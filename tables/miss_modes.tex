@@ -1,0 +1,21 @@
+\begin{table}[!t]
+\centering
+\footnotesize
+\setlength{\tabcolsep}{3pt}
+\begin{tabular}{@{}lcccccc@{}}
+\toprule
+& \multicolumn{3}{c}{Staging ($n{=}440$)} & \multicolumn{3}{c}{Screening ($n{=}309$)} \\
+\cmidrule(lr){2-4}\cmidrule(l){5-7}
+Method & Hits & Unreach. & Missel. & Hits & Unreach. & Missel. \\
+\midrule
+B-spline & 243 & 197 & 0 & 211 & 98 & 0 \\
+SAM standalone & 99 & 44 & 297 & 80 & 1 & 228 \\
+Relaxed 28 & 237 & 176 & 27 & 204 & 74 & 31 \\
+\quad + Siamese scorer & 203 & 176 & 61 & 210 & 74 & 25 \\
+\textbf{\ours} & \textbf{289} & 92 & 59 & \textbf{244} & 20 & 45 \\
+Exhaustive & 297 & 89 & 54 & 242 & 19 & 48 \\
+\bottomrule
+\end{tabular}
+\caption{\textbf{Where misses come from} at 3\,mm. \emph{Unreach.}: no candidate within tolerance. \emph{Missel.}: a candidate was within tolerance but the scorer chose another. The spline returns a single point, so all its misses are unreachable. Diverse search removes most unreachable misses; SAM's field reaches almost everything but rarely selects correctly.}
+\label{tab:missmodes}
+\end{table}

@@ -16,20 +16,22 @@ def pct(v, cohort):
 
 
 def fig_budget():
-    fig, axes = plt.subplots(1, 2, figsize=(S.COL_W, 1.95), sharey=True)
+    fig, axes = plt.subplots(1, 2, figsize=(S.COL_W, 2.2), sharey=True)
     x = np.arange(len(BUDGETS))
     for ax, c in zip(axes, ["staging", "screening"]):
         d = SWEEP[c]
         ax.axhline(pct(d["spline"], c), color=S.SPLINE, lw=1.0, ls=(0, (1, 1.5)), zorder=1)
-        ax.plot(x, pct(d["ungated_reach"], c), color=S.OURS, lw=1.2, ls="--", zorder=2)
-        ax.plot(x, pct(d["ungated_hits"], c), color=S.OURS, marker="o", ms=3.2, zorder=3,
+        ax.plot(x, pct(d["ungated_reach"], c), color=S.OURS, lw=1.6, ls="--", zorder=2)
+        ax.text(5.1, pct(d["ungated_reach"][-1], c) + 1.5, "reach", fontsize=6, color=S.OURS, ha="right", va="bottom")
+        ax.text(5.1, pct(d["ungated_hits"][-1], c) - 2.0, "hits", fontsize=6, color=S.OURS, ha="right", va="top")
+        ax.plot(x, pct(d["ungated_hits"], c), color=S.OURS, marker="o", ms=4.2, lw=1.8, zorder=3,
                 mec="white", mew=0.6)
-        ax.plot(x, pct(d["strict_hits"], c), color=S.ALT, marker="s", ms=3.0, zorder=3,
+        ax.plot(x, pct(d["strict_hits"], c), color=S.ALT, marker="s", ms=3.8, lw=1.6, zorder=3,
                 mec="white", mew=0.6)
         # fit-only prefix at 28 and exhaustive (raw lattice)
-        ax.plot([2], [pct(d["fitonly28"][0], c)], marker="D", ms=4, color=S.INK2, ls="none",
+        ax.plot([2], [pct(d["fitonly28"][0], c)], marker="D", ms=5.5, color=S.INK, ls="none",
                 mec="white", mew=0.6, zorder=4)
-        ax.plot([6], [pct(d["exhaustive"][0], c)], marker="^", ms=4.2, color=S.INK2,
+        ax.plot([6], [pct(d["exhaustive"][0], c)], marker="^", ms=6, color=S.INK,
                 ls="none", mec="white", mew=0.6, zorder=4)
         ax.set_xticks(list(x) + [6])
         ax.set_xticklabels(BUDGETS + ["Exh."])
@@ -42,9 +44,9 @@ def fig_budget():
     from matplotlib.lines import Line2D
     h = [Line2D([], [], color=S.OURS, marker="o", ms=3, label="Diverse, no gates: hits"),
          Line2D([], [], color=S.OURS, ls="--", label="Diverse, no gates: reach"),
-         Line2D([], [], color=S.ALT, marker="s", ms=3, label="Wide strict: hits"),
-         Line2D([], [], color=S.INK2, marker="D", ls="none", ms=3.5, label="Fit-only 28"),
-         Line2D([], [], color=S.INK2, marker="^", ls="none", ms=3.5, label="Exhaustive"),
+         Line2D([], [], color=S.ALT, marker="s", ms=3, label="Gated K: hits"),
+         Line2D([], [], color=S.INK, marker="D", ls="none", ms=4.5, label="Fit-only 28"),
+         Line2D([], [], color=S.INK, marker="^", ls="none", ms=4.5, label="Exhaustive"),
          Line2D([], [], color=S.SPLINE, ls=(0, (1, 1.5)), lw=1, label="B-spline hits")]
     fig.legend(handles=h, loc="lower center", ncol=3, bbox_to_anchor=(0.5, -0.06),
                handlelength=1.8, columnspacing=0.9)
@@ -167,42 +169,37 @@ def fig_bands():
 
 
 def fig_speed():
-    fig, axes = plt.subplots(1, 2, figsize=(S.COL_W, 1.75), sharey=True)
+    fig, axes = plt.subplots(1, 2, figsize=(S.COL_W, 1.9), sharey=True)
     for ax, c in zip(axes, ["staging", "screening"]):
         d = SPEED[c]
         div = [r for r in d["routes"] if r[0] in ("28", "56", "112", "All")]
         ax.plot([r[1] for r in div], pct([r[2] for r in div], c), color=S.OURS, marker="o",
-                ms=3.2, mec="white", mew=0.6, zorder=3)
+                ms=4.5, lw=1.8, mec="white", mew=0.6, zorder=3)
+        offs = {"28": (4, -10), "112": (-8, 5), "All": (0, 5)}
         for lab, t, h in div:
-            if lab not in ("28", "All"):
+            if lab not in offs:
                 continue
-            ax.annotate(lab, (t, 100 * h / N[c]), textcoords="offset points", xytext=(-4, 2),
-                        ha="right", fontsize=5.8, color=S.INK2)
-        for lab, mk in (("Fit-only 28", "D"), ("Exhaustive", "^")):
+            ax.annotate("K=" + lab if lab != "All" else "all", (t, 100 * h / N[c]),
+                        textcoords="offset points", xytext=offs[lab], ha="center",
+                        fontsize=5.8, color=S.OURS)
+        for lab, mk, off in (("Fit-only 28", "D", (14, -10)), ("Exhaustive", "^", (0, 5))):
             r = [r for r in d["routes"] if r[0] == lab][0]
-            ax.plot([r[1]], [100 * r[2] / N[c]], marker=mk, ms=4, color=S.INK2, ls="none",
+            ax.plot([r[1]], [100 * r[2] / N[c]], marker=mk, ms=5.5, color=S.INK, ls="none",
                     mec="white", mew=0.6, zorder=4)
+            ax.annotate(lab.replace("Exhaustive", "exhaustive").replace("Fit-only 28", "fit-only 28"),
+                        (r[1], 100 * r[2] / N[c]), textcoords="offset points", xytext=off,
+                        ha="center", fontsize=5.8, color=S.INK)
         st, sh = d["spline"]
-        ax.plot([st], [100 * sh / N[c]], marker="o", ms=4.5, color=S.SPLINE, ls="none",
-                mec="white", mew=0.6, zorder=4)
-        ax.set_xscale("log")
-        ax.set_xlim(0.07, 6)
-        ax.set_xticks([0.1, 0.3, 1, 3])
-        ax.set_xticklabels(["0.1", "0.3", "1", "3"])
-        ax.minorticks_off()
-        ax.set_ylim(35, 90)
+        ax.axhline(100 * sh / N[c], color=S.SPLINE, lw=1.0, ls=(0, (1, 1.5)), zorder=1)
+        ax.text(0.295, 100 * sh / N[c] + 1.2, f"B-spline ({st:.1f} s)", ha="right", va="bottom",
+                fontsize=5.8, color=S.SPLINE)
+        ax.set_xlim(0.07, 0.30)
+        ax.set_xticks([0.1, 0.15, 0.2, 0.25, 0.3])
+        ax.set_ylim(35, 92)
         ax.set_title(TITLES[c], loc="left")
-        ax.set_xlabel("Median local time (s, log)")
     axes[0].set_ylabel("Hits within 3 mm (%)")
-    from matplotlib.lines import Line2D
-    h = [Line2D([], [], color=S.OURS, marker="o", ms=3, label="Diverse search, cap $K$"),
-         Line2D([], [], color=S.INK2, marker="D", ls="none", ms=3.5, label="Fit-only 28"),
-         Line2D([], [], color=S.INK2, marker="^", ls="none", ms=3.5, label="Exhaustive"),
-         Line2D([], [], color=S.SPLINE, marker="o", ls="none", ms=3.5, label="B-spline")]
-    fig.legend(handles=h, loc="lower center", ncol=4, bbox_to_anchor=(0.5, -0.06),
-               handlelength=1.4, columnspacing=0.8)
+    fig.supxlabel("Median local time per query (s)", fontsize=7, color=S.INK2, y=0.02)
     fig.tight_layout(w_pad=0.6)
-    fig.subplots_adjust(bottom=0.3)
     fig.savefig(os.path.join(OUT, "accuracy_latency.pdf"))
     plt.close(fig)
 

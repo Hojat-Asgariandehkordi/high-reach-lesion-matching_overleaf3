@@ -175,7 +175,7 @@ On our data it keeps about 365 of the 4,851 translations per query.
 Let $\mathcal{X} = \{x_t : t \in \T\}$ be the set of all proposed positions and $\mathcal{D} \subseteq \mathcal{X}$ the positions in the complete list.
 Write $d(y, \mathcal{A}) = \min_{x \in \mathcal{A}} d(y, x)$ for the distance from a position $y$ to the closest member of a set $\mathcal{A}$.
 Every proposed position was either kept, or skipped because a kept position lay within $r$ of it.
-Therefore, for any reference $y$,
+This is the covering property of greedy suppression: the kept positions form an $r$-net of the lattice. Therefore, for any reference $y$,
 \begin{equation}
 d(y, \mathcal{X}) \le d(y, \mathcal{D}) \le d(y, \mathcal{X}) + r .
 \label{eq:coverage}
@@ -198,10 +198,10 @@ s(t) = \ell_t - 1.5\left(\frac{f_t - \min_{u\in\Ss} f_u}{F} + \frac{w_t - \min_{
 \label{eq:direct}
 \end{equation}
 and the method returns the position $x_{\hat t}$ of the highest-scoring translation $\hat t$.
-The terms in parentheses measure how much worse a candidate fits than the best candidate in the list, and $F$ and $W$ are fixed scales (the residual limits fitted on development data) that make the two costs comparable.
+The terms in parentheses measure how much worse a candidate fits than the best candidate in the list, and $F = 76.958$\,HU and $W = 99.541$\,HU are fixed scales (the residual limits fitted on development data) that make the two costs comparable; the weight $1.5$ is fixed for all routes.
 Note that the minima are the same for every candidate in a list.
 So when a list grows, the scores of the old candidates shift together and their order is unchanged; the selection can change only if a newly added candidate scores higher than the previous winner.
-This property makes the accounting in Sec.~\ref{sec:decomp} exact.
+This property makes the accounting in Sec.~\ref{sec:decomp} interpretable.
 
 \subsection{Was a correct candidate available, and was it chosen?}
 \label{sec:decomp}
@@ -220,7 +220,7 @@ A hit is only possible if the lesion is reachable, and an empty list gives $R_i 
 
 Now compare two methods, 1 and 2, on the same lesions, and sort each lesion into one of three groups: $\mathcal{J}$, reachable by both; $\mathcal{G}$, reachable only by method 2 (reach \emph{gained}); and $\mathcal{O}$, reachable only by method 1 (reach lost).
 Lesions reachable by neither are misses for both.
-The change in the number of hits then splits exactly into
+The change in the number of hits then splits, as an accounting identity, into
 \begin{equation}
 \Delta H = \underbrace{\sum_{i\in\mathcal{J}} (H_{i,2} - H_{i,1})}_{\text{selection}} \;+\; \underbrace{\sum_{i\in\mathcal{G}} H_{i,2} \;-\; \sum_{i\in\mathcal{O}} H_{i,1}}_{\text{reach}} .
 \label{eq:decomp}
@@ -228,24 +228,23 @@ The change in the number of hits then splits exactly into
 The \emph{selection} term counts how choices change on lesions that both methods could have found.
 The \emph{reach} term counts hits on lesions that only one of the methods could have found.
 For example, when we diversify a 28-candidate list on the staging cohort, 45 hits are gained on newly reachable lesions, 1 is lost with lost reach, and the selection term is $-4$, so $\Delta H = 45 - 1 - 4 = +40$ (Sec.~\ref{sec:diversity}).
-Comparing hit rates among reachable lesions instead would mix the two effects, because the set of reachable lesions itself changes.
+The identity holds for any two methods; what makes it informative here is the list invariance of Eq.~\ref{eq:direct}, which guarantees that a nonzero selection term reflects a new candidate winning rather than a reshuffling of old ones. Comparing hit rates among reachable lesions instead would mix the two effects, because the set of reachable lesions itself changes.
 
 \subsection{Compared candidate lists}
 \label{sec:routes}
-All candidate lists below use the same grid, query, costs and scorer; they differ only in which translations are scored.
-Some lists apply \emph{gates}, hard thresholds that discard translations with poor fit before diversification.
+All candidate lists use the same grid, query, costs and scorer; they differ only in which translations reach the scorer.
+We use four names throughout.
 \begin{itemize}
-\item \textbf{Fit-only $K$}: the first $K$ translations of the wide lattice in fit order, without diversification.
-\item \textbf{Diverse $K$}: Algorithm~\ref{alg:diverse} on the wide lattice, stopped after $K$ kept translations.
-\item \textbf{\ours}: Algorithm~\ref{alg:diverse} on the wide lattice with no budget and no gates (about 365 candidates).
-\item \textbf{Strict $K$}: diversified, but first discards translations whose fit cost exceeds an absolute limit or is more than 24\,HU worse than the best, and after taking $K$ also discards those whose witness cost exceeds a limit. ``Original'' uses the smaller lattice; ``Original 28\,+\,fit'' loosens its fit limit by 20\,HU.
-\item \textbf{Relaxed $K$}: like strict, with the fit limit loosened by 20\,HU, a 40\,HU slack, and no witness limit.
-\item \textbf{Exhaustive}: all 4,851 translations, no gates.
+\item \textbf{Fit-only $K$}: the $K$ best translations of the wide lattice in fit order, without diversification.
+\item \textbf{Diverse $K$}: Algorithm~\ref{alg:diverse} on the wide lattice, stopped after $K$ kept translations; \textbf{\ours} is the complete list (about 365 candidates).
+\item \textbf{Gated $K$}: Diverse $K$ after hard \emph{gates} that discard translations with a fit cost above an absolute limit or more than 24\,HU worse than the best, and, after taking $K$, those with a witness cost above a limit. \textbf{Relaxed $K$} loosens the fit limit by 20\,HU and the slack to 40\,HU and drops the witness limit.
+\item \textbf{Exhaustive}: all 4,851 translations.
 \end{itemize}
 Budgets are $K \in \{7, 14, 28, 56, 112\}$ or the complete list.
-Anatomical fit still enters every score through Eq.~\ref{eq:direct}; removing gates only changes which translations reach the scorer.
+Anatomical fit enters every score through Eq.~\ref{eq:direct}; gates only change which translations reach the scorer.
+Gated variants on the smaller original lattice are reported in the supplement.
 
-\ifexpandedpaper\input{method_expanded}\fi
+
 
 \section{Evaluation protocol}
 \label{sec:evaluation}
@@ -277,7 +276,7 @@ We also report a frozen local Siamese scorer trained on the same development dat
 We report reach and hits (Eq.~\ref{eq:reachhit}) at a primary tolerance of $\tau = 3$\,mm in the shared grid, and also at 2 and 4\,mm and in native earlier-scan coordinates.
 Every eligible lesion counts in the denominator, including failures.
 Because lesions in the same patient are correlated, confidence intervals resample patients rather than lesions: we report paired 95\% intervals from 5,000 patient-level bootstrap draws.
-Before inference we fixed the primary staging contrast (strict cap 7 to 28 under both scorers), the threshold for a useful gain (at least 3 points with an interval above zero), and the criterion for the spline comparison (lower bound above $-5$ points with at least fivefold speed on prepared crops).
+Before inference we fixed the primary staging contrast (Gated $K$ from 7 to 28 under both scorers), the threshold for a useful gain (at least 3 points with an interval above zero), and the criterion for the spline comparison (lower bound above $-5$ points with at least fivefold speed on prepared crops).
 
 \paragraph{Timing.}
 \emph{Prepared-crop} time starts with both crops and the query in memory and includes candidate generation, features, scoring and any optimization.

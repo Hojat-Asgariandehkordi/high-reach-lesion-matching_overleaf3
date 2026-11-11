@@ -1,10 +1,8 @@
-To measure how a lung lesion changes over time, a radiologist must find it again in the patient's earlier CT scan.
-We study this step when the lesion's position in the current scan is already known.
-After the two scans are aligned, small residual shifts remain, and several nearby locations in the earlier scan can look anatomically plausible.
-A common strategy ranks candidate shifts by how well the surrounding anatomy matches and lets a lesion classifier choose among the best few.
-We find that this short list often consists of near-duplicates of a single guess, so a wrong guess leaves the classifier no correct option.
-We propose \emph{fit-ordered diverse search}: candidates are still taken in order of anatomical fit, but a candidate is kept only if it lies at least a minimum distance from every candidate already kept.
-The same number of candidates then covers more distinct locations, and the complete list covers every possible shift to within that distance while scoring about one-thirteenth of them.
-We also separate whether a correct candidate was available from whether the classifier chose it, which shows where each improvement comes from.
-On 440 lung metastases from an independent staging cohort, our search finds the earlier lesion within 3\,mm in 289 cases, compared with 243 for deformable registration, and it improves by a similar margin on 309 screening nodules.
-With the same number of candidates, spreading them out alone adds 9 to 12 percentage points, and the local matching step runs about 19 times faster than registration.
+Measuring how a lung lesion changes over time requires finding it again in the patient's earlier CT scan.
+After a global chest alignment, a small residual shift remains, and several nearby locations can match the surrounding anatomy.
+Hypothesis-based matchers rank candidate shifts by anatomical fit and let a lesion scorer choose among the best few.
+We show that this design spends its budget poorly: the best-fitting shifts are near-duplicates of a single alignment mode, so when that mode is wrong the scorer never sees the lesion.
+We introduce \emph{fit-ordered diverse search}, which keeps the fit ordering but accepts a shift only if it lies at least 2.1\,mm from every shift already accepted.
+With the same 28 candidates, this raises the hit rate by 9.1 and 12.0 percentage points on two CT cohorts, and an accounting of reach and selection shows that the entire gain comes from coverage.
+Run to completion, the diversified list reaches 348 of the 351 lesions that scoring every shift can reach while evaluating 7.5\% of the shifts.
+On 440 metastases from an independent staging cohort, the resulting matcher finds the earlier lesion within 3\,mm in 289 cases, compared with 243 for lesion-inclusive deformable registration; the advantage replicates on 309 screening nodules, and the local matching step runs about 19 times faster.

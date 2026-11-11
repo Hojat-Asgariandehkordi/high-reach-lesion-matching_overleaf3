@@ -36,6 +36,12 @@ Before crop preparation, each scan must have a robust lung extent of at least 13
 The evaluation uses de-identified research data and previously supplied annotations. The original NLST reports written consent and institutional review~\cite{aberlenslt}. The secondary analysis involved no participant contact or new imaging.
 
 \section{Physical support and candidate generation}
+\paragraph{Residual support details (moved from the main paper).}
+The fit and witness octants use strided centers that stay valid across the lattice after smoothing and displacement.
+The residual support excludes a 10\,mm core on the resampled grid, while the final lesion score and the central spline can use the lesion-bearing interior.
+The residual limits are fitted on training-side controls.
+The wide and matched narrow comparison uses the same safe shell centers and limits, a subset of the original 824 samples per sector, so translation extent is compared on identical physical observations.
+
 \paragraph{Crops and query.}
 A coarse lung mask initializes a scan-only chest affine from physical lung bounds, followed by two levels of masked correlation optimization. The prior is linearly resampled on the current crop grid with air fill outside the native image, and both crops are clipped to $[-1000,400]$ HU. A jitter uniform in $[-2.5,2.5]$ mm per axis shifts each supplied current center. The archived query maximizes weakest negative curvature across scales 1.4, 2.1, 3.0 and 4.2 mm minus a penalty $0.01(d/6)^2$ within 6 mm, where $d$ is the distance to the supplied center~\cite{li2003}. We preserve its earlier-point evaluation even when the current detection decision is negative. In the original archive, missing priors leave the current-only decision unchanged on 1,190 cases.
 

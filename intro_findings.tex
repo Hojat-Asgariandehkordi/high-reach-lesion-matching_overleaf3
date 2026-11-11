@@ -16,17 +16,15 @@ We therefore keep the fit ordering but enforce spatial separation: walking down 
 This greedy rule, a form of non-maximum suppression~\cite{neubeck2006nms}, uses the same budget to cover more distinct locations (Fig.~\ref{fig:teaser}c).
 Run to completion, it covers the entire translation lattice to within $r$ while scoring only about one-thirteenth of the positions.
 
-To understand \emph{why} a change in the candidate list helps, we separate two quantities.
-\emph{Reach} asks whether any candidate lies within tolerance of the true earlier location.
-\emph{Selection} asks whether the scorer chooses such a candidate.
-Because our scorer ranks any two candidates identically regardless of the rest of the list, every change in accuracy decomposes exactly into hits gained or lost through reach and hits changed on targets that were already reachable.
-This bookkeeping exposes effects that aggregate accuracy hides.
-For example, enlarging the list helps a lesion-specific scorer but not a general anatomical embedding~\cite{yan2022sam}, even though both see identical candidates.
+To see \emph{why} a change in the candidate list helps, we track two quantities.
+\emph{Reach} asks whether any candidate lies within tolerance of the true earlier location; \emph{selection} asks whether the scorer chooses such a candidate.
+Splitting the change in hits into a reach term and a selection term is a simple accounting identity, but it becomes informative here because our scorer ranks any two candidates the same way regardless of the rest of the list, so the selection term isolates genuine changes in choice.
+The accounting shows that diversification works entirely through coverage, and that extra coverage pays off only for a scorer that can use it: enlarging the list helps a lesion-specific scorer but not a general anatomical embedding~\cite{yan2022sam}, even though both see identical candidates.
 
 We evaluate on an independent melanoma staging cohort and replicate on a lung screening cohort, with success criteria fixed before inference.
 Our contributions are:
 \begin{itemize}
-  \item \textbf{Fit-ordered diverse search}, a candidate allocation rule for point-query lesion correspondence with a lattice coverage guarantee (Sec.~\ref{sec:method}).
-  \item \textbf{An exact reach/selection decomposition} that attributes accuracy changes to candidate coverage or to scorer choices on matched queries (Sec.~\ref{sec:decomp}).
-  \item \textbf{A controlled study on two cohorts} showing +10.5 and +10.7 points at 3\,mm over a lesion-inclusive B-spline at about 19$\times$ lower local cost, and showing that diversification alone accounts for +9.1 and +12.0 points at a fixed budget (Sec.~\ref{sec:results}).
+  \item \textbf{A diagnosis and a remedy for candidate allocation.} We show that fit-ranked shortlists collapse onto one alignment mode and introduce fit-ordered diverse search, which inherits the covering property of greedy suppression: the complete list stays within $r$ of every lattice position while scoring 7.5\% of them (Sec.~\ref{sec:method}).
+  \item \textbf{Evidence that allocation, not scoring, limits small budgets.} At a fixed budget of 28, diversification adds 9.1 and 12.0 points over the fit-ranked list in two cohorts, and the reach/selection accounting attributes the whole gain to coverage (Secs.~\ref{sec:decomp} and~\ref{sec:diversity}).
+  \item \textbf{An accurate and fast matcher.} The complete fit-ordered list comes within 1.8 points of exhaustive scoring on staging and matches it on screening, and it improves on a lesion-inclusive B-spline by 10.5 and 10.7 points at 3\,mm with about 19 times lower local cost (Sec.~\ref{sec:results}).
 \end{itemize}
