@@ -72,7 +72,9 @@ def main(path):
     half = float(d["half_mm"])
     labels = [str(s) for s in d["labels"]]
 
-    plt.rcParams.update({"font.family": "DejaVu Sans", "pdf.fonttype": 42})
+    plt.rcParams.update({"font.family": "serif",
+                         "font.serif": ["Times New Roman", "TeX Gyre Termes", "Liberation Serif", "Nimbus Roman", "Times"],
+                         "mathtext.fontset": "stix", "pdf.fonttype": 42})
     fig, axes = plt.subplots(2, 6, figsize=(7.0, 2.62),
                              gridspec_kw=dict(wspace=0.03, hspace=0.03,
                                               left=0.005, right=0.995, top=0.915, bottom=0.115))

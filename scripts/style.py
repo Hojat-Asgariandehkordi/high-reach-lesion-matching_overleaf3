@@ -18,7 +18,10 @@ SURF = "#fcfcfb"
 
 def apply():
     mpl.rcParams.update({
-        "font.family": "DejaVu Sans",
+        "font.family": "serif",
+        # Times New Roman if installed; otherwise metric-compatible Times clones
+        "font.serif": ["Times New Roman", "TeX Gyre Termes", "Liberation Serif", "Nimbus Roman", "Times"],
+        "mathtext.fontset": "stix",
         "font.size": 7,
         "axes.titlesize": 7.5,
         "axes.titleweight": "bold",
