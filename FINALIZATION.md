@@ -27,11 +27,23 @@ For point-query lesion matching after a chest alignment, *which* local hypothese
 | Status figure (supp) | rule-level points | **recovered from vector figure** |
 
 ## Action ledger
-(see cycles below)
+
+### Cycle 1 candidates (scores: P(help) / benefit 1-3 / P(harm) / downside 1-3 / cost 1-5)
+| ID | Concern (baseline review) | Change | Evidence | P(help) | Ben | P(harm) | Down | Cost | Priority | Decision |
+|---|---|---|---|---|---|---|---|---|---|---|
+| A | W1, W2, W7, fix 1-2, 5: claims bundle pipeline vs. rule; contributions oversold; local-only speed | Rewrite abstract, intro contributions, Sec. 5.1 lead and discussion around two separated, precisely scoped findings: (i) allocation at fixed budget (+9.1/+12.0); (ii) the full fit-ordered pipeline vs. spline, with exhaustive as an explicit upper bound (diverse = 348/351 reach, 289/297 hits at 7.5% of positions). Present Eq. 3 as the NMS covering property and Eq. 6 as an accounting identity whose interpretation rests on list invariance. State local vs end-to-end speed. Add a compact "where misses come from" table (Supp. Tab. S3: unreachable vs reachable-misselected) | primary_contrasts; Supp S3, S10, S14-16 | high | 3 | low | 1 | 3 | (0.8x3-0.1x1)/3 = 0.77 | execute |
+| B | Clarity 4: route taxonomy, lab-note paragraph, Tab. 1 timing mix, F/W undefined, Siamese "22/25" | One naming scheme (Fit-only K, Diverse K, Diverse search, Exhaustive, Gated K strict/relaxed) across text, tables and figures; move "Residual support details" to the supplement; split Tab. 1 time column note (CPU vs GPU), explain candidate counts; give F, W values | Supp S3 (F=76.958, W=99.541 HU) | high | 2 | low | 1 | 3 | (0.8x2-0.1)/3 = 0.50 | execute |
+| C | Figs 6 and 8 hard to read | Redesign Fig. 8 (accuracy-latency) with a linear time axis inset and direct labels; enlarge markers and reach/hit distinction in Fig. 6 | existing data | med-high | 2 | low | 1 | 2 | (0.7x2-0.1)/2 = 0.65 | execute |
+| D | Fig. 4 should show fit-only candidates | Add fit-only top-K overlay | cases.npz lacks fit-only lists | — | 2 | — | — | 4 | — | reject (data unavailable) |
+| E | W3: spread baselines, r sweep | Uniform sub-lattice / local-minima / r sweep | needs new runs | — | 3 | — | — | 5 | — | defer (next research task) |
+
+Predicted benefit of cycle 1: clarity +1, novelty framing more defensible (no score promise).
+
 
 ## Independent review history
 | Snapshot | Digest (main.pdf sha256, first 12) | Score (range) | Notes |
 |---|---|---|---|
+| baseline main@e28aea2 | de17d686a67b | 4/10 (3-5), conf 4 | novelty 3, soundness 6, evidence 5, clarity 4, figs 6. Main issues: claims bundle pipeline gain with diversification; Eq.3/6 oversold; taxonomy; Tab.1 timing; Fig.8; missing spread baselines (needs runs) |
 
 ## Material unresolved items
 - Exhaustive staging timing conflict: 0.956 s (S15) vs 0.265 s (S16).
