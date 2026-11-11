@@ -39,11 +39,24 @@ For point-query lesion matching after a chest alignment, *which* local hypothese
 
 Predicted benefit of cycle 1: clarity +1, novelty framing more defensible (no score promise).
 
+**Cycle 1 outcome:** overall score unchanged (4, range 3-5); clarity 4→5; the reviewer judged numbers consistent and Fig. 1 and the miss-mode table effective, and raised no new factual problems. Decision: **keep** (meaningful clarity gain, no regression).
+
+### Cycle 2 candidates
+| ID | Concern (cycle-1 review) | Change | Evidence | P(help) | Ben | P(harm) | Down | Cost | Priority | Decision |
+|---|---|---|---|---|---|---|---|---|---|---|
+| A2 | W1, W2, W5, fix 1-2 | Attribute the spline gain precisely where it is stated (abstract, intro, 5.3, conclusion): wider search extent plus lesion-aware selection; put the exact-mark result (33→4 on screening) next to the headline; say why small budgets bind (per-candidate scoring cost, multi-lesion workloads) | Supp. S7, S14-S16 | high | 3 | low | 1 | 2 | 1.15 | execute |
+| B2 | W8, Tab. 2 and Fig. 8 mix timing protocols | Remove timing from Tab. 2; new one-column timing table with both protocols side by side (matched comparison vs fixed-budget replay), including the exhaustive discrepancy; Fig. 8 uses one protocol only; text states speed ratios per protocol | Supp. S14, S15, S16 | high | 2 | low | 1 | 2 | 0.75 | execute |
+| D2 | Naming mismatch with supplement; redundancy | Add a name-mapping table at the top of the supplement and a scope note before the status-protocol sections; remove duplicated interval lists from Tab. 2 caption | supplement | med | 2 | low | 1 | 2 | 0.65 | execute |
+| E2 | W3 uniform sub-lattice; r sweep; wide-initialized spline | needs runs | — | — | 3 | — | — | 5 | — | defer (next research tasks) |
+| F2 | Fig. 6 markers overlap | larger markers / zoom insets | spec fixed by group (PROMPT.md) | med | 1 | med | 1 | 2 | 0.25 | reject (conflicts with group's figure spec) |
+
+
 
 ## Independent review history
 | Snapshot | Digest (main.pdf sha256, first 12) | Score (range) | Notes |
 |---|---|---|---|
 | baseline main@e28aea2 | de17d686a67b | 4/10 (3-5), conf 4 | novelty 3, soundness 6, evidence 5, clarity 4, figs 6. Main issues: claims bundle pipeline gain with diversification; Eq.3/6 oversold; taxonomy; Tab.1 timing; Fig.8; missing spread baselines (needs runs) |
+| cycle 1 @66a52ad | 14ce67264aed | 4/10 (3-5), conf 4 | novelty 3, soundness 6, evidence 5, clarity 5 (+1), figs 6. Fig.1 'excellent', Tab.3 'clear and effective'. Remaining: spline comparison confounded (lesion snapping, lattice extent), timing protocols mixed, naming vs supplement, redundancy of Fig.5, uniform sub-lattice ablation (needs runs) |
 
 ## Material unresolved items
 - Exhaustive staging timing conflict: 0.956 s (S15) vs 0.265 s (S16).
