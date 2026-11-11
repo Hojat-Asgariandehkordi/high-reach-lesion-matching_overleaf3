@@ -1,0 +1,3 @@
+# Patient CT crops: keep out of the (public) repository
+scripts/cases.npz
+__pycache__/

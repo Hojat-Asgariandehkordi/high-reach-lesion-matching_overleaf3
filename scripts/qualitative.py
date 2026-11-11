@@ -1,93 +1,140 @@
-"""Qualitative-results figure (and real-CT teaser backdrop).
+"""Qualitative figure: six axial CT pairs from the staging cohort.
 
-Usage once patches are exported from the pipeline:
-    python scripts/qualitative.py cases.npz            -> fig/qualitative.pdf
-    python scripts/qualitative.py --placeholder        -> layout placeholder
+Usage (from the project root):
+    python scripts/qualitative.py                # reads scripts/cases.npz
+    python scripts/qualitative.py path/to/cases.npz
 
-cases.npz must hold, for N cases (2D axial slices through the reference, in the
-shared current-frame grid, 0.7 mm pixels, HU):
-    current   (N, H, W)  current-scan slice through the query p
-    earlier   (N, H, W)  resampled earlier-scan slice through the reference
-    query     (N, 2)     p in pixel (row, col) of `current`
-    ref       (N, 2)     earlier reference in pixels of `earlier`
-    ours      (N, 2)     Diverse search selection
-    spline    (N, 2)     spline mapped point
-    sam       (N, 2)     SAM standalone point
-    cands     (N, M, 2)  retained centres projected to the slice (NaN-padded)
-    title     (N,)       short case label, e.g. "staging, 4 mm nodule"
-Slices should be windowed for lung: [-1000, 400] HU.
+Writes figures/qualitative.pdf and figures/qualitative.png (200 dpi).
+Reads only cases.npz; all coordinates are voxel (z, y, x) on the shared
+current-frame grid with spacing (1.5, 0.7, 0.7) mm.
 """
-import sys, os
+import os
+import sys
+
 import numpy as np
+import matplotlib
+
+matplotlib.use("Agg")
 import matplotlib.pyplot as plt
+from matplotlib.lines import Line2D
 from matplotlib.patches import Circle
-sys.path.insert(0, os.path.dirname(__file__))
-import style as S
 
-S.apply()
-OUT = os.path.join(os.path.dirname(__file__), "..", "figures")
-PX_MM = 0.7
+HERE = os.path.dirname(os.path.abspath(__file__))
+OUT = os.path.join(HERE, "..", "figures")
 
-
-def mark(ax, rc, **kw):
-    if rc is None or np.any(np.isnan(rc)):
-        return
-    ax.plot(rc[1], rc[0], ls="none", **kw)
-
-
-def draw(cases, n_cols=6):
-    n = len(cases["current"])
-    n_cols = min(n_cols, n)
-    fig, axes = plt.subplots(2, n_cols, figsize=(S.PAGE_W, 2.55))
-    axes = np.atleast_2d(axes)
-    for k in range(n_cols):
-        a0, a1 = axes[0, k], axes[1, k]
-        for a in (a0, a1):
-            a.set_xticks([]); a.set_yticks([]); a.grid(False)
-        a0.imshow(np.clip(cases["current"][k], -1000, 400), cmap="gray", vmin=-1000, vmax=400)
-        mark(a0, cases["query"][k], marker="+", ms=8, mew=1.3, color="#ffd400")
-        a1.imshow(np.clip(cases["earlier"][k], -1000, 400), cmap="gray", vmin=-1000, vmax=400)
-        c = cases["cands"][k]
-        c = c[~np.isnan(c).any(1)]
-        a1.plot(c[:, 1], c[:, 0], "o", ms=1.8, color=S.OURS, alpha=0.6)
-        ref = cases["ref"][k]
-        a1.add_patch(Circle((ref[1], ref[0]), 3.0 / PX_MM, fill=False, ls=":", lw=0.8,
-                            color="white"))
-        mark(a1, ref, marker="*", ms=8, color=S.SPLINE, mec="white", mew=0.4)
-        mark(a1, cases["ours"][k], marker="o", ms=5, mfc="none", mec=S.OURS, mew=1.3)
-        mark(a1, cases["spline"][k], marker="^", ms=5, mfc="none", mec="#ffd400", mew=1.1)
-        mark(a1, cases["sam"][k], marker="s", ms=4.5, mfc="none", mec="#e87ba4", mew=1.1)
-        a0.set_title(str(cases["title"][k]), fontsize=6, loc="left")
-    axes[0, 0].set_ylabel("Current")
-    axes[1, 0].set_ylabel("Earlier")
-    fig.subplots_adjust(wspace=0.04, hspace=0.06)
-    return fig
+WINDOW = (-950, 80)            # lung window, HU
+TOL_MM = 3.0                   # hit tolerance
+CAND_SLAB_MM = 1.6             # show candidates within this axial distance
+TITLE_COLOR = "#b86a3d"
+COL = {
+    "query": "white",
+    "cand": "#e4e4e4",
+    "affine": "#9ad0ff",
+    "ref": "#ffe14a",
+    "diverse": "#58cbff",
+    "spline": "#ffb05c",
+    "sam": "#75e9a8",
+}
 
 
-def placeholder(n_cols=6):
-    fig, axes = plt.subplots(2, n_cols, figsize=(S.PAGE_W, 2.4))
-    labels = ["success", "success", "success", "spline fails", "large motion", "failure"]
-    for k in range(n_cols):
-        for r, a in enumerate(axes[:, k]):
-            a.set_xticks([]); a.set_yticks([]); a.grid(False)
-            a.set_facecolor("#efeeea")
-            for s in a.spines.values():
-                s.set_visible(True); s.set_color(S.MUTED); s.set_linestyle((0, (2, 2)))
-            a.text(0.5, 0.5, ("current CT\n+ query" if r == 0 else
-                              "earlier CT\nref / ours /\nspline / SAM"),
-                   ha="center", va="center", fontsize=6, color=S.INK2, transform=a.transAxes)
-        axes[0, k].set_title(labels[k], fontsize=6, loc="left", color=S.SPLINE)
-    fig.suptitle("PLACEHOLDER: export patches and run scripts/qualitative.py cases.npz",
-                 fontsize=7, color="#c0392b", y=1.02)
-    fig.subplots_adjust(wspace=0.05, hspace=0.06)
-    return fig
+def load(path):
+    d = np.load(path, allow_pickle=False)
+    data = {k: d[k] for k in d.files}
+    assert data["current"].shape[0] == 6 and data["prior"].shape[0] == 6, "expected 6 columns"
+    assert float(data["half_mm"]) == 16.0, "half_mm must be 16"
+    assert np.allclose(data["spacing_zyx"], [1.5, 0.7, 0.7]), "spacing must be [1.5, 0.7, 0.7]"
+    return data
+
+
+def show_slice(ax, vol, z, center_yx, dz, dy, dx, half):
+    img = vol[int(z)].astype(np.float32)          # (y, x), not modified in place
+    ny, nx = img.shape
+    extent = [-dx / 2, (nx - 0.5) * dx, -dy / 2, (ny - 0.5) * dy]
+    ax.imshow(img, cmap="gray", vmin=WINDOW[0], vmax=WINDOW[1], interpolation="nearest",
+              origin="lower", extent=extent)
+    cy, cx = center_yx[0] * dy, center_yx[1] * dx
+    ax.set_xlim(cx - half, cx + half)
+    ax.set_ylim(cy - half, cy + half)
+    ax.set_xticks([]); ax.set_yticks([])
+    for s in ax.spines.values():
+        s.set_visible(False)
+    return cy, cx
+
+
+def mm(p, dy, dx):
+    """voxel (z, y, x) -> plot (x_mm, y_mm)."""
+    return p[2] * dx, p[1] * dy
+
+
+def main(path):
+    d = load(path)
+    dz, dy, dx = (float(v) for v in d["spacing_zyx"])
+    half = float(d["half_mm"])
+    labels = [str(s) for s in d["labels"]]
+
+    plt.rcParams.update({"font.family": "DejaVu Sans", "pdf.fonttype": 42})
+    fig, axes = plt.subplots(2, 6, figsize=(7.0, 2.62),
+                             gridspec_kw=dict(wspace=0.03, hspace=0.03,
+                                              left=0.005, right=0.995, top=0.915, bottom=0.115))
+    for i in range(6):
+        # --- top: current CT with the query
+        a0 = axes[0, i]
+        show_slice(a0, d["current"][i], d["current_slice"][i], d["current_center_yx"][i],
+                   dz, dy, dx, half)
+        qx, qy = mm(d["query"][i], dy, dx)
+        a0.plot(qx, qy, marker="+", ms=9, mew=1.4, color=COL["query"], ls="none")
+        a0.set_title(labels[i], fontsize=8, fontweight="bold", color=TITLE_COLOR, pad=2.5)
+
+        # --- bottom: earlier CT
+        a1 = axes[1, i]
+        z = int(d["earlier_slice"][i])
+        show_slice(a1, d["prior"][i], z, d["earlier_center_yx"][i], dz, dy, dx, half)
+        n = int(d["candidate_n"][i])
+        cand = d["candidates"][i, :n]
+        keep = np.abs(cand[:, 0] - z) * dz <= CAND_SLAB_MM
+        a1.plot(cand[keep, 2] * dx, cand[keep, 1] * dy, ls="none", marker="o", ms=2,
+                mfc=COL["cand"], mec="none", alpha=0.9)
+        rx, ry = mm(d["reference"][i], dy, dx)
+        a1.add_patch(Circle((rx, ry), TOL_MM, fill=False, ec="white", lw=0.9, ls=(0, (1, 1.3))))
+        a1.plot(qx, qy, marker="x", ms=6, mew=1.3, color=COL["affine"], ls="none")
+        a1.plot(rx, ry, marker="*", ms=9, color=COL["ref"], mec="black", mew=0.3, ls="none")
+        for key, mk, ms in (("diverse", "o", 8), ("spline", "^", 8), ("sam", "s", 7)):
+            px, py = mm(d[key][i], dy, dx)
+            a1.plot(px, py, marker=mk, ms=ms, mfc="none", mec=COL[key], mew=1.4, ls="none")
+
+    # 5 mm scale bar, lower-left of the first current panel
+    a0 = axes[0, 0]
+    x0, x1 = a0.get_xlim(); y0, y1 = a0.get_ylim()
+    bx, by = x0 + 2.0, y0 + 2.4
+    a0.plot([bx, bx + 5.0], [by, by], color="white", lw=2.0, solid_capstyle="butt")
+    a0.text(bx + 2.5, by + 0.9, "5 mm", color="white", fontsize=6.5, ha="center", va="bottom")
+
+    handles = [
+        Line2D([], [], ls="none", marker="+", ms=7, mew=1.3, color="black", label="query"),
+        Line2D([], [], ls="none", marker="*", ms=8, color=COL["ref"], mec="black", mew=0.4,
+               label="reference"),
+        Line2D([], [], ls=(0, (1, 1.3)), lw=1.0, color="black", label="3 mm"),
+        Line2D([], [], ls="none", marker="o", ms=3, mfc="#9a9a9a", mec="none",
+               label="kept candidates"),
+        Line2D([], [], ls="none", marker="o", ms=6, mfc="none", mec="#2a9fd6", mew=1.3,
+               label="Diverse search"),
+        Line2D([], [], ls="none", marker="^", ms=6, mfc="none", mec="#e08a2e", mew=1.3,
+               label="B-spline"),
+        Line2D([], [], ls="none", marker="s", ms=5.5, mfc="none", mec="#2fb36e", mew=1.3,
+               label="SAM"),
+        Line2D([], [], ls="none", marker="x", ms=5.5, mew=1.3, color="#4a90d9",
+               label="chest-affine query"),
+    ]
+    fig.legend(handles=handles, loc="lower center", ncol=8, frameon=False, fontsize=6.6,
+               handlelength=1.6, handletextpad=0.35, columnspacing=0.9,
+               bbox_to_anchor=(0.5, -0.005))
+
+    os.makedirs(OUT, exist_ok=True)
+    fig.savefig(os.path.join(OUT, "qualitative.pdf"))
+    fig.savefig(os.path.join(OUT, "qualitative.png"), dpi=200)
+    plt.close(fig)
+    print("wrote figures/qualitative.pdf and figures/qualitative.png")
 
 
 if __name__ == "__main__":
-    if len(sys.argv) > 1 and sys.argv[1] != "--placeholder":
-        d = np.load(sys.argv[1], allow_pickle=True)
-        fig = draw({k: d[k] for k in d.files})
-    else:
-        fig = placeholder()
-    fig.savefig(os.path.join(OUT, "qualitative.pdf"))
-    print("written")
+    main(sys.argv[1] if len(sys.argv) > 1 else os.path.join(HERE, "cases.npz"))
