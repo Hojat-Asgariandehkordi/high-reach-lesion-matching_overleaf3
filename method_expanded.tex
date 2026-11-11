@@ -3,8 +3,3 @@ The fit and witness octants use strided centers that stay valid across the latti
 The residual support excludes a 10\,mm core on the resampled grid, while the final lesion score and the central spline can use the lesion-bearing interior.
 The residual limits are fitted on training-side controls.
 The wide and matched narrow comparison uses the same safe shell centers and limits, a subset of the original 824 samples per sector, so translation extent is compared on identical physical observations.
-
-\paragraph{Reading the coverage bound.}
-The upper bound in Eq.~\ref{eq:coverage} follows by taking the nearest lattice position to $y$ and its retained neighbor.
-The empirical reach at $\tau$ additionally depends on where the references fall relative to the retained centers.
-The exact decomposition in Eq.~\ref{eq:decomp} therefore tells whether a candidate change improves matches by making targets available or changes competition among locations already within reach.

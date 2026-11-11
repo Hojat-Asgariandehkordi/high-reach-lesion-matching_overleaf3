@@ -10,10 +10,10 @@ Hypothesis-based matchers~\cite{sofka2010} instead propose many local translatio
 This second design is fast and interpretable, but it depends on a step that is rarely examined: \emph{which} hypotheses are allowed to reach the scorer.
 
 Our starting observation is that ranking by fit wastes a short candidate list.
-Translations that differ by a fraction of a millimeter have nearly identical fit, so the top $K$ translations crowd around a single fit mode (Fig.~\ref{fig:teaser}a).
+Translations that differ by a fraction of a millimeter have nearly identical fit, so the top $K$ translations crowd around a single fit mode (Fig.~\ref{fig:teaser}b).
 If that mode is wrong, the scorer has no correct option, however good it is.
 We therefore keep the fit ordering but enforce spatial separation: walking down the fit-ranked list, a translation is retained only if its mapped point is at least $r$ from every retained point.
-This greedy rule, a form of non-maximum suppression~\cite{neubeck2006nms}, uses the same budget to cover more distinct locations (Fig.~\ref{fig:teaser}b).
+This greedy rule, a form of non-maximum suppression~\cite{neubeck2006nms}, uses the same budget to cover more distinct locations (Fig.~\ref{fig:teaser}c).
 Run to completion, it covers the entire translation lattice to within $r$ while scoring only about one-thirteenth of the positions.
 
 To understand \emph{why} a change in the candidate list helps, we separate two quantities.

@@ -10,16 +10,16 @@
 \begin{document}
 \maketitle
 
-% ---- Teaser (replaces the former Fig. 1 dot plot, figures/cohort_transfer.pdf) ----
+% ---- Figure 1: schematic of the problem and the idea ----
 \begin{strip}
 \centering
 \includegraphics[width=\linewidth]{figures/teaser.pdf}
 \captionsetup{hypcap=false}
-\captionof{figure}{\textbf{Spreading candidates before scoring.}
-(a)~Ranking local translations by anatomical fit fills a short list with near-copies of one fit mode; if that mode is wrong, no candidate lies within tolerance (dashed circle) of the earlier lesion (star).
-(b)~Fit-ordered diverse search keeps the same order and budget but retains a translation only if it is at least $r$ from every retained one, so the list also covers the weaker, correct mode.
-Panels (a,\,b) are a 2D illustration on a synthetic fit landscape.
-(c)~With the same lesion scorer, diversification at 28 candidates beats the fit-ranked prefix, and the complete diversified list beats a lesion-inclusive B-spline by 10.5 and 10.7 points.}
+\captionof{figure}{\textbf{The problem and our idea.}
+(a)~A lesion is marked in the current CT (query $p$). After a global chest alignment, the same lesion lies somewhere inside a small search window (dashed) in the earlier CT, but several nearby spots can match the surrounding anatomy.
+(b)~Inside the window, each dot is a candidate location. Keeping the 12 candidates with the best anatomical fit places them all around one fit mode; here that mode is wrong, so no candidate lies within 3\,mm (dashed circle) of the true earlier lesion (star).
+(c)~Our diverse search walks through the same fit order but keeps a candidate only if it is at least a distance $r$ from every candidate kept so far (shaded disks). The same 12 candidates now also cover the correct location, and a lesion classifier can pick it.
+Panels (b,\,c) run the actual selection rule on a synthetic 2D fit landscape.}
 \captionsetup{hypcap=true}
 \label{fig:teaser}
 \end{strip}
@@ -33,21 +33,33 @@ Panels (a,\,b) are a 2D illustration on a synthetic fit landscape.
 \ifexpandedpaper\input{intro_expanded}\fi
 
 \section{Related work}
-\paragraph{Registration for longitudinal lung CT.}
-Free-form deformation with B-splines~\cite{rueckert1999} remains a standard way to estimate a continuous map between visits, and learned networks predict such maps directly~\cite{balakrishnan2019voxelmorph,ghazipour2021,tian2024unigradicon,hering2023learn2reg}.
-Work on registration uncertainty separates image agreement from the reliability of a mapped location~\cite{eppenhof2018,luo2017}.
-We use a lesion-inclusive B-spline as the continuous-registration comparator and study a complementary question: how to allocate a discrete set of local hypotheses under the same global alignment.
+\label{sec:related}
 
-\paragraph{Hypothesis-based lesion correspondence.}
-Location Registration and Recognition (LRR) generates, refines and verifies local registration hypotheses for supplied nodule positions~\cite{sofka2010}.
-Learned trackers combine lesion appearance with anatomical context~\cite{cai2021,tang2022tlt}, re-identify detected nodules with Siamese networks~\cite{rafaelpalou2021}, or match points through dense anatomical embeddings~\cite{yan2022sam,zhuang2026diffusion}.
-We compare against the released Self-supervised Anatomical eMbedding model (SAM)~\cite{yan2022sam}, which supports point queries without additional training; it is unrelated to Segment Anything.
-Deep Lesion Tracker and Transformer Lesion Tracker lack public inference weights, and the diffusion-guided tracker expects a coarse registration as input (supplement, Sec.~S3).
+\paragraph{Longitudinal lesion tracking.}
+Matching a lesion across visits is a prerequisite for measuring growth and response in follow-up imaging.
+Location Registration and Recognition (LRR)~\cite{sofka2010} is the closest design to ours: it generates local registration hypotheses around a supplied nodule position, refines them, and verifies them with a lesion model.
+Rafael-Palou \etal~\cite{rafaelpalou2021} instead re-identify detected nodules with a 3D Siamese network, avoiding explicit registration.
+Deep Lesion Tracker~\cite{cai2021} and Transformer Lesion Tracker~\cite{tang2022tlt} learn to combine lesion appearance with anatomical context and predict the earlier location directly.
+These systems differ mainly in their scoring function; how candidate locations are allocated before scoring has received less attention, and it is the question we study.
+
+\paragraph{Image registration.}
+Free-form deformation with B-splines~\cite{rueckert1999} is a standard way to estimate a continuous map between two CT scans.
+Discrete registration evaluates a set of candidate displacements per control point and optimizes them jointly~\cite{glocker2008dense,heinrich2013mrf}, which is close in spirit to scoring a lattice of translations.
+Learned methods predict deformation fields in a single forward pass~\cite{balakrishnan2019voxelmorph,ghazipour2021}, and recent foundation models and benchmarks cover many anatomies, including lung CT~\cite{tian2024unigradicon,hering2023learn2reg}.
+Studies of registration uncertainty show that good image agreement does not guarantee a reliable mapped location~\cite{eppenhof2018,luo2017}, which motivates keeping several hypotheses rather than committing to one.
+We use a lesion-inclusive B-spline as the registration comparator.
+
+\paragraph{Dense anatomical correspondence.}
+Self-supervised anatomical embeddings (SAM)~\cite{yan2022sam} assign each voxel a descriptor of its anatomical position, so a point query can be matched by finding the most similar descriptor in another scan; diffusion-guided position encodings follow the same principle~\cite{zhuang2026diffusion}.
+We compare against the released SAM model, which supports point queries without retraining; this SAM is unrelated to Segment Anything.
+Deep Lesion Tracker and Transformer Lesion Tracker lack public inference weights, and the diffusion-guided tracker expects a coarse registration as input, so we do not run them (supplement, Sec.~S3).
 
 \paragraph{Diversity in candidate generation.}
-Greedy suppression of nearby hypotheses is standard in detection~\cite{neubeck2006nms}, and diverse solution sets improve downstream selection in structured prediction~\cite{batra2012diverse}.
-Farthest-point and minimum-distance sampling give coverage guarantees for point sets~\cite{eldar1997farthest}.
-We apply minimum-distance selection to correspondence hypotheses ordered by anatomical fit, and we measure its effect on coverage separately from its effect on the scorer's choice.
+Selecting a few good hypotheses from many is common across vision.
+Non-maximum suppression greedily removes detections that overlap a higher-scoring one~\cite{neubeck2006nms}.
+Diverse $M$-best methods return several high-scoring but mutually different solutions so that a later stage can choose among them~\cite{batra2012diverse}.
+Farthest-point sampling spreads samples to cover a domain with a bounded gap~\cite{eldar1997farthest}, and randomized correspondence search propagates good matches while sampling widely~\cite{barnes2009patchmatch}.
+We apply minimum-distance selection to lesion correspondence hypotheses ordered by anatomical fit, and we measure its effect on coverage separately from its effect on the final choice.
 
 \section{Fit-ordered diverse search}
 \label{sec:method}
@@ -55,50 +67,90 @@ We apply minimum-distance selection to correspondence hypotheses ordered by anat
 \begin{figure*}[!t]
 \centering
 \includegraphics[width=\textwidth]{figures/method_overview.pdf}
-\caption{\textbf{Fit-ordered diverse search.}
-(1)~After a chest affine, both scans share a current-frame grid around the query $p$; alternating octants of an outer shell give the fit and witness residuals.
-(2)~Every translation on the lattice is ranked by fit cost $f_t$.
+\caption{\textbf{Pipeline.}
+(1)~After a chest affine, both scans share a grid around the query $p$; an outer shell of tissue, split into alternating octants, gives the fit and witness costs.
+(2)~Every candidate translation is ranked by its fit cost $f_t$ (darker is better).
 (3)~Walking down this order, a translation is kept only if its mapped point is at least $r$ from all kept points (shaded disks have radius $r/2$).
-(4)~A frozen lesion scorer with a soft fit penalty (Eq.~\ref{eq:direct}) selects one point.
-Panels 2--4 are a 2D illustration; the method operates on a 3D lattice of 4,851 translations.}
+(4)~A frozen lesion scorer with a soft fit penalty (Eq.~\ref{eq:direct}) selects one point; the star marks the reference, used only for evaluation.
+Panels 2--4 are a 2D illustration; the method uses a 3D lattice of 4,851 translations.}
 \label{fig:construction}
 \end{figure*}
 
-Figure~\ref{fig:construction} summarizes the pipeline.
-Steps 1, 2 and 4 are shared by all compared routes; step 3 is our contribution.
+Figure~\ref{fig:construction} gives an overview.
+We first fix the setting and notation (Sec.~\ref{sec:setup}), then describe the three ingredients: an anatomical cost that orders candidates (Sec.~\ref{sec:fit}), the diversification rule that chooses which candidates to keep (Sec.~\ref{sec:diverse}), and the scorer that picks one (Sec.~\ref{sec:scorer-def}).
+Finally we define how we measure whether a correct candidate was available and whether it was chosen (Sec.~\ref{sec:decomp}).
 
-\paragraph{Problem and shared frame.}
-We are given a current CT, an earlier CT of the same patient, and an approximate center of a lesion in the current scan; the goal is the corresponding earlier location.
-A scan-only chest affine maps current physical coordinates to the earlier CT, and both scans are resampled onto a common current-frame $64^3$ grid with $0.7\times0.7\times1.5$\,mm voxels.
-In our study the approximate center is the reference mark jittered uniformly by up to 2.5\,mm per axis, which simulates an imprecise click.
-A multiscale curvature response~\cite{li2003} then selects a fixed query point $p$ within 6\,mm of this input; for the retrospective cohort the retained query comes from the original archive.
-All routes receive the same crops and the same $p$, and the earlier reference is used only for evaluation.
+\subsection{Setting and notation}
+\label{sec:setup}
+We are given two CT scans of the same patient, a \emph{current} scan and an \emph{earlier} scan, together with an approximate position of a lesion in the current scan.
+The goal is to return the position of the same lesion in the earlier scan.
 
-\paragraph{Translation lattice.}
-A translation $t$ proposes the earlier point $x_t = p - t$.
-Translations lie on the voxel grid.
-The \emph{original} lattice spans $\pm(4.2, 4.2, 4.5)$\,mm with 1,183 translations, and the \emph{wide} lattice spans $\pm(7, 7, 7.5)$\,mm with 4,851 translations $\T$.
+\paragraph{Common grid.}
+A global chest alignment (an affine transform computed from the scans alone) maps positions in the current scan to positions in the earlier scan.
+Using it, we resample both scans onto the same $64\times64\times64$ voxel grid centered on the lesion, with voxels of $0.7\times0.7\times1.5$\,mm.
+On this grid, the same voxel index refers to approximately the same anatomy in both scans, and all distances are measured in millimeters.
+Intensities are in Hounsfield units (HU), in which air is about $-1000$ and soft tissue about $0$ to $100$.
 
-\paragraph{Anatomical fit and witness costs.}
-The lesion may grow, shrink or change shape between visits, so we score translations on the surrounding anatomy instead.
-We take sample centers in a shell 23--28\,mm from the crop center and split the shell into octants.
-Alternating octants form the \emph{fit} set and the remaining octants form the \emph{witness} set, with 436 samples each.
-For current intensity $a_i$ and displaced earlier intensity $b_i(t)$, let $o_t$ be the median of $a_i - b_i(t)$ over the fit samples, clipped to $[-98, 98]$\,HU, which removes global intensity offsets.
-For a sample set $S$,
+\paragraph{Query point.}
+In practice the approximate position comes from a radiologist's click or a detector.
+We simulate it by taking the annotated lesion center and moving it randomly by up to 2.5\,mm along each axis.
+A blob-detection filter~\cite{li2003} then moves it to the most lesion-like position within 6\,mm.
+We call the result the \emph{query point} $p$.
+Every method receives the same grid and the same $p$; the annotated earlier position, which we call the \emph{reference} $y$, is used only for evaluation.
+
+\paragraph{Candidate translations.}
+Because the alignment is imperfect, the earlier lesion is usually near, but not exactly at, $p$.
+We therefore consider small translations $t$ (3D vectors in mm), each of which proposes the earlier position
 \begin{equation}
-E_S(t) = \frac{1}{|S|}\sum_{i \in S} g_i(t)\,\min\{|a_i - b_i(t) - o_t|,\ 420\},
+x_t = p - t .
+\label{eq:mapped}
+\end{equation}
+The translations lie on the voxel grid, so neighboring candidates differ by one voxel.
+The \emph{wide lattice} $\T$ contains all translations within $\pm7$\,mm in-plane and $\pm7.5$\,mm along the body axis, which gives $21\times21\times11 = 4{,}851$ translations.
+A smaller \emph{original lattice} ($\pm4.2$, $\pm4.2$, $\pm4.5$\,mm; 1,183 translations) is used in some comparisons.
+For two positions $x$ and $y$, $d(x, y)$ is their Euclidean distance in mm.
+
+\subsection{Anatomical fit cost}
+\label{sec:fit}
+The lesion itself may grow, shrink or change shape between visits, so we do not use it to rank translations.
+We use the anatomy around it, such as vessels, airways and the pleura, which should look the same in both scans after a correct shift.
+
+\paragraph{Where we compare.}
+We take sample positions in a spherical shell 23--28\,mm from the center of the grid, well outside the lesion.
+We split the shell into its eight octants (the eight corners of a cube).
+Four alternating octants form the \emph{fit} set and the other four form the \emph{witness} set, with 436 sample positions each.
+
+\paragraph{How we compare.}
+For a sample position $i$, let $a_i$ be the current-scan intensity and $b_i(t)$ the earlier-scan intensity at the same position shifted by $t$.
+If $t$ is correct, $a_i \approx b_i(t)$.
+Two practical effects complicate this.
+First, scanners and contrast phases can make one scan uniformly brighter, so we subtract the median difference $o_t = \mathrm{median}_i\,(a_i - b_i(t))$ over the fit samples, clipped to $\pm98$\,HU.
+Second, a single mismatched vessel can produce a very large difference, so we cap each difference at 420\,HU.
+The cost of translation $t$ on a sample set $S$ is the weighted average
+\begin{equation}
+E_S(t) = \frac{1}{|S|}\sum_{i \in S} g_i(t)\,\min\bigl\{\,|a_i - b_i(t) - o_t|,\ 420\,\bigr\}.
 \label{eq:residual}
 \end{equation}
-where $g_i(t) = 0.25 + 0.75\,\mathrm{clip}_{[0,1]}\big((\max(a_i, b_i(t)) + 860)/490\big)$ down-weights aerated lung.
-The fit cost $f_t$ and the witness cost $w_t$ evaluate Eq.~\ref{eq:residual} on the fit and witness samples.
-The witness reuses $o_t$, so it tests the same alignment on disjoint spatial support, much like a held-out check.
+The weight $g_i(t) = 0.25 + 0.75\,\mathrm{clip}_{[0,1]}\big((\max(a_i, b_i(t)) + 860)/490\big)$ is $0.25$ when both intensities are air-like (below $-860$\,HU) and rises to $1$ for tissue (above $-370$\,HU), so informative structures count more than empty lung.
+A low $E_S(t)$ means the shifted earlier scan looks like the current scan around the lesion.
 
-\paragraph{Diverse search.}
-Algorithm~\ref{alg:diverse} gives the rule.
-We traverse translations in increasing fit cost, breaking ties by displacement norm.
-A translation is retained only if its mapped point is at least $r = 2.1$\,mm (three in-plane voxels) from every retained point.
-With a budget $K$ the traversal stops at the $K$-th retained point.
-Without a budget it returns the complete list $\Ss$, which we call \emph{\ours}.
+\paragraph{Fit and witness.}
+The \emph{fit cost} $f_t = E_{\text{fit}}(t)$ uses the fit octants and determines the order in which candidates are considered.
+The \emph{witness cost} $w_t = E_{\text{wit}}(t)$ uses the other four octants with the same offset $o_t$.
+Because the witness samples played no role in the ordering, $w_t$ acts like a held-out check: a translation that fits only the octants it was ranked on receives a high witness cost.
+
+\subsection{Diverse search}
+\label{sec:diverse}
+Sorting all translations by $f_t$ gives a ranked list.
+Taking the first $K$ entries is the usual choice, but neighboring translations, one voxel apart, have almost the same cost, so the first $K$ entries tend to cluster around a single position (Fig.~\ref{fig:teaser}b).
+
+Our rule keeps the same order but enforces a minimum distance (Algorithm~\ref{alg:diverse}).
+We visit translations from lowest to highest fit cost, breaking ties by preferring smaller shifts $\|t\|$.
+A translation is \emph{kept} if its proposed position $x_t$ is at least $r$ away from the proposed position of every translation kept so far; otherwise it is skipped.
+We use $r = 2.1$\,mm, three in-plane voxels.
+With a budget of $K$ candidates, we stop after keeping $K$.
+Without a budget we visit the whole lattice and obtain the complete list $\Ss$, which we call \emph{\ours}.
+On our data it keeps about 365 of the 4,851 translations per query.
 
 \begin{algorithm}[t]
 \caption{Fit-ordered diverse search}
@@ -106,85 +158,90 @@ Without a budget it returns the complete list $\Ss$, which we call \emph{\ours}.
 \begin{algorithmic}[1]
 \Require query $p$, translations $\T$, fit costs $\{f_t\}$, radius $r$, budget $K$ ($K{=}\infty$ for \ours)
 \State sort $\T$ by $(f_t, \|t\|)$ ascending
-\State $\Ss \gets \emptyset$
+\State $\Ss \gets \emptyset$ \Comment{kept translations}
 \For{$t$ in sorted $\T$}
-  \If{$\min_{u \in \Ss} \|x_t - x_u\| \ge r$} \Comment{$x_t = p - t$}
+  \If{$d(x_t, x_u) \ge r$ for all $u \in \Ss$} \Comment{$x_t = p - t$}
     \State $\Ss \gets \Ss \cup \{t\}$
     \If{$|\Ss| = K$} \textbf{break} \EndIf
   \EndIf
 \EndFor
-\State \Return $\hat{t} = \argmax_{t \in \Ss} s(t)$ \Comment{Eq.~\ref{eq:direct}}
+\State \Return $\hat{t} = \argmax_{t \in \Ss} s(t)$ \Comment{score of Eq.~\ref{eq:direct}}
 \end{algorithmic}
 \end{algorithm}
 
-\paragraph{Coverage of the complete list.}
-Let $\mathcal{X} = \{x_t : t \in \T\}$ be all lattice points and $\mathcal{D} \subseteq \mathcal{X}$ the points of the complete list.
-Every lattice point is either in $\mathcal{D}$ or was rejected because a retained point lay within $r$.
-Hence, for any reference location $y$,
+\paragraph{What the complete list guarantees.}
+Let $\mathcal{X} = \{x_t : t \in \T\}$ be the set of all proposed positions and $\mathcal{D} \subseteq \mathcal{X}$ the positions in the complete list.
+Write $d(y, \mathcal{A}) = \min_{x \in \mathcal{A}} d(y, x)$ for the distance from a position $y$ to the closest member of a set $\mathcal{A}$.
+Every proposed position was either kept, or skipped because a kept position lay within $r$ of it.
+Therefore, for any reference $y$,
 \begin{equation}
-d(y, \mathcal{X}) \le d(y, \mathcal{D}) \le d(y, \mathcal{X}) + r.
+d(y, \mathcal{X}) \le d(y, \mathcal{D}) \le d(y, \mathcal{X}) + r .
 \label{eq:coverage}
 \end{equation}
-For a tolerance $\tau \ge r$, every target within $\tau - r$ of the lattice therefore remains reachable.
-Short prefixes and gated lists carry no such guarantee, because they can omit an entire neighborhood.
+The left inequality holds because $\mathcal{D}$ is a subset of $\mathcal{X}$.
+For the right one, take the lattice position closest to $y$; it is either kept or within $r$ of a kept position.
+In words: compared with scoring all 4,851 positions, the complete list is never more than $r$ farther from the reference.
+For example, with a success tolerance of $\tau = 3$\,mm and $r = 2.1$\,mm, every lesion within $0.9$\,mm of some lattice position is guaranteed to have a kept candidate within tolerance.
+A list cut at $K$ entries, or filtered by cost thresholds, has no such guarantee, because it can omit a whole region.
 
-\paragraph{Lesion scorer.}
-For each retained translation, a frozen logistic model gives a logit $\ell_t$ from eight features.
-Five describe the earlier location: center contrast, compactness, tubular and planar Hessian responses, and isotropy.
-Three compare it with the current lesion: patch correlation and the earlier-to-current contrast and compactness ratios (supplement, Sec.~S3).
-The selected translation maximizes
+\subsection{Choosing one candidate}
+\label{sec:scorer-def}
+For each kept translation, a lesion scorer judges whether the proposed earlier position looks like the same lesion.
+It is a logistic regression, trained once on development data and then frozen, whose output logit $\ell_t$ combines eight features.
+Five describe the earlier position alone: center contrast, compactness, tube-likeness and plate-likeness (from the Hessian, to reject vessels and fissures), and isotropy.
+Three compare it with the current lesion: patch correlation, and the earlier-to-current ratios of contrast and compactness (supplement, Sec.~S3).
+The final score adds a penalty for poor anatomical fit,
 \begin{equation}
 s(t) = \ell_t - 1.5\left(\frac{f_t - \min_{u\in\Ss} f_u}{F} + \frac{w_t - \min_{u\in\Ss} w_u}{W}\right),
 \label{eq:direct}
 \end{equation}
-where the original residual limits $F$ and $W$ fix the scales across routes.
-The two minima are constant within a list, so the relative order of any two candidates does not depend on which other candidates are present.
-A larger list can change the selection only by adding a new winner.
+and the method returns the position $x_{\hat t}$ of the highest-scoring translation $\hat t$.
+The terms in parentheses measure how much worse a candidate fits than the best candidate in the list, and $F$ and $W$ are fixed scales (the residual limits fitted on development data) that make the two costs comparable.
+Note that the minima are the same for every candidate in a list.
+So when a list grows, the scores of the old candidates shift together and their order is unchanged; the selection can change only if a newly added candidate scores higher than the previous winner.
+This property makes the accounting in Sec.~\ref{sec:decomp} exact.
 
-\paragraph{Reach and selection.}
+\subsection{Was a correct candidate available, and was it chosen?}
 \label{sec:decomp}
-For track $i$ with earlier reference $y_i$, candidate set $\Ss_i$, selected point $\hat{x}_i$ and tolerance $\tau$, define
+A method can fail because no candidate is near the reference, or because one is near but the scorer chose another.
+We measure these separately.
+For lesion $i$ with reference $y_i$, kept set $\Ss_i$ and selected position $\hat x_i$, and a tolerance $\tau$ (3\,mm unless stated otherwise),
 \begin{align}
-R_i &= \mathbf{1}\{\min_{x\in\Ss_i} d(x, y_i) \le \tau\}, &
+R_i &= \mathbf{1}\{d(y_i, \Ss_i) \le \tau\}, &
 H_i &= \mathbf{1}\{d(\hat{x}_i, y_i) \le \tau\},
 \label{eq:reachhit}
 \end{align}
-with $R_i = H_i = 0$ for an empty set, so a hit implies reach.
-When comparing route~1 with route~2, let $\mathcal{J}$ be the tracks reachable by both, $\mathcal{G}$ those reachable only by route~2, and $\mathcal{O}$ those reachable only by route~1.
-Then
+where $\mathbf{1}\{\cdot\}$ is $1$ if the condition holds and $0$ otherwise, and $d(y_i, \Ss_i)$ is the distance to the nearest kept position.
+$R_i = 1$ means the lesion is \emph{reachable}: some candidate is within tolerance.
+$H_i = 1$ means a \emph{hit}: the chosen candidate is within tolerance.
+A hit is only possible if the lesion is reachable, and an empty list gives $R_i = H_i = 0$.
+
+Now compare two methods, 1 and 2, on the same lesions, and sort each lesion into one of three groups: $\mathcal{J}$, reachable by both; $\mathcal{G}$, reachable only by method 2 (reach \emph{gained}); and $\mathcal{O}$, reachable only by method 1 (reach lost).
+Lesions reachable by neither are misses for both.
+The change in the number of hits then splits exactly into
 \begin{equation}
-\Delta H = \underbrace{\sum_{i\in\mathcal{J}} (H_{i,2} - H_{i,1})}_{\text{selection}} + \underbrace{\sum_{i\in\mathcal{G}} H_{i,2} - \sum_{i\in\mathcal{O}} H_{i,1}}_{\text{reach}}.
+\Delta H = \underbrace{\sum_{i\in\mathcal{J}} (H_{i,2} - H_{i,1})}_{\text{selection}} \;+\; \underbrace{\sum_{i\in\mathcal{G}} H_{i,2} \;-\; \sum_{i\in\mathcal{O}} H_{i,1}}_{\text{reach}} .
 \label{eq:decomp}
 \end{equation}
-The first term measures changed choices on a fixed set of tracks, and the remaining terms measure hits gained or lost with reach.
-Comparing conditional hit rates instead would mix the two effects, because the denominator changes.
+The \emph{selection} term counts how choices change on lesions that both methods could have found.
+The \emph{reach} term counts hits on lesions that only one of the methods could have found.
+For example, when we diversify a 28-candidate list on the staging cohort, 45 hits are gained on newly reachable lesions, 1 is lost with lost reach, and the selection term is $-4$, so $\Delta H = 45 - 1 - 4 = +40$ (Sec.~\ref{sec:diversity}).
+Comparing hit rates among reachable lesions instead would mix the two effects, because the set of reachable lesions itself changes.
 
-\paragraph{Candidate routes.}
-Table~\ref{tab:routes} defines every route we compare.
-\emph{Gates} are hard cutoffs applied before diversification.
-\emph{Strict} gates combine an absolute fit limit, a 24\,HU slack from the best fit, and a witness limit applied after the prefix.
-\emph{Relaxed} gates add 20\,HU to the fit limit, widen the slack to 40\,HU and drop the witness limit.
-\ours removes all gates; anatomical fit still enters Eq.~\ref{eq:direct} as a soft penalty.
-
-\begin{table}[t]
-\centering
-\small
-\setlength{\tabcolsep}{4pt}
-\begin{tabular}{@{}lllcc@{}}
-\toprule
-Route & Lattice & Gates & Cap $K$ & Diversified \\
-\midrule
-Original $K$ & original & strict & $K$ & \checkmark \\
-Wide strict $K$ & wide & strict & $K$ & \checkmark \\
-Wide relaxed $K$ & wide & relaxed & $K$ & \checkmark \\
-Fit-only $K$ & wide & none & $K$ & -- \\
-\textbf{\ours} & wide & none & -- ($\approx$365) & \checkmark \\
-Exhaustive & wide & none & -- (4,851) & -- \\
-\bottomrule
-\end{tabular}
-\caption{Candidate routes. All routes use the same crops, query, residuals and scorer. Budgets are 7, 14, 28, 56, 112 or the complete list. ``Original 28\,+\,fit'' adds 20\,HU to the original fit limit. Diverse search retains about 365 and 360 centers per staging and screening query.}
-\label{tab:routes}
-\end{table}
+\subsection{Compared candidate lists}
+\label{sec:routes}
+All candidate lists below use the same grid, query, costs and scorer; they differ only in which translations are scored.
+Some lists apply \emph{gates}, hard thresholds that discard translations with poor fit before diversification.
+\begin{itemize}
+\item \textbf{Fit-only $K$}: the first $K$ translations of the wide lattice in fit order, without diversification.
+\item \textbf{Diverse $K$}: Algorithm~\ref{alg:diverse} on the wide lattice, stopped after $K$ kept translations.
+\item \textbf{\ours}: Algorithm~\ref{alg:diverse} on the wide lattice with no budget and no gates (about 365 candidates).
+\item \textbf{Strict $K$}: diversified, but first discards translations whose fit cost exceeds an absolute limit or is more than 24\,HU worse than the best, and after taking $K$ also discards those whose witness cost exceeds a limit. ``Original'' uses the smaller lattice; ``Original 28\,+\,fit'' loosens its fit limit by 20\,HU.
+\item \textbf{Relaxed $K$}: like strict, with the fit limit loosened by 20\,HU, a 40\,HU slack, and no witness limit.
+\item \textbf{Exhaustive}: all 4,851 translations, no gates.
+\end{itemize}
+Budgets are $K \in \{7, 14, 28, 56, 112\}$ or the complete list.
+Anatomical fit still enters every score through Eq.~\ref{eq:direct}; removing gates only changes which translations reach the scorer.
 
 \ifexpandedpaper\input{method_expanded}\fi
 
@@ -215,11 +272,10 @@ The crossing gives the direct and learned scorers identical proposals.
 We also report a frozen local Siamese scorer trained on the same development data.
 
 \paragraph{Metrics and statistics.}
-A track is \emph{reachable} if a retained point lies within $\tau$ of the earlier reference, and a \emph{hit} if the selected point does (Eq.~\ref{eq:reachhit}).
-The primary tolerance is $\tau = 3$\,mm in the shared physical frame; we also report 2 and 4\,mm and distances in native earlier-scan coordinates.
-All eligible tracks are counted, including failures.
-Intervals are paired pointwise 95\% intervals from 5,000 patient-cluster bootstrap draws, because lesions within a patient are correlated.
-Before inference we fixed the primary staging contrast (strict cap 7 to 28 under both scorers), a practical margin of at least 3 points with an interval above zero for a useful gain, and, for the spline comparison, a lower bound above $-5$ points with at least fivefold speed on prepared crops.
+We report reach and hits (Eq.~\ref{eq:reachhit}) at a primary tolerance of $\tau = 3$\,mm in the shared grid, and also at 2 and 4\,mm and in native earlier-scan coordinates.
+Every eligible lesion counts in the denominator, including failures.
+Because lesions in the same patient are correlated, confidence intervals resample patients rather than lesions: we report paired 95\% intervals from 5,000 patient-level bootstrap draws.
+Before inference we fixed the primary staging contrast (strict cap 7 to 28 under both scorers), the threshold for a useful gain (at least 3 points with an interval above zero), and the criterion for the spline comparison (lower bound above $-5$ points with at least fivefold speed on prepared crops).
 
 \paragraph{Timing.}
 \emph{Prepared-crop} time starts with both crops and the query in memory and includes candidate generation, features, scoring and any optimization.

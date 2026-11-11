@@ -1,20 +1,23 @@
 \section{Discussion and limitations}
 \label{sec:discussion}
-For a point query in an aligned scan pair, anatomy can order plausible translations cheaply while a lesion scorer chooses among their mapped positions.
-The equal-budget comparisons show that changing only \emph{where} the candidates lie, not how many are scored, improves matching in both cohorts.
-Measuring reach and selection on the same queries explains the gain: diversification creates opportunities, and the scorer determines how many are realized.
+For a point query in an aligned scan pair, anatomy can order plausible translations cheaply, while a lesion scorer chooses among their positions.
+Our equal-budget comparisons show that changing only \emph{where} the candidates lie, not how many are scored, improves matching in both cohorts.
+Separating reach from selection explains the gain: diversification creates opportunities, and the scorer determines how many are realized.
 The same accounting shows that a general anatomical embedding does not benefit from extra candidates that a lesion-specific scorer exploits.
 
 \paragraph{Limitations.}
-The endpoint assumes a supplied approximate current location and a known persistent lesion; clinical incident status and wrong-lesion associations require separate adjudication.
-The query is simulated by jittering the reference mark.
-When the exact current mark is supplied instead, the spline improves from 211 to 239 screening hits while \ours stays at 243, so most of the screening advantage in our main analysis comes from robustness to an imprecise query (supplement, Tab.~S7).
-% TODO(group): agree on this wording; the diagnostic is in the supplement, so stating it here pre-empts reviewers.
-A failed chest affine can leave the target outside the local crop: in two staging pairs, 28 targets lie more than 100\,mm outside the crop and every route errs by more than 200\,mm; all such tracks remain in the denominators.
-The screening cohort is retrospective; the staging cohort is the independent test.
-Finally, end-to-end time on native scans is dominated by the shared chest alignment.
-The supplement reports alignment, query and status sensitivities, the full candidate and scorer tables, and an exploratory adaptive routing rule.
+The task assumes an approximate current location and a known persistent lesion; clinical incident status and wrong-lesion associations require separate adjudication.
+The query is simulated by jittering the annotated mark, and with the exact mark the screening advantage over the spline shrinks from 33 to 4 hits (Sec.~\ref{sec:query}); evaluating with queries from a real detector or real clicks is needed.
+% TODO(group): agree on this wording.
+A failed chest alignment can leave the lesion outside the local crop: in two staging pairs, 28 references lie more than 100\,mm outside the crop and every method errs by more than 200\,mm; these lesions remain in the denominators.
+The screening cohort is retrospective, whereas the staging cohort is the independent test.
+End-to-end time on native scans is dominated by the shared chest alignment.
+Finally, we did not compare with learned registration models, which could provide a stronger continuous baseline.
 
-\paragraph{Conclusion.}
-Fit-ordered diversification increases candidate reach without the cost of scoring the full lattice.
-Its consistent gains over local spline refinement in two cohorts support treating candidate allocation as a first-class design choice for longitudinal lesion matching.
+\section{Conclusion}
+\label{sec:conclusion}
+We studied how to choose the candidate locations that a lesion scorer sees when matching a lung lesion across CT visits.
+Ranking candidates by anatomical fit and keeping only those at least 2.1\,mm apart spreads a fixed budget over more distinct locations, and the complete list covers the full lattice to within that distance at about one-thirteenth of the cost.
+On an independent staging cohort and a screening cohort, this simple rule outperforms a lesion-inclusive B-spline by about 10 points at 3\,mm while running about 19 times faster on the local step.
+Our reach/selection decomposition shows that the gain comes from coverage, and that it pays off only with a scorer able to use the extra candidates.
+Future work includes real query sources, scorers trained to exploit diverse candidate lists, and other anatomies where several nearby locations are plausible.

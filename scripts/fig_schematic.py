@@ -60,52 +60,61 @@ def truth(ax, tau=3.0):
     ax.plot(*Y_REF, marker="*", ms=8, color=S.SPLINE, mec="white", mew=0.5, zorder=6)
 
 
+def chest(ax, cx, lesion, title, query=None, window=None):
+    from matplotlib.patches import Ellipse, Rectangle
+    ax.add_patch(Ellipse((cx, 0), 8.6, 6.2, color="#c9c7c0", lw=0))
+    ax.add_patch(Ellipse((cx - 2.0, 0.25), 3.1, 4.3, color="#3b3a37", lw=0))
+    ax.add_patch(Ellipse((cx + 2.0, 0.25), 3.1, 4.3, color="#3b3a37", lw=0))
+    ax.add_patch(Circle((cx, -2.35), 0.55, color="#f4f3ef", lw=0))
+    ax.add_patch(Ellipse((cx + 0.35, 0.0), 1.3, 1.9, color="#a9a7a0", lw=0))
+    ax.add_patch(Circle(lesion, 0.32, color="#efeee9", lw=0))
+    ax.text(cx, 3.55, title, ha="center", fontsize=6.5, color=S.INK)
+    if query is not None:
+        ax.annotate("query $p$", xy=(query[0] + 0.3, query[1] + 0.25), xytext=(query[0] + 0.9, query[1] + 1.6),
+                    fontsize=6, color="#8a7300", ha="left",
+                    arrowprops=dict(arrowstyle="-|>", color="#ffd400", lw=1.0, mutation_scale=6))
+    if window is not None:
+        (wx, wy), w = window
+        ax.add_patch(Rectangle((wx - w / 2, wy - w / 2), w, w, fill=False, ec="#ffd400",
+                               lw=0.9, ls=(0, (2, 1.5)), zorder=5))
+
+
 def teaser():
     K = 12
     fitonly = order[:K]
     div = diverse(order, K=K)
-    fig = plt.figure(figsize=(S.PAGE_W, 2.05))
-    gs = fig.add_gridspec(1, 3, width_ratios=[1, 1, 1.45], wspace=0.25)
-    for k, (idx, title) in enumerate([(fitonly, f"Top {K} by fit"),
-                                      (div, f"Top {K}, diversified")]):
-        ax = fig.add_subplot(gs[k])
+    fig = plt.figure(figsize=(S.PAGE_W, 2.0))
+    gs = fig.add_gridspec(1, 3, width_ratios=[1.9, 1, 1], wspace=0.14)
+    # (a) the problem
+    ax = fig.add_subplot(gs[0])
+    ax.set_xlim(-4.5, 15.3); ax.set_ylim(-4.0, 4.1); ax.set_aspect("equal")
+    ax.axis("off")
+    chest(ax, 0, (-2.6, 1.0), "Current CT", query=(-2.6, 1.0))
+    chest(ax, 10.8, (10.8 - 2.25, 0.7), "Earlier CT, aligned",
+          window=((10.8 - 2.6, 1.0), 2.4))
+    ax.add_patch(FancyArrowPatch((4.6, 0.3), (6.2, 0.3), arrowstyle="-|>", mutation_scale=9,
+                                 color=S.INK2, lw=0.9))
+    ax.text(5.4, 0.75, "same\nframe", ha="center", fontsize=5.8, color=S.INK2)
+    ax.text(10.8, -3.6, "zoomed in (b, c)", ha="center", fontsize=6, color="#b39400")
+    ax.set_title("(a) Find the same lesion earlier", loc="left")
+    # (b) and (c): the search window, zoomed
+    for k, (idx, title) in enumerate([(fitonly, f"(b) Top {K} by fit"),
+                                      (div, f"(c) Top {K}, diversified (ours)")]):
+        ax = fig.add_subplot(gs[k + 1])
         landscape(ax)
+        for sp in ax.spines.values():
+            sp.set_color("#ffd400"); sp.set_linestyle((0, (2, 1.5))); sp.set_linewidth(0.9)
         if k == 1:
             for i in idx:
                 ax.add_patch(Circle(P[i], 2.1 / 2, color=S.OURS, alpha=0.12, lw=0))
-        ax.scatter(P[idx, 0], P[idx, 1], s=14, color=S.OURS if k else S.INK2,
+        ax.scatter(P[idx, 0], P[idx, 1], s=12, color=S.OURS if k else S.INK2,
                    edgecolor="white", linewidth=0.5, zorder=5)
         truth(ax)
         hit = [i for i in idx if np.linalg.norm(P[i] - Y_REF) <= 3.0]
-        msg = "no candidate within 3 mm" if not hit else f"{len(hit)} candidates within 3 mm"
-        ax.text(0.5, -0.07, msg, transform=ax.transAxes, ha="center", va="top", fontsize=6.5,
+        msg = "all in one wrong mode" if not hit else "also covers the lesion"
+        ax.text(0.5, -0.06, msg, transform=ax.transAxes, ha="center", va="top", fontsize=6.2,
                 color=S.SPLINE if not hit else S.OURS, fontweight="bold")
-        ax.set_title(("(a) " if k == 0 else "(b) ") + title, loc="left")
-    # (c) results
-    ax = fig.add_subplot(gs[2])
-    names = ["B-spline", "Fit-only 28", "Diverse 28", "Diverse search"]
-    cols = [S.SPLINE, S.MUTED, S.OURS, S.OURS]
-    hatches = ["", "", "//////", ""]
-    w = 0.19
-    for gi, c in enumerate(["staging", "screening"]):
-        for j, n in enumerate(names):
-            v = 100 * HEADLINE[c][n] / N[c]
-            x = gi + (j - 1.5) * (w + 0.02)
-            ax.bar(x, v, width=w, color=cols[j] if not hatches[j] else "white",
-                   edgecolor=cols[j], hatch=hatches[j], lw=0.8 if hatches[j] else 0)
-            ax.text(x, v + 1.2, f"{v:.0f}", ha="center", fontsize=5.8, color=S.INK2)
-    ax.set_xticks([0, 1])
-    ax.set_xticklabels(["Staging (n=440)", "Screening (n=309)"])
-    ax.set_ylim(0, 108)
-    ax.set_yticks([0, 20, 40, 60, 80])
-    ax.set_ylabel("%")
-    ax.grid(axis="x", visible=False)
-    ax.set_title("(c) Hits within 3 mm, same scorer", loc="left")
-    import matplotlib.patches as mp
-    hd = [mp.Patch(facecolor=cols[j] if not hatches[j] else "white", edgecolor=cols[j],
-                   hatch=hatches[j], label=names[j]) for j in range(4)]
-    ax.legend(handles=hd, loc="upper left", ncol=2, fontsize=5.8, handlelength=1.2,
-              columnspacing=0.7, bbox_to_anchor=(0.0, 1.03))
+        ax.set_title(title, loc="left", fontsize=7)
     fig.savefig(os.path.join(OUT, "teaser.pdf"))
     plt.close(fig)
     return fitonly, div

@@ -1,9 +1,10 @@
-Measuring how a lung lesion changes between CT visits requires finding its earlier location.
-Given a point on the current lesion and a global chest alignment, several earlier locations usually remain plausible.
-A common recipe ranks small translations by how well the surrounding anatomy agrees and passes the best few to a lesion scorer.
-We show that this shortlist wastes its budget: well-fitting translations cluster around one alignment mode, so when that mode is wrong, no candidate is usable.
-We propose \emph{fit-ordered diverse search}, which keeps a translation only if its mapped point lies at least a fixed radius from every point already kept.
-At any budget the rule scores the same number of candidates, and run to completion it covers the full translation lattice to within that radius with about one-thirteenth of the positions.
-To explain where gains come from, we separate \emph{reach} (some candidate is correct) from \emph{selection} (the scorer picks it) and decompose every accuracy change into these two parts.
-On an independent staging cohort of 440 linked pulmonary metastases, diverse search places 289 earlier points within 3\,mm, versus 243 for a lesion-inclusive B-spline registration (+10.5 points, 95\% CI 3.6--17.6), and the gain replicates on 309 screening tracks (+10.7 points).
-At a fixed budget of 28 candidates, diversification alone adds 9.1 and 12.0 points, and the local matching step runs about 19$\times$ faster than the spline.
+To measure how a lung lesion changes over time, a radiologist must find it again in the patient's earlier CT scan.
+We study this step when the lesion's position in the current scan is already known.
+After the two scans are aligned, small residual shifts remain, and several nearby locations in the earlier scan can look anatomically plausible.
+A common strategy ranks candidate shifts by how well the surrounding anatomy matches and lets a lesion classifier choose among the best few.
+We find that this short list often consists of near-duplicates of a single guess, so a wrong guess leaves the classifier no correct option.
+We propose \emph{fit-ordered diverse search}: candidates are still taken in order of anatomical fit, but a candidate is kept only if it lies at least a minimum distance from every candidate already kept.
+The same number of candidates then covers more distinct locations, and the complete list covers every possible shift to within that distance while scoring about one-thirteenth of them.
+We also separate whether a correct candidate was available from whether the classifier chose it, which shows where each improvement comes from.
+On 440 lung metastases from an independent staging cohort, our search finds the earlier lesion within 3\,mm in 289 cases, compared with 243 for deformable registration, and it improves by a similar margin on 309 screening nodules.
+With the same number of candidates, spreading them out alone adds 9 to 12 percentage points, and the local matching step runs about 19 times faster than registration.

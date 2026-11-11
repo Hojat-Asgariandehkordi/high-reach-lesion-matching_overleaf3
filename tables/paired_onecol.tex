@@ -1,0 +1,30 @@
+\begin{table}[!t]
+\centering
+\footnotesize
+\setlength{\tabcolsep}{2.2pt}
+\begin{tabular}{@{}llccc@{}}
+\toprule
+& Change & Reach & Hits & $+$/$-$ \\
+\midrule
+\multirow{7}{*}{\rotatebox{90}{Staging}}
+& Diversify at 28 & 221$\to$274 & 205$\to$245 & 51/11 \\
+& Strict 7$\to$28, direct & 202$\to$241 & 192$\to$219 & 34/7 \\
+& Strict 7$\to$28, SAM & 202$\to$241 & 144$\to$139 & 17/22 \\
+& Wider lattice at 28 & 239$\to$241 & 220$\to$219 & 15/16 \\
+& Relaxed 28$\to$all & 264$\to$300 & 237$\to$264 & 33/6 \\
+& Remove gates, all & 300$\to$348 & 264$\to$289 & 30/5 \\
+& Diverse$\to$exhaustive & 348$\to$351 & 289$\to$297 & 12/4 \\
+\midrule
+\multirow{7}{*}{\rotatebox{90}{Screening}}
+& Diversify at 28 & 189$\to$242 & 175$\to$212 & 44/7 \\
+& Strict 7$\to$28, direct & 185$\to$220 & 167$\to$195 & 28/0 \\
+& Strict 7$\to$28, SAM & 185$\to$220 & 121$\to$118 & 23/26 \\
+& Wider lattice at 28 & 220$\to$220 & 193$\to$195 & 9/7 \\
+& Relaxed 28$\to$all & 235$\to$257 & 204$\to$217 & 14/1 \\
+& Remove gates, all & 257$\to$289 & 217$\to$244 & 29/2 \\
+& Diverse$\to$exhaustive & 289$\to$290 & 244$\to$242 & 6/8 \\
+\bottomrule
+\end{tabular}
+\caption{Paired changes to the candidate list at 3\,mm on all 440 staging and 309 screening lesions. $+$/$-$ counts lesions that become hits / stop being hits. Differences in points with 95\% intervals are plotted in Fig.~\ref{fig:forest}.}
+\label{tab:contrasts}
+\end{table}

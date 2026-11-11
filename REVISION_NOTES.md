@@ -1,35 +1,34 @@
 # Revision notes (applied to the group's Overleaf project)
 
-`submission.tex` builds the compact CVPR version (the main text ends on page 7, 8 pages with references). `main.tex` builds the long version that includes the `*_expanded.tex` blocks. Like the original long version, it runs past 8 pages, so submit `submission.tex`.
+## Two compilable mains
+- `main.tex` is the **main paper**: 9 pages of text plus references (11 pages in total), following the supervisor's "aim for 9+ pages".
+- `supplement.tex` is the **supplement** (19 pages, unchanged content).
 
-The supplement (`supplement.tex`) is unchanged and still compiles. The revision only adds packages to the shared `preamble.tex`.
+Both compile on their own with pdfLaTeX. In Overleaf, set "Main document" to the one you want to build.
+`submission.tex` (the old compact wrapper) was removed. To recreate a compact build later, make a file containing `\def\cvprcompact{}\input{main}`. The `\ifexpandedpaper` switches are still in place.
 
-## Files changed
-| File | Change |
+## Supervisor's comments → what was done
+| Comment | Change |
 |---|---|
-| `preamble.tex` | Added packages: cuted, caption, multirow, algorithm, algpseudocode. Added macros `\TODO`, `\ours`, `\T`, `\Ss` and `\argmax` |
-| `abstract.tex` | Rewritten to lead with the idea; about 6 numbers instead of about 15 |
-| `intro_findings.tex` | Rewritten: problem, prior approaches, clumping observation, reach/selection framing, contribution list |
-| `intro_expanded.tex` | Shortened to the compute paragraph (the reach material moved into the core intro) |
-| `main.tex` | Teaser strip on page 1; related work rewritten (adds learned registration and NMS / diversity; SAM disambiguated); method rewritten with Algorithm 1, the residual, coverage and decomposition equations in the core paper, the 8 scorer features named, and a new route-definition table; evaluation tightened |
-| `method_expanded.tex` | Keeps only the residual-support details; the equations moved into the core method |
-| `evaluation_expanded.tex` | Removed sentences that are now in the core text |
-| `results_text.tex` | Built around one main table; adds the qualitative figure and new plots; compact and expanded switches kept |
-| `discussion.tex` | Split into discussion, limitations (now includes the exact-mark diagnostic) and conclusion |
-| `refs.bib` | 6 new references appended at the end, with a comment marking them |
-| `tables/main_results.tex` | **New.** All methods × Hit@2/3/4, Reach@3 and time, for both cohorts |
-| `figures/teaser.pdf`, `method_overview.pdf`, `budget_reach.pdf`, `reach_selection.pdf`, `accuracy_latency.pdf`, `qualitative.pdf` | **New** figures |
-| `scripts/` | **New.** Python scripts that regenerate every new figure; numbers are in `scripts/data.py` with source tables |
+| Abstract stripped of undefined technical details | Rewritten in plain language: no CI, no unexplained terms ("B-spline", "reach", "gates", "fit-only prefix"); about 5 numbers |
+| Schematic Figure 1 | New fully schematic Fig. 1: (a) the task on stylized chest CT slices, (b) top-12 by fit clumping in one wrong mode, (c) the same 12 diversified, covering the lesion. The results bar chart was removed from Fig. 1 |
+| Math must be easy to follow, with step-by-step definitions | Method rewritten as 6 subsections: setting & notation → fit cost → diverse search → choosing one → reach/selection → compared lists. Every symbol is defined at first use (grid, HU, p, y, t, x_t, d, 𝒯, octants, a_i, b_i, o_t, g_i, f_t, w_t, ℓ_t, F, W, R_i, H_i, 𝒥/𝒢/𝒪). Each equation is followed by a plain-language reading, plus worked examples (the 0.9 mm coverage example; 45 − 1 − 4 = +40) |
+| Small tables → text | The route-definition table is now a bulleted list in Sec. 3.6 |
+| Error bars not clear | All intervals redrawn with thick caps. New forest plot (Fig. 5) of every paired difference with 95% CIs; the query-band plot (Fig. 6) and the decomposition (Fig. 7) now show CIs with clear caps |
+| Table 3 → one column | The paired-change table is now one column (Tab. 2); its CIs moved to the forest plot |
+| Literature review + conclusion | Related work expanded to 4 paragraphs (lesion tracking, registration incl. discrete/MRF and learned, dense anatomical correspondence, diversity in candidate generation). Separate Conclusion section added |
+| More results/plots in the main paper | Added the forest plot, the query-band plot and the exact-mark diagnostic (as text). The accuracy–latency plot and the decomposition plot are now always in the main paper |
 
-The old figure files are left in `figures/` so nothing breaks. In the main paper, `cohort_transfer`, `method_schematic`, `candidate_budget`, `reach_attribution`, `matching_time` and `fixed_budget_cost` are no longer used. `query_sensitivity` is still used in the long version.
-
-Unused after the revision: `tables/tolerance_effects.tex` (its numbers now appear in `tables/main_results.tex` and the text).
+## New figure files (all in `figures/`, regenerated by `scripts/`)
+`teaser.pdf` (Fig. 1), `method_overview.pdf` (Fig. 2), `qualitative.pdf` (Fig. 3, placeholder), `budget_reach.pdf`, `paired_forest.pdf`, `query_bands.pdf`, `reach_selection.pdf`, `accuracy_latency.pdf`.
+To regenerate: `python scripts/fig_results.py && python scripts/fig_schematic.py`. All plotted numbers are in `scripts/data.py`, each with its source.
 
 ## Open decisions for the group
 1. **Qualitative figure is a placeholder** (red TODO). Export patches as described in `scripts/qualitative.py`, then run `python scripts/qualitative.py cases.npz`.
-2. **Timing replays disagree.** Exhaustive staging time is 0.956 s in Supp. Tab. S15 and 0.265 s in Tab. S16. Choose the canonical replay.
-3. **Limitations wording** on the exact-mark diagnostic (Supp. Tab. S7). Keep it as written or soften it, but agree as a group.
-4. **LLM usage statement:** check it against the CVPR 2027 policy, and mention the AI help used for this revision.
-5. **Verify the 6 new references** at the end of `refs.bib`.
-6. **Optional:** add a learned-registration baseline (e.g. uniGradICON).
-7. Before submitting, uncomment `\renewcommand{\TODO}[1]{}` in `preamble.tex`.
+2. **Query-band CIs need confirming.** For the 1.5–3 mm and >3 mm bands, I read the intervals off the vector geometry of the draft's Fig. 3, because they were not printed anywhere. Please confirm them against the analysis output (`BAND` in `scripts/data.py`).
+3. **Timing replays disagree.** Exhaustive staging time is 0.956 s in Supp. Tab. S15 and 0.265 s in Tab. S16. Choose the canonical replay.
+4. **Limitations wording** on the exact-mark diagnostic (screening advantage 33 → 4 hits with the exact mark). Agree as a group.
+5. **LLM usage statement:** check it against the CVPR 2027 policy, and mention the AI help used for this revision.
+6. **Verify the 9 new references** at the end of `refs.bib`.
+7. **Optional:** add a learned-registration baseline (e.g. uniGradICON). The Limitations section now names this gap.
+8. Before submitting, uncomment `\renewcommand{\TODO}[1]{}` in `preamble.tex`.
