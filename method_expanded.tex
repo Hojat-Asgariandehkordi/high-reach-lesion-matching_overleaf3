@@ -1,27 +1,10 @@
-\paragraph{Residual construction.}
-The outer shell spans 23--28 mm from the crop center. The fit and witness octants use strided centers that stay valid across the lattice after smoothing and displacement. For current intensity $a_i$ and displaced earlier intensity $b_i(t)$, we estimate $o_t$ as the median $a_i-b_i(t)$ over the fit samples, clipped to $[-98,98]$ HU. For either set of centers $S$, the residual is
-\begin{equation}
-E_S(t)=|S|^{-1}\sum_{i\in S}
-g_i(t)\min\{\lvert a_i-b_i(t)-o_t\rvert,420\},
-\end{equation}
-where $g_i(t)=0.25+0.75\,\mathrm{clip}_{[0,1]}((\max(a_i,b_i(t))+860)/490)$. Using the same offset for the witness samples tests the fit on disjoint spatial support within the crop. The limits are fitted on training-side controls. The wide and matched narrow comparison uses the same safe shell centers and limits. This allows a comparison of translation extent with identical physical observations.
+\paragraph{Residual support details.}
+The fit and witness octants use strided centers that stay valid across the lattice after smoothing and displacement.
+The residual support excludes a 10\,mm core on the resampled grid, while the final lesion score and the central spline can use the lesion-bearing interior.
+The residual limits are fitted on training-side controls.
+The wide and matched narrow comparison uses the same safe shell centers and limits, a subset of the original 824 samples per sector, so translation extent is compared on identical physical observations.
 
-\paragraph{Coverage of the complete list.}
-Let $\mathcal{L}$ denote all wide lattice positions and $D$ the complete list selected at separation $r=2.1$ mm with residual cutoffs disabled. Every $x\in\mathcal{L}$ either belongs to $D$ or was rejected due to a previously retained neighbor within $r$. Since $D\subseteq\mathcal{L}$, for every reference location $y$,
-\begin{equation}
-d(y,\mathcal{L})\leq d(y,D)\leq d(y,\mathcal{L})+r.
-\end{equation}
-The upper bound follows by taking the nearest lattice position to $y$ and its retained neighbor. For $\tau\geq r$, targets within $\tau-r$ of a lattice point remain reachable at tolerance $\tau$. The empirical reach at $\tau$ additionally depends on where the references fall relative to the retained centers. Short prefixes and cutoff-based lists have different coverage because their construction may omit an entire neighborhood.
-
-\paragraph{Accounting for where new matches come from.}
-For track $i$ with earlier reference $y_i$ and candidate set $T_i$ at tolerance $\tau$, let
-\begin{align}
-R_i(T,\tau)&=\mathbf{1}\!\left\{\min_{x\in T_i}d(x,y_i)\leq\tau\right\},\\
-H_i(T,\tau)&=\mathbf{1}\!\left\{d(\hat{x}_i,y_i)\leq\tau\right\}.
-\end{align}
-An empty candidate set gives $R_i=H_i=0$. Since the selected point $\hat{x}_i$ belongs to $T_i$, a hit implies reach. For two routes, let $C$ denote the jointly reachable tracks, $N$ the tracks reachable only by the second route, and $L$ those reachable only by the first. Then
-\begin{equation}
-\Delta H=\sum_{i\in C}(H_{i,2}-H_{i,1})+
-\sum_{i\in N}H_{i,2}-\sum_{i\in L}H_{i,1}.
-\end{equation}
-The first term measures how choices change on a fixed set of tracks. The other terms measure gains and losses tied to changed reach. A comparison of aggregate conditional hit rates can mix these effects because the denominator changes. The exact decomposition tells whether a candidate change improves matches by making targets available or changes competition among locations already within reach.
+\paragraph{Reading the coverage bound.}
+The upper bound in Eq.~\ref{eq:coverage} follows by taking the nearest lattice position to $y$ and its retained neighbor.
+The empirical reach at $\tau$ additionally depends on where the references fall relative to the retained centers.
+The exact decomposition in Eq.~\ref{eq:decomp} therefore tells whether a candidate change improves matches by making targets available or changes competition among locations already within reach.

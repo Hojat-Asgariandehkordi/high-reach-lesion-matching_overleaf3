@@ -1,5 +1,32 @@
-Finding a lung lesion in an earlier CT links the same finding across visits for measurement of interval change~\cite{sofka2010,rafaelpalou2021}. We study the point-query setting, where a current lesion has already been identified and its approximate location is supplied. Chest alignment puts the two scans in a common frame. Breathing, positioning and changes in lesion appearance can leave several earlier locations plausible within that frame. Closely spaced shifts can also fill a shortlist with slight variations of the same alignment.
+Follow-up chest CT is read by comparison: a radiologist identifies a lesion in the current scan and looks for the same lesion in an earlier scan to measure interval change~\cite{rafaelpalou2021,sofka2010}.
+Automating the second step is a correspondence problem with an unusual structure.
+The current location is known, and a global chest alignment brings the earlier scan into a common frame.
+What remains is a residual displacement of a few millimeters caused by breathing, patient positioning and changes in the lesion itself.
+Within that small window, several earlier locations are often plausible, and the surrounding anatomy may not single out one of them.
 
-We propose a local search that uses anatomical agreement to order translations and reserves the final choice for a lesion scorer. In fit order, the search keeps a translation only if its mapped point is sufficiently far from previously retained points. At a fixed candidate count, the list covers more distinct locations. With the full list, every lattice point has a retained neighbor within the separation radius. Fit and witness residuals continue to inform the final score. The same current point, image support and scorer let us measure the effect of changing which points are considered.
+Two families of methods address this residual.
+Deformable registration estimates a continuous map that absorbs local motion~\cite{rueckert1999,ghazipour2021}, but it commits to one solution and is costly per query.
+Hypothesis-based matchers~\cite{sofka2010} instead propose many local translations, rank them by anatomical agreement and let a lesion scorer choose among the best few.
+This second design is fast and interpretable, but it depends on a step that is rarely examined: \emph{which} hypotheses are allowed to reach the scorer.
 
-On independent staging CT, the proposed search locates 289 of 440 linked pulmonary metastases within 3 mm, versus 243 for a lesion-inclusive deformable spline. It gains 10.5 percentage points and takes about one-nineteenth of the median local time on prepared staging crops. The same approach improves by 10.7 points in retrospective screening. At exactly 28 candidates per supported query, diversification alone adds 40 staging hits and 37 screening hits relative to a fit-ranked prefix (Fig.~\ref{fig:transfer}, Tab.~\ref{tab:contrasts}).
+Our starting observation is that ranking by fit wastes a short candidate list.
+Translations that differ by a fraction of a millimeter have nearly identical fit, so the top $K$ translations crowd around a single fit mode (Fig.~\ref{fig:teaser}a).
+If that mode is wrong, the scorer has no correct option, however good it is.
+We therefore keep the fit ordering but enforce spatial separation: walking down the fit-ranked list, a translation is retained only if its mapped point is at least $r$ from every retained point.
+This greedy rule, a form of non-maximum suppression~\cite{neubeck2006nms}, uses the same budget to cover more distinct locations (Fig.~\ref{fig:teaser}b).
+Run to completion, it covers the entire translation lattice to within $r$ while scoring only about one-thirteenth of the positions.
+
+To understand \emph{why} a change in the candidate list helps, we separate two quantities.
+\emph{Reach} asks whether any candidate lies within tolerance of the true earlier location.
+\emph{Selection} asks whether the scorer chooses such a candidate.
+Because our scorer ranks any two candidates identically regardless of the rest of the list, every change in accuracy decomposes exactly into hits gained or lost through reach and hits changed on targets that were already reachable.
+This bookkeeping exposes effects that aggregate accuracy hides.
+For example, enlarging the list helps a lesion-specific scorer but not a general anatomical embedding~\cite{yan2022sam}, even though both see identical candidates.
+
+We evaluate on an independent melanoma staging cohort and replicate on a lung screening cohort, with success criteria fixed before inference.
+Our contributions are:
+\begin{itemize}
+  \item \textbf{Fit-ordered diverse search}, a candidate allocation rule for point-query lesion correspondence with a lattice coverage guarantee (Sec.~\ref{sec:method}).
+  \item \textbf{An exact reach/selection decomposition} that attributes accuracy changes to candidate coverage or to scorer choices on matched queries (Sec.~\ref{sec:decomp}).
+  \item \textbf{A controlled study on two cohorts} showing +10.5 and +10.7 points at 3\,mm over a lesion-inclusive B-spline at about 19$\times$ lower local cost, and showing that diversification alone accounts for +9.1 and +12.0 points at a fixed budget (Sec.~\ref{sec:results}).
+\end{itemize}

@@ -1,23 +1,23 @@
 \section{Results}
+\label{sec:results}
 
-\subsection{Higher matching accuracy transfers across cohorts}
+\input{tables/main_results}
+
+\subsection{Diverse search transfers across cohorts}
 \label{sec:transfer}
-On independent staging CT, Diverse search hits 289 of 440 earlier marks within 3 mm (65.7\%), compared with 243 for the full central spline (55.2\%). The paired difference is $+10.5$ points [3.6, 17.6]. The search finds 63 tracks the spline misses and retains 226 of the 243 spline hits. On retrospective screening it hits 244 of 309 (79.0\%) versus 211 (68.3\%), with 46 gains and 13 losses, a paired difference of $+10.7$ points [5.8, 15.4]. Each comparison keeps the current query, global alignment and CT inputs fixed (Fig.~\ref{fig:transfer}).
+On the independent staging cohort, \ours places 289 of 440 earlier points within 3\,mm (65.7\%), versus 243 (55.2\%) for the lesion-inclusive spline (Tab.~\ref{tab:main}).
+The paired difference is $+10.5$ points [3.6, 17.6].
+The search finds 63 tracks that the spline misses and retains 226 of the 243 spline hits.
+On the screening cohort it hits 244 of 309 (79.0\%) versus 211 (68.3\%), with 46 gains and 13 losses, a difference of $+10.7$ points [5.8, 15.4].
+Both comparisons meet the prespecified criteria.
+The advantage holds at 2\,mm ($+13.6$ and $+12.0$ points) and at 4\,mm ($+8.9$ and $+7.8$ points), and the median error of returned points falls from 2.41 to 1.68\,mm on staging and from 1.70 to 1.46\,mm on screening.
 
-\begin{table*}[!t]
-\centering\small
-\caption{Correspondence at three tolerances. Entries give hit counts on the full cohort and the paired difference in percentage points with its patient-cluster 95\% interval.}
-\label{tab:tolerances}
-\input{tables/tolerance_effects}
-\end{table*}
-
-The advantage persists at both 2 and 4 mm (Tab.~\ref{tab:tolerances}). In the staging cohort, giving every patient equal weight yields a 9.6-point gain [3.7, 15.9]. Measuring in native earlier-scan millimeters yields 292 versus 242 hits at 3 mm, a gain of 11.4 points [4.1, 18.9]. These two analyses preserve the improvement when accounting for differences in lesion burden and affine scale.
-
+The staging gain is robust to how lesions and distances are counted.
+Giving every patient equal weight yields $+9.6$ points [3.7, 15.9], and measuring in native earlier-scan millimeters yields 292 versus 242 hits ($+11.4$ points [4.1, 18.9]).
+The gain is also not confined to poorly localized queries.
+Among tracks whose query lies within 1.5\,mm of the current mark, \ours hits 238 of 322 staging tracks versus 205 for the spline ($+10.2$ points [2.1, 18.4]) and 178 versus 157 of 194 screening tracks ($+10.8$ points [5.8, 16.0]).
 \ifexpandedpaper
-Median error among returned points falls from 2.41 to 1.68 mm on staging and from 1.70 to 1.46 mm on screening. The supplement reports availability, off-target points and error tails for all routes.
-
-\paragraph{Performance with the fixed current query.}
-An improvement in prior matching could come mainly from tracks where the current localization starts far from the lesion. We examine the existing current-query error bands to see how the gain is distributed. Among tracks whose current query is within 1.5 mm of the current mark, Diverse search hits 238 of 322 staging tracks versus 205 for the spline. The paired difference is 10.2 points [2.1, 18.4]. On 194 screening tracks in this band, the difference is 10.8 points [5.8, 16.0], from 157 to 178 hits. This band contributes 33 of the 46 net staging gains and 21 of the 33 screening gains (Fig.~\ref{fig:query-sensitivity}). The two smaller bands describe the paired differences with larger current-query errors. These within-band comparisons are descriptive. A separate diagnostic that supplies the exact current mark narrows the difference in screening, as reported in the supplement.
+This band contributes 33 of the 46 net staging gains and 21 of the 33 screening gains (Fig.~\ref{fig:query-sensitivity}); the within-band comparisons are descriptive.
 
 \begin{figure*}[!t]
 \centering
@@ -27,77 +27,85 @@ An improvement in prior matching could come mainly from tracks where the current
 \end{figure*}
 \fi
 
-\subsection{Spatial diversification makes better use of the same budget}
-\label{sec:diversity}
+SAM's standalone field reaches most targets (396 staging, 308 screening) but selects only 99 and 80 correct points.
+The frozen Siamese scorer nearly matches the spline on screening (210 versus 211) but not on staging (203 versus 243).
+Figure~\ref{fig:qualitative} shows typical successes and failures.
+Exhaustive scoring of all 4,851 positions adds eight staging hits over \ours ($+1.8$ points [0.2, 3.5]) and two fewer on screening.
 
 \begin{figure*}[!t]
 \centering
-\includegraphics[width=\textwidth]{figures/candidate_budget.pdf}
-\caption{Reach and matching accuracy at fixed wide extent and image support. Dashed curves show the fraction of tracks with a candidate within 3 mm. Solid curves show the fraction whose selected point is within 3 mm. At 28 candidates, the separated list raises both reach and hits over the fit-only prefix. Exhaustive scores the raw lattice. The horizontal reference shows the full spline's hit rate.}
-\label{fig:budget}
+\includegraphics[width=\linewidth]{figures/qualitative.pdf}
+\caption{\textbf{Qualitative examples} \TODO{replace placeholder; pick 3 successes, 1 spline failure, 1 large-motion case and 1 failure of ours}. Top: current CT with query $p$ (+). Bottom: earlier CT with the reference (star) and 3\,mm tolerance (dotted), retained candidates (small dots), and the points selected by \ours (circle), the B-spline (triangle) and SAM (square).}
+\label{fig:qualitative}
 \end{figure*}
+
+\subsection{Diversification makes better use of a fixed budget}
+\label{sec:diversity}
+At a budget of 28, the fit-ordered prefix spends several slots on the same neighborhood.
+Enforcing 2.1\,mm separation with the same order, grid and scorer raises reach from 221 to 274 staging tracks and from 189 to 242 screening tracks, and raises hits from 205 to 245 ($+9.1$ points [6.0, 12.2]) and from 175 to 212 ($+12.0$ points [7.5, 16.4]) (Tab.~\ref{tab:contrasts}).
+Figure~\ref{fig:attribution} shows where the hits come from.
+Diversification makes 54 staging and 56 screening tracks newly reachable and the scorer selects 45 and 41 of them, while choices on tracks reachable by both lists lose a net four hits in each cohort.
+The gain is therefore a gain in coverage, not in selection.
+The same holds with relaxed gates, where diversification at 28 adds 7.5 [4.7, 10.7] and 9.4 [5.3, 13.4] points.
+\ifexpandedpaper
+The separated list scores fewer points on average in this relaxed setting because some fit neighborhoods have few distinct positions.
+\fi
+
+\begin{figure}[!t]
+\centering
+\includegraphics[width=\linewidth]{figures/budget_reach.pdf}
+\caption{\textbf{Reach and hits versus candidate budget} at fixed wide extent and image support. Dashed: fraction of tracks with any candidate within 3\,mm (reach). Solid: fraction whose selected point is within 3\,mm (hits). At $K{=}28$ the diversified list (blue) beats the fit-only prefix (diamond) by 9.1 and 12.0 points; hard gates (green) cap the benefit of a larger budget. Exh.\ scores the raw lattice.}
+\label{fig:budget}
+\end{figure}
 
 \begin{table*}[!t]
 \centering\small
-\caption{Paired changes in candidate retention and scoring at 3 mm on all 440 staging and 309 screening tracks. Each row reports reach and automatic hits before and after the change, discordant hit gains and losses, and the difference in hit rate in percentage points.}
+\caption{Paired changes in candidate retention and scoring at 3\,mm on all 440 staging and 309 screening tracks. Each row reports reach and hits before and after the change, discordant hit gains and losses, and the difference in hit rate in points with its patient-cluster 95\% interval.}
 \label{tab:contrasts}
 \input{tables/primary_contrasts}
 \end{table*}
 
-At a budget of 28, fit order alone often allocates several candidates to the same neighborhood. Enforcing 2.1 mm separation increases reach from 221 to 274 staging tracks and from 189 to 242 screening tracks with the same number of scored centers per supported query. Direct hits increase from 205 to 245, a 9.1-point gain [6.0, 12.2], and from 175 to 212, a 12.0-point gain [7.5, 16.4], respectively. This is a same-budget comparison with the same fit order, physical grid and scorer. The change is which positions occupy the 28 slots (Tab.~\ref{tab:contrasts}).
+Figure~\ref{fig:budget} follows reach and hits as the budget grows.
+The complete diversified list reaches 348 of the 351 targets reachable on the raw lattice in staging and 289 of 290 in screening, while scoring about one-thirteenth of the positions.
+The coverage bound (Eq.~\ref{eq:coverage}) predicts that representing a cluster by one point costs more at tight tolerances: exhaustive scoring adds 18 staging hits over \ours at 2\,mm but only five at 4\,mm.
 
-Figure~\ref{fig:budget} shows how additional slots extend coverage. The complete diversified list reaches 348 of the 351 raw-reachable staging targets and 289 of 290 in screening. It scores about 365 centers per supported staging query and 360 in screening, roughly one-thirteenth of the 4,851-point lattice. Exhaustive scoring reaches three additional staging tracks and hits eight more ($+1.8$ points [0.2, 3.5]). On screening, it adds one reachable track and hits 242 versus 244. The full list thus offers a compact operating point, while exhaustive scoring gives the highest staging hit count. The corresponding times appear in Sec.~\ref{sec:latency}.
-
-\ifexpandedpaper
-The paired transitions show where the same-budget advantage comes from. Diversification makes 54 staging and 56 screening tracks newly reachable. It selects 45 and 41 of those targets, respectively. On targets reachable with either list, each cohort loses four net hits. One staging hit is lost with reach. The net increases of 40 and 37 therefore follow from expanding coverage at a fixed count (Fig.~\ref{fig:attribution}). The result also holds at the same cap with relaxed fit screening. Diversification adds 7.5 points [4.7, 10.7] on staging and 9.4 points [5.3, 13.4] on screening. The separated list scores fewer points on average in this relaxed setting because some fit neighborhoods have few distinct positions.
-
-The equal-budget gain and exhaustive comparison describe two uses of the same algorithm. Early in the list, separation allocates scarce slots to different plausible neighborhoods. In the full list, it uses one point to represent a cluster of nearby translations. A representative can remain inside the evaluation radius while moving away from the best-scoring location. At 2 mm, exhaustive scoring adds 18 staging hits over the complete diversified list. At 4 mm the difference is five. This dependence on tolerance quantifies the accuracy cost of representing the search with fewer fine-grid positions.
-\fi
-
-\subsection{Additional reach pays off with the direct scorer}
+\subsection{Additional reach pays off only with a capable scorer}
 \label{sec:scorer}
-Increasing the strict cap from 7 to 28 at fixed wide support increases direct hits from 192 to 219 on staging, a gain of 6.1 points [3.6, 9.1]. In screening the gain is 9.1 points [6.0, 12.3], from 167 to 195 hits. Both exceed the prespecified practical margin. In contrast, expanding lattice extent at fixed support and strict cap 28 changes hits from 220 to 219 on staging and from 193 to 195 on screening. Both paired intervals span zero. The controlled comparisons identify the number and placement of retained candidates as the productive changes under these settings.
+Raising the strict cap from 7 to 28 increases direct hits from 192 to 219 on staging ($+6.1$ points [3.6, 9.1]) and from 167 to 195 on screening ($+9.1$ points [6.0, 12.3]), both above the prespecified margin.
+Widening the lattice at fixed support and cap 28 does not help (intervals span zero), so the number and placement of retained candidates, not lattice extent, drive the gain.
+On the identical expanded sets, SAM selects only 10 of the 39 newly reachable staging targets and loses 15 hits on the 202 shared tracks (Fig.~\ref{fig:attribution}), whereas the direct scorer selects 33 of them.
+The cap effect favors the direct scorer over SAM by 7.3 points [4.4, 10.4] on staging and 10.0 [5.4, 14.8] on screening.
+A larger proposal budget is useful only to a scorer that can exploit it.
 
-The staging cap increase makes 39 targets newly reachable. The direct scorer selects 33 of them and changes hits on the 202 jointly reachable tracks from 192 to 186, for a net gain of 27. In screening it selects 23 of 35 newly reachable targets and adds five hits on the 185 jointly reachable tracks. This decomposition shows how the same change adds matches through reach in both cohorts, even though the effect on jointly reachable targets differs.
-
-The scorer crossing measures the value of these new opportunities. On the identical expanded sets, SAM selects 10 of the 39 newly reachable staging targets and loses 15 hits on the shared 202. The paired cap effect favors the direct scorer over SAM by 7.3 points [4.4, 10.4] on staging and 10.0 [5.4, 14.8] on screening. This is a comparison of changes under a specific released scorer on common crops. The full-field and native-context SAM analyses are in the supplement. A useful proposal budget depends on the scorer's ability to use the additional reach.
-
-\ifexpandedpaper
-\begin{figure*}[!t]
+\begin{figure}[!t]
 \centering
-\includegraphics[width=\textwidth]{figures/reach_attribution.pdf}
-\caption{Where additional hits come from. Orange bars count hits gained on newly reachable tracks minus hits lost when reach disappears. Blue bars show the change on tracks reachable with either list. Diamonds give the sum. Diversification at 28 positions and cap expansion under the direct scorer both gain hits through reach. The paired intervals for the total changes appear in Tab.~\ref{tab:contrasts}.}
+\includegraphics[width=\linewidth]{figures/reach_selection.pdf}
+\caption{\textbf{Where additional hits come from} (Eq.~\ref{eq:decomp}). Blue: hits on newly reachable tracks minus hits lost with reach. Hatched: change on tracks reachable by both lists. Diversification and a larger cap gain through reach with the direct scorer; SAM, given identical candidates, loses more on shared targets than it gains. Intervals are in Tab.~\ref{tab:contrasts}.}
 \label{fig:attribution}
-\end{figure*}
-
-Residual cutoffs and the cap can each remove usable candidates. Under the relaxed gates, replacing cap 28 with the full diversified list increases staging hits from 237 to 264 and screening hits from 204 to 217. Removing the remaining cutoffs increases reach by another 48 staging and 32 screening tracks. Selected hits increase by 25 and 27. Anatomical fit remains in the scoring objective, so these gains specifically support using it as a soft preference in the final search. The individually relaxed gates and the narrow fit-relaxed control appear in the full comparison tables.
-\fi
-
-\subsection{Diverse search reduces local matching time}
-\label{sec:latency}
-On matched staging crops, median local time is 0.194 s for Diverse search and 3.617 s for the full spline, an 18.6-fold speed ratio. The corresponding screening medians are 0.185 and 3.866 s, a 20.9-fold ratio. Prepared-crop timing charges both the fit order and the final scoring. The spline also pays for its local optimization. The measured p90 times on staging are 0.458 and 4.707 s and on screening are 0.190 and 4.693 s (Fig.~\ref{fig:runtime}).
-
-\begin{figure*}[!t]
-\centering
-\includegraphics[width=\textwidth]{figures/matching_time.pdf}
-\caption{Time per query with prepared crops and with native scans. Points show medians and line ends mark the empirical p90. Prepared-crop comparisons use the same 24 staging and 32 screening queries. The native screening replay uses eight pairs for one query and the four pairs with two measured queries for the second workload. The native time includes loading, alignment, crop construction and local matching.}
-\label{fig:runtime}
-\end{figure*}
-
-In a three-repeat replay of the fixed budgets, the fit-only and diversified 28-point prefixes take 0.098 and 0.120 s median on staging. The 40-hit gain comes with a 22 ms difference in the measured medians. The corresponding screening medians are 0.101 and 0.120 s for 37 additional hits. The complete diversified list takes about 0.190 s versus 0.265 s for exhaustive scoring in both cohorts. This speed difference is smaller than the candidate-count ratio because both routes compute anatomical costs and the diversified route constructs the separated list. Exhaustive scoring adds eight staging hits with about 75 ms more median local time.
+\end{figure}
 
 \ifexpandedpaper
-\paragraph{Accuracy at smaller fixed budgets.}
-We time the existing ungated candidate budgets in a separate randomized replay after the accuracy readout. Each route recomputes the geometry, proposal list and scores on every run. Three repeats per query preserve all saved point predictions and candidate counts. The replay separates the cost of choosing which points to score from the cost of scoring them (Fig.~\ref{fig:fixed-cost}).
-
-A cap of 112 gives 278 staging hits at 0.142 s and 232 screening hits at 0.144 s. The complete list gives 289 and 244, respectively, at about 0.190 s. Median paired savings are 50 ms [45, 53] on staging and 45 ms [42, 47] on screening. The timing reduction comes from stopping candidate separation earlier and extracting fewer descriptors. This intermediate setting provides a measured operating point for workloads with a smaller local compute budget.
-
-\begin{figure*}[!t]
+\begin{figure}[!t]
 \centering
-\includegraphics[width=\textwidth]{figures/fixed_budget_cost.pdf}
-\caption{Fixed candidate budgets trade prepared-crop time for additional hits. Hit rates use the full cohorts. Latency is the median across query-level medians of three randomized repeats on matched workloads of 24 staging and 32 screening queries. Orange labels give the cap or the complete list. Gold points show the fit-only prefix and exhaustive scoring. The dotted line gives the spline hit rate. The timing replay is secondary to the accuracy analysis.}
-\label{fig:fixed-cost}
-\end{figure*}
+\includegraphics[width=\linewidth]{figures/accuracy_latency.pdf}
+\caption{\textbf{Accuracy versus prepared-crop latency.} Diverse search at caps 28, 56, 112 and the complete list, the fit-only prefix and exhaustive scoring come from a three-repeat randomized replay on matched workloads of 24 staging and 32 screening queries; the spline point is from the matched prepared-crop comparison. Hit rates use the full cohorts. Native-scan timing is in the supplement.}
+\label{fig:speed}
+\end{figure}
 \fi
 
-Native-scan costs reflect a different workload. On one query per screening pair, medians are 29.36 s for Diverse search and 32.87 s for the spline. With two measured queries and shared scan initialization, medians per query are 14.88 and 19.38 s. Sharing the affine across queries gives the local stage more influence on time per match. Supplementary timing results preserve the earlier relaxed-budget comparisons, the p90 tails, and the routing experiment at matched cost.
+Hard gates also discard usable candidates.
+With relaxed gates, replacing cap 28 by the complete list raises hits from 237 to 264 (staging) and from 204 to 217 (screening).
+Removing the remaining gates adds 48 and 32 reachable tracks and 25 and 27 hits.
+Since anatomical fit still enters Eq.~\ref{eq:direct}, this supports using fit as a soft preference rather than a hard filter.
+
+\subsection{Compute}
+\label{sec:latency}
+On prepared staging crops, the median local time is 0.194\,s for \ours versus 3.617\,s for the spline (18.6$\times$), and 0.185 versus 3.866\,s on screening (20.9$\times$); p90 times are 0.458 versus 4.707\,s and 0.190 versus 4.693\,s.
+\ifexpandedpaper Figure~\ref{fig:speed} places every fixed budget on one accuracy--latency plot.\fi
+The diversified 28-point prefix costs 22\,ms more than the fit-only prefix for 40 additional staging hits, and a cap of 112 gives 278 staging hits at 0.142\,s, an intermediate operating point.
+\ifexpandedpaper
+Median paired savings of the cap-112 setting over the complete list are 50\,ms [45, 53] on staging and 45\,ms [42, 47] on screening; the reduction comes from stopping candidate separation earlier and extracting fewer descriptors.
+\fi
+With native scans, chest alignment dominates: one query per screening pair takes 29.36\,s for \ours versus 32.87\,s for the spline, and two queries sharing the alignment take 14.88 versus 19.38\,s per query.
+The local speedup is therefore most relevant when the alignment is shared across many lesions.
+

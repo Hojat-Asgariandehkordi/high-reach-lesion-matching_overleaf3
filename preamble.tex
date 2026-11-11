@@ -9,3 +9,16 @@
 \input{title}
 \newcommand{\pp}{\,\mathrm{pp}}
 \hypersetup{pdfauthor={},pdfsubject={},pdfkeywords={}}
+% ---- added in revision ----
+\usepackage{cuted}           % page-1 teaser strip
+\usepackage{caption}
+\usepackage{multirow}
+\usepackage{algorithm}
+\usepackage[noend]{algpseudocode}
+\usepackage{xspace}
+\newcommand{\TODO}[1]{\textbf{\color{red}[TODO: #1]}}
+% \renewcommand{\TODO}[1]{}  % uncomment before submission
+\DeclareMathOperator*{\argmax}{arg\,max}
+\newcommand{\ours}{Diverse search\xspace}
+\newcommand{\T}{\mathcal{T}}   % translation lattice
+\newcommand{\Ss}{\mathcal{S}}  % retained (diversified) set
