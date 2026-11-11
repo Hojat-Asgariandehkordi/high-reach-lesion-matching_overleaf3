@@ -1,0 +1,98 @@
+\documentclass[10pt,twocolumn,letterpaper]{article}
+\usepackage[review]{cvpr}
+\newif\ifexpandedpaper
+\ifdefined\cvprcompact\expandedpaperfalse\else\expandedpapertrue\fi
+\input{preamble}
+\title{\paperTitle}
+\author{Anonymous CVPR submission}
+\hypersetup{pdftitle={\paperTitle}}
+
+\begin{document}
+\maketitle
+\begin{abstract}
+\input{abstract}
+\end{abstract}
+
+\begin{figure*}[!t]
+\centering
+\includegraphics[width=\textwidth]{figures/cohort_transfer.pdf}
+\caption{Diverse search improves 3 mm correspondence in two CT cohorts. The points show automatic hit rates on all allocated tracks. Each label gives the number of hits over the cohort total. The gain and interval above each pair come from a paired patient-cluster bootstrap. Both routes use the same current query, scan alignment and image support.}
+\label{fig:transfer}
+\end{figure*}
+
+\section{Introduction}
+\input{intro_findings}
+\ifexpandedpaper\input{intro_expanded}\fi
+
+\section{Related work}
+\paragraph{Local correspondence and registration.}
+Location Registration and Recognition generates, refines and verifies local registration hypotheses for supplied nodule positions~\cite{sofka2010}. Deformable registration can estimate a continuous map that accommodates local motion~\cite{rueckert1999,ghazipour2021}. Studies of registration uncertainty distinguish image agreement from the reliability of a mapped location~\cite{eppenhof2018,luo2017}. Our study measures a complementary design choice in local hypothesis search. We isolate how the allocation of candidate centers affects target coverage and final selection under the same scan initialization. A lesion-inclusive spline supplies a continuous-registration comparison.
+
+\paragraph{Learned lesion matching.}
+Rafael-Palou \etal~\cite{rafaelpalou2021} use a learned representation to re-identify detected nodules. Deep Lesion Tracker and Transformer Lesion Tracker combine lesion appearance with anatomical context~\cite{cai2021,tang2022tlt}. Dense anatomical embeddings enable correspondence from a point query~\cite{yan2022sam,zhuang2026diffusion}. SAM offers a released point-query checkpoint and a dense similarity field. This lets us compare its selected point and cross its scorer with the same candidate sets used by our local matcher. The crossing varies candidate allocation while holding the scored positions, current query and input crops fixed for each budget.
+
+\section{Fit-ordered diverse search}
+\label{sec:method}
+
+\begin{figure*}[!t]
+\centering
+\includegraphics[width=\textwidth]{figures/method_schematic.pdf}
+\caption{Fit-ordered diverse search, illustrated in two dimensions. (A) The chest affine puts the two scans on a common grid. An outer shell supplies anatomical fit and witness costs for translations of the fixed current point. (B) A short fit-ranked prefix can concentrate around one fit mode. Enforcing a minimum separation uses the same budget to cover more locations. The star and tolerance ring illustrate a reference used only at evaluation.}
+\label{fig:construction}
+\end{figure*}
+
+\paragraph{Shared scan coordinates.}
+A scan-only chest affine maps current physical coordinates to the earlier CT. We resample the two scans onto a common current-frame $64^3$ grid at $0.7\times0.7\times1.5$ mm. The input is an approximate current lesion center, represented in our study by a reference mark jittered by up to 2.5 mm along each axis. A multiscale curvature response selects the fixed point $p$ within 6 mm of this input~\cite{li2003}. The retained query for the retrospective cohort comes from the original archive. The earlier reference is used for evaluation.
+
+\paragraph{Anatomical fit supplies a proposal order.}
+A residual translation $t$ proposes the earlier point $p-t$. We compute a weighted HU residual on alternating outer octants for all translations. We call this the fit cost $f_t$. The remaining octants supply a witness cost $w_t$ on disjoint centers. The original lattice contains 1,183 translations inside $\pm(4.2,4.2,4.5)$ mm in $x,y,z$. The wide lattice contains 4,851 translations inside $\pm(7,7,7.5)$ mm. Both lattices use the same 436 fit and 436 witness samples for the width comparison, a subset of the original 824 per sector. The residual support excludes a 10 mm core on the resampled grid. The final lesion score and central spline can use the lesion-bearing interior.
+
+\paragraph{Spatial separation allocates the candidate budget.}
+We traverse translations in increasing fit cost, with displacement norm as a tie-break. We retain a candidate if its mapped point is at least 2.1 mm from all previously retained points. With a budget of $K$ the process stops at the $K$th distinct point. We call the wide list with no residual cutoffs and no cap \emph{Diverse search}. Each lattice point either remains in the full list or lies within 2.1 mm of a point retained earlier. The complete list thus covers the lattice within the separation radius.
+
+\paragraph{Capacity and residual cutoffs.}
+The strict route applies an absolute fit cutoff and 24 HU slack from the best fit, diversifies the passing candidates, takes a prefix of length $K$, then applies the witness cutoff. We use budgets of 7, 14, 28, 56, 112 and the complete list. Original 28 + fit adds 20 HU to the original absolute fit limit. Wide relaxed adds 20 HU to the shared-support fit limit, increases slack to 40 HU and disables the witness cutoff. Diverse search disables all three cutoffs and uses the same anatomical costs in ordering and scoring. Exhaustive search scores all 4,851 wide-lattice positions. The fit-only prefix and diversified prefix with 28 positions compare spatial allocation at the same budget and without cutoffs.
+
+\paragraph{A fixed lesion scorer selects one earlier point.}
+For a candidate $t$, a frozen logistic score $L_t$ combines five earlier opacity and shape features with three between-visit patch features. We select the translation that maximizes
+\begin{equation}
+L_t - 1.5\left(
+ \frac{f_t-\min_{u\in T}f_u}{F}
++\frac{w_t-\min_{u\in T}w_u}{W}\right)
+\label{eq:direct}
+\end{equation}
+over retained set $T$. The original residual limits $F,W$ fix the scales across routes. The two minima contribute constants within the set. The relative order of any two candidates under this score is therefore fixed when the candidate list changes. The effect of a larger list comes from which alternatives enter the competition.
+
+\ifexpandedpaper\input{method_expanded}\fi
+
+\section{Evaluation}
+\label{sec:evaluation}
+\paragraph{Independent staging cohort.}
+Longitudinal-CT v2 includes melanoma staging CT from a different clinical source from the screening studies~\cite{gatidis2026longct,kuestner2025longct}. Readers manually linked and segmented lesions at baseline and follow-up. We use clear persistent pulmonary links in single-volume scan pairs, with separate 3D centroids. An outcome-independent hash order allocates 440 links from 72 of the 107 eligible patients under a scan retrieval budget. All 144 allocated volumes are retrieved. Three tracks lack shared crop support and remain misses. The query construction, models and contrasts are fixed before inference. The reference locations are held separately from the predictions.
+
+\paragraph{Screening replication.}
+LUNA25 provides nodule keys across NLST screening visits~\cite{peeters2026,lunamarks,lunascans,nlstct}. We use the archived 145 tracks from 100 development patients and the 309 linked tracks from 233 different, previously inspected patients for the retrospective comparison. The scorer and geometry settings remain frozen on both cohorts. The staging cohort tests independent transfer, and the screening cohort tests the same search changes on a different nodule and acquisition distribution.
+
+\paragraph{Comparators.}
+The full lesion-inclusive central cubic spline estimates a map by fitting image similarity within 22 mm of the crop center. It starts from the exhaustive original fit translation and uses bounded coefficients~\cite{lowekamp2013}. We compare with the released SAM point-query model~\cite{yan2022sam} using the same two crops and the same current point. SAM's coarse and fine embedding similarities define a common score field. We evaluate its full-field maximum and sample its scores at the fit-ordered candidate centers. This crossing gives the direct and learned scorers identical proposals. The released checkpoint uses the NIH Lymph Node source according to its documentation. Its patient roster is unavailable.
+
+\paragraph{Accuracy and paired inference.}
+The primary tolerance is 3 mm in the shared physical frame. A track is reachable if a retained point is within tolerance of the linked earlier reference. A hit requires the selected point to satisfy the same criterion. We count all eligible tracks, including failures, and examine 2 and 4 mm and distances in native baseline coordinates. We report paired pointwise 95\% intervals from 5,000 patient-cluster bootstrap draws, conditional on the frozen models and analysis. The locked primary staging budget contrast is strict cap 7 to 28, evaluated with both scorers. The prespecified target for a useful hit gain is at least three percentage points with a paired interval above zero. The spline comparison requires a lower bound above $-5$ points and at least fivefold speed on prepared crops.
+
+\paragraph{Timing.}
+Prepared-crop time starts with the two crops and current point in memory. It includes candidate generation, feature computation, scoring and local optimization as applicable. Native time starts with scan loading and includes chest alignment, resampling and query localization. In the measured two-query setting we share scan initialization across two distinct current lesions on the same pair.
+
+\ifexpandedpaper\input{evaluation_expanded}\fi
+
+\input{results_text}
+\input{discussion}
+
+\label{sec:main-end}
+\section*{LLM Usage Statement}
+OpenAI Codex assisted with study design, literature and data screening, code, experiment execution, analysis, figures and tables, manuscript drafting and editing, and source and layout checks. The numerical results are computed from the specified inputs using the recorded analysis. The authors are responsible for verification and for the submitted work.
+
+{\small
+\bibliographystyle{ieeenat_fullname}
+\bibliography{refs}
+}
+\end{document}

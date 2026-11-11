@@ -1,0 +1,11 @@
+\subsection{Cost of an adaptive search rule}
+On development we select a rule that first runs Original 28 + fit, then runs Diverse search if the candidate set is empty or the two highest direct scores are within two logit units. The adaptive route uses the wide result on 200 of 309 screening tracks and 323 of 437 supported staging tracks. Both passes and the score margin are timed when it switches. It hits 240 screening and 280 staging marks. Relative to fixed Diverse search, it loses five screening hits and gains one, and loses 12 staging hits and gains three. The staging difference is $-2.0$ points [$-3.3$, $-0.9$].
+
+Three randomized repetitions per query give staging medians of 0.261 s for the adaptive route and 0.190 s for fixed Diverse search. The median paired overhead is 0.071 s [0.034, 0.081] by patient resampling. On screening the respective medians are 0.266 and 0.192 s, with median paired overhead 0.077 s and an interval spanning zero. Exhaustive scoring gives 297 staging hits at a similar 0.266 s median, a 3.9-point gain [1.8, 5.9] over the adaptive route. On screening, exhaustive scoring and the adaptive route take 0.267 and 0.266 s, with 242 and 240 hits. With native screening scans, fixed and adaptive search take 29.36 and 29.34 s per query for one query and 14.88 and 14.91 s per query for two measured queries. Table~\ref{tab:decision-cost} reports both timing boundaries. The matched comparisons favor a fixed candidate list at these operating points.
+
+\begin{table*}[!t]
+\centering\small
+\caption{Matched cost of fixed and adaptive routes. Hit counts use the full cohorts. Local values are median / p90 seconds over the median of three randomized runs per query. The native screening replay measures one query on eight pairs and two distinct queries on four of those pairs. Native values are medians in seconds per query.}
+\label{tab:decision-cost}
+\input{tables/decision_cost}
+\end{table*}

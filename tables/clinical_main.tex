@@ -1,0 +1,15 @@
+\begin{tabular}{lrrrrrrrrrr}
+\toprule
+ & \multicolumn{5}{c}{Clean} & \multicolumn{5}{c}{Sheared prior} \\
+Method & Inc. & FN & Res. & P res. & AUC & Inc. & FN & Res. & P res. & AUC \\
+\midrule
+Patch / first & 58 & 2 & 87 & 11 & 0.819 & 54 & 4 & 83 & 11 & 0.790 \\
+Patch / set & 56 & 4 & 86 & 12 & 0.790 & 54 & 3 & 79 & 10 & 0.779 \\
+Direct / first & 61 & 3 & 86 & 12 & 0.803 & 60 & 3 & 81 & 10 & 0.768 \\
+Direct / set & 57 & 2 & 85 & 11 & 0.779 & 54 & 2 & 81 & 11 & 0.784 \\
+Siamese / set & 59 & 5 & 89 & 12 & 0.751 & 58 & 3 & 84 & 11 & 0.727 \\
+Witness-first & 59 & 2 & 87 & 12 & 0.777 & 50 & 1 & 78 & 10 & 0.777 \\
+Fit gate, recalibrated & 58 & 3 & 84 & 11 & 0.735 & 60 & 2 & 81 & 10 & 0.790 \\
+Fit gate, frozen & 60 & 4 & 84 & 11 & 0.735 & 63 & 4 & 81 & 10 & 0.790 \\
+\bottomrule
+\end{tabular}

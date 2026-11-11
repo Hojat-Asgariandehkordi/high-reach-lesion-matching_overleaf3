@@ -1,0 +1,17 @@
+\begin{tabular}{lrrrrrrrr}
+\toprule
+ & \multicolumn{4}{c}{External} & \multicolumn{4}{c}{Screening} \\
+\cmidrule(lr){2-5}\cmidrule(lr){6-9}
+Route & Avail. & Reach & Hits & Misses (U/R) & Avail. & Reach & Hits & Misses (U/R) \\
+\midrule
+Original 7 & 345 & 220 & 206 & 220/14 & 285 & 198 & 184 & 111/14 \\
+Original 28 + fit & 361 & 248 & 232 & 192/16 & 294 & 229 & 204 & 80/25 \\
+Wide relaxed 28 & 381 & 264 & 237 & 176/27 & 301 & 235 & 204 & 74/31 \\
+Wide relaxed 28 + Siamese & 381 & 264 & 203 & 176/61 & 301 & 235 & 210 & 74/25 \\
+Wide ungated, diversified all & 437 & 348 & 289 & 92/59 & 309 & 289 & 244 & 20/45 \\
+Wide raw, all & 437 & 351 & 297 & 89/54 & 309 & 290 & 242 & 19/48 \\
+Escalation & 437 & 330 & 280 & 110/50 & 309 & 281 & 240 & 28/41 \\
+Standalone SAM & 437 & 396 & 99 & 44/297 & 309 & 308 & 80 & 1/228 \\
+Full central spline & 437 & 243 & 243 & 197/0 & 309 & 211 & 211 & 98/0 \\
+\bottomrule
+\end{tabular}

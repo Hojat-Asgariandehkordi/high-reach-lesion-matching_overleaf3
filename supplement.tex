@@ -1,0 +1,302 @@
+\documentclass[10pt,twocolumn,letterpaper]{article}
+\usepackage[review]{cvpr}
+\input{preamble}
+\renewcommand{\thesection}{S\arabic{section}}
+\renewcommand{\thetable}{S\arabic{table}}
+\renewcommand{\thefigure}{S\arabic{figure}}
+\title{\paperTitle\\[0.25em]\large Supplementary Material}
+\author{Anonymous CVPR submission}
+\hypersetup{pdftitle={\paperTitle\ - Supplement}}
+
+\begin{document}
+\maketitle
+
+\section{Cohorts and analysis conventions}
+\begin{table}[t]
+\centering\small
+\caption{Archived LUNA25 flow. The earlier-track and first-recorded categories have unknown status for the chosen prior.}
+\label{tab:cohorts}
+\input{tables/cohorts}
+\end{table}
+
+LUNA25 public data~\cite{peeters2026,lunamarks,lunascans} provide marks and the listed NLST series~\cite{nlstct}. We select the most annotated series per visit, breaking ties by series identifier. The last two eligible annotated visits form one scan pair per patient. A track uses a nodule key present in both selected series. Of the 2,120 source participants, 1,484 belong to the original checkpoint partition, 212 to development, and 424 to retrospective test. The source split shuffles sorted identifiers with seed 42, takes the first 70\% for the checkpoint partition, and shuffles the remainder with seed 29 before a one-third development split. The scored subsets are in Tab.~\ref{tab:cohorts}. The fit gate's encoder checkpoint used 1,383 patients in the original checkpoint partition, with zero overlap with development, the retrospective LUNA25 test patients, or TCIA. The new matchers use neither this encoder nor external initialization.
+
+The analysis of 309 linked marks reuses previously inspected patients. We recorded the analysis before the new readout. The primary external budget contrasts are the wide strict cap 7 to 28 under the direct and SAM scorers. Other prespecified point contrasts isolate fixed-support width, relaxation at cap 28, the higher relaxed caps, the remaining gates at all candidates, and diversification versus raw scoring. We report pointwise 95\% intervals. The paired bootstrap resamples whole patients with replacement using seed 20261109 and 5,000 draws and preserves every sampled patient's tracks and paired predictions. It conditions on fitted models, candidate generation, supported subsets where indicated, and any fitted decision thresholds. All eligible tracks enter, with failed point maps and empty sets treated as misses.
+
+\paragraph{External pulmonary links.}
+Longitudinal-CT v2 provides independently annotated lesion masks and linked centers of gravity at baseline and follow-up~\cite{gatidis2026longct,kuestner2025longct}. The annotation interface uses registration for side-by-side slice synchronization and for a quality warning. Readers manually segmented and linked lesions before consensus review. We use the released lesion identity, clear linkage and two actual segmented marks. We exclude merging, disappearing and appearing rows from this persistence endpoint. The chosen studies are distinct from the screening and NIH Lymph Node training sources. Patient-level linkage across sources is unavailable.
+
+We inspect per-patient metadata and scan headers before image retrieval. Single-volume pairs with finite paired points and valid native geometry are eligible. We allocate up to 72 patients by a fixed salted SHA-256 order, subject to a 12 GiB compressed scan budget, and retain all eligible tracks within each selected patient. The 72 pairs occupy 10.36 GiB in the public ZIP. We retrieve the corresponding archive members by HTTP range and validate their ZIP checksums. The release encodes visit order as baseline and follow-up. The public metadata omit precise visit dates. Native CT axes and affine round-trips pass header checks for all 144 selected volumes.
+
+In a prespecified 12-patient geometry audit, each of 98 CSV centroids differs from its mask-derived centroid by $(0.5,0.5,0.5)$ voxels. We subtract this offset in each visit before applying its NIfTI transform. The maximum corrected error is below $10^{-9}$ voxels in the audit. We convert RAS to LPS and verify that the reader reference maps through the inverse chest affine and back. The native-distance sensitivity uses the full linear part of this transform. Eligibility and inputs are frozen before inference, and the earlier references and query manifest are separate. The query uses independently seeded jitter with the same physical range as the screening study.
+
+Before crop preparation, each scan must have a robust lung extent of at least 130 mm and a 10 mm margin to both axial ends. After aligning the scans we require the entire crop to lie inside both image supports, using all eight native corners. Failed scans and unsupported crops remain in the denominator. The source and allocated sample flow are in Tab.~\ref{tab:external-flow}.
+
+\paragraph{Use of research images.}
+The evaluation uses de-identified research data and previously supplied annotations. The original NLST reports written consent and institutional review~\cite{aberlenslt}. The secondary analysis involved no participant contact or new imaging.
+
+\section{Physical support and candidate generation}
+\paragraph{Crops and query.}
+A coarse lung mask initializes a scan-only chest affine from physical lung bounds, followed by two levels of masked correlation optimization. The prior is linearly resampled on the current crop grid with air fill outside the native image, and both crops are clipped to $[-1000,400]$ HU. A jitter uniform in $[-2.5,2.5]$ mm per axis shifts each supplied current center. The archived query maximizes weakest negative curvature across scales 1.4, 2.1, 3.0 and 4.2 mm minus a penalty $0.01(d/6)^2$ within 6 mm, where $d$ is the distance to the supplied center~\cite{li2003}. We preserve its earlier-point evaluation even when the current detection decision is negative. In the original archive, missing priors leave the current-only decision unchanged on 1,190 cases.
+
+\paragraph{Sampling and residuals.}
+The fit and witness sets use alternating octants and centers on a stride-two voxel grid within a 23--28 mm shell. Gaussian smoothing has standard deviations $(0.45,0.9,0.9)$ voxels in $z,y,x$ with truncation at two standard deviations and discrete radii $(1,2,2)$. For a map, let $a,b$ be paired HU and let $o$ be the median of $a-b$ on fit, clipped to $\pm98$ HU. We average
+\begin{align}
+g(a,b) &= 0.25+0.75\,\mathrm{clip}_{[0,1]}\left(\frac{\max(a,b)+860}{490}\right),\\
+\ell(a,b) &= g(a,b)\min\left(\lvert a-b-o\rvert,420\right)
+\end{align}
+over the respective sector samples. The witness uses the offset from fit. Shifts are ordered by fit cost and then displacement norm. The frozen original fit and witness limits are 76.958 and 99.541 HU. The 279 fit controls give shared-mask limits of 73.124 and 103.872 HU at the best narrow shift, applied identically to the two widths. The broad relaxed configuration uses the wider common-mask fit bound plus 20 HU and slack 40 HU, with the witness cutoff removed.
+
+For the original lattice, the nearest raw prior voxels accessed by smoothing over all shifts are 13.31 mm from the crop center. On the shared support the corresponding distances are 15.13 mm for the narrow lattice and 12.00 mm for the wide lattice. Linear interpolation for the affine evaluation uses corners inside the same rectangular raw-voxel bound, because the componentwise displacement extrema are integer grid steps. With an additional conservative voxel per axis the wide bound is 10.50 mm. The exact crop-grid margin to the prior image boundary is at least 0.70 mm along the shortest physical axis. There are no changes to crop size, native field of view or HU inputs when changing the width. The native-grid corner audit in Sec.~\ref{sec:timing} includes the earlier scan resampling.
+
+\paragraph{Anchor affine ensemble.}
+The anchor pool has 216 centers in the shared fit sectors. A center's sparse $3^3$ patch has offsets $(-1,0,1)$ voxels axially and $(-2,0,2)$ in each in-plane direction. The actual minimum prior crop-grid radius including this patch and smoothing is 13.50 mm. Within each fit octant we keep up to six anchors in descending patch standard deviation, with a floor of 8 HU and 4.2 mm separation. Each fixed anchor evaluates normalized cross-correlation at all wide translations. It contributes its best three modes separated by 2.1 mm, weighted by clipped texture divided by 75 HU (floor 0.1, ceiling 1) times $[(1+\rho)/2]^6$ with correlation $\rho$.
+
+A 2.2 mm isotropic Gaussian smooths the pooled votes on the wide lattice. The first 14 modes after greedy 2.1 mm separation seed a local affine displacement. For an anchor position $x_i$, the design row is $[1,(x_i-c)/25]$ in physical units with crop center $c$. Starting from the seed translation, three soft assignment updates multiply each vote's weight by a 2.2 mm Gaussian in its residual to the current prediction, then solve weighted least squares. Diagonal ridge weights $(0.4,2.5,2.5,2.5)$ shrink the offset and gradient toward the seed and zero gradient. We scale each output component to stay within the wide bounds on the fit and witness centers and the query. Across the retrospective maps, the median anchor count is 24 and the median number of fitted hypotheses is 14 before point diversification. When candidates converge on nearly the same mapped location, diversification retains one. The screened set applies the shared absolute fit, slack, and witness limits. The ungated set retains the same ordered, diversified centers without those cutoffs. Witness and fit costs still contribute to the fixed selection score. Removing these gates in screening raises reach from 179 to 193 and hits from 178 to 191. The ungated set averages 1.6 distinct centers, with 116 of 118 misses unreachable.
+
+\paragraph{Order-dependent reach.}
+Distance to the continuous box is the norm of the excess beyond its three shift bounds. The original stage audit gives 274, 274, 251, 241, 229, 200, and 198 reachable tracks for the continuous box, lattice, absolute fit, slack, diversification, cap, and witness. Replacing the fixed query by the current mark while holding geometry costs fixed gives 222 final reachable tracks. Of the 111 originally unreachable tracks, 32 have current-query errors above 3 mm. The witness-first alternative achieves 199 reachable and 185 selected hits, one more of each than the original set. These counts describe the implemented stage order, and current-query displacement can affect which step removes reach. The wide lattice reaches 286, 290, and 292 tracks at 2, 3, and 4 mm before screening.
+
+In the extended sweeps, all means the complete fit-ordered list after the specified gates and 2.1 mm diversification. The ungated and raw references keep the fit and witness residuals in the frozen direct score. All methods use the same current and earlier crops. The raw reference uses one descriptor computation over all centers and the same candidate score as the shorter lists. Greedy diversification can recover better spatial support at a fixed cap, while the dense reference shows the cost of pruning at full candidate count. The same-region comparisons in Tabs.~\ref{tab:point-luna} and \ref{tab:point-external} record actual candidate counts after the witness step. Query bands are $[0,1.5]$, $(1.5,3]$ and $(3,\infty)$ mm. Replacing the frozen query by the known current mark is a separate diagnostic. Its crop, residual costs and spline objectives remain fixed.
+
+\section{Appearance supervision and evaluation}
+\paragraph{Fixed descriptors.}
+The previous patch rule ranks the positive part of earlier center-to-shell contrast multiplied by $0.5+0.5\,\mathrm{clip}_{[0,1]}(\rho)$, where $\rho$ is zero-mean patch correlation. Contrast subtracts a 3.1--4.0 mm uniform shell mean from a Gaussian center mean of width 1.35 mm. The direct model includes prior contrast, compactness, tubular and planar responses, isotropy, correlation, and earlier-to-current contrast and compactness ratios. The ratios use current floors of 30 and 8 HU and are clipped to $[0,2.5]$. The prior-only feature model uses the first five features. Weighted standardization and $L_2$ logistic regression with $C=1$ fit both. The earlier patch descriptors require at least 4 mm of support in the crop. Convolution kernels for curvature extend beyond that patch, with nearest-value padding at crop edges. The multi-scale Hessian scales are 1.4, 2.1, 3.0 and 4.2 mm.
+
+\paragraph{Matched supervision.}
+The four new arms use 101 tracks from 76 patients with both valid shell and mixed proposal supervision. There are 707 shell positives and 788 shell negatives. Proposal training uses 480 positives and 2,222 negatives. The 2.5--3.5 mm exclusion band removes 451 points on these tracks. There are 2,123 training positive--negative pairs within 4.5 mm of one another. Shell examples use the earlier reference, six axial jitters, and decoys drawn on 26 rays with up to three high-response points per contrast or curvature criterion. Proposal training uses only centers from the original and wide relaxed sets. Each training epoch draws eight examples per class per track from shuffled class queues, cycling and reshuffling after a complete pass. This holds the number of optimizer updates and the class and track mass constant across arms. Labels represent distances to the supplied mark.
+
+\paragraph{Architecture and fits.}
+We trilinearly sample isotropic 13-voxel cubes and clip $(\mathrm{HU}+300)/700$ to $[-1,1]$. Current and earlier patches share three 3D convolution blocks with widths 20, 40 and 60 and strides 1, 2 and 2. Each uses four-group normalization and SiLU. Global max and $2^3$ average pooling feed a 48-dimensional embedding. The paired head concatenates both embeddings, their absolute difference and their product, then uses 48 hidden units with dropout 0.30. The prior-only head keeps the same shape and zeros the current embedding and interactions. AdamW uses batch size 80, initial learning rate $0.0015$, weight decay $0.015$, and a cosine schedule down to 15\% over 40 epochs. Five patient-disjoint folds share training seeds 20261109--20261113 and test the same held-out candidates. Final refits use seed 20261209. The model has 122,557 parameters. There is no augmentation, pretraining or added ranking calibration. Sixteen shell training patches reach the crop padding. None of the inference patches from the original, wide or affine sets reach it on the retrospective tracks.
+
+The original frozen Siamese was selected at epoch 12 on the same architecture after a four-setting and three-epoch development grid on the wider set of 143 shell-eligible tracks. The original freeze includes 1,001 positive and 1,103 decoy patches, with monotone logit calibration. The test uses the archived ranking on the original set and the same weights on the new sets. Its exact-mark shell probe, which supplies the earlier mark directly, gives strict wins on 275 of 307 supported tracks. Previous patch, prior-only features and direct features give 246, 272 and 273. That diagnostic is separate from the mixed-set evaluation. In the mixed-set probe, close-pair win rate averages within each track and ties count half.
+
+\paragraph{Highest-scoring distractor.}
+On identical wide relaxed candidates, proposal training flips 4 tracks from miss to hit and 10 from hit to miss relative to shell training. Seven of the ten losses retain the same highest-scoring distractor, and eight retain the same highest-scoring positive. In one loss, the proportion of close positive--negative pairs ranked correctly actually increases. The better average close-pair ranking can coexist with a reversal of the margin against the leading distractor. This is a spatial ranking analysis of the archived final fit. Fold validation measures development variation, and the final matched models use one training seed.
+
+\paragraph{Released SAM model.}
+The public authors' implementation and original NIH Lymph Node checkpoint~\cite{yan2022sam} use 2 mm resampling and the mean of coarse and fine cosine similarity. We use the weights with a strict tensor load and the released forward and field routines. A compatibility import shim for the legacy detection framework fails if any compiled detector operation is called. In a six-case development smoke test, the common-crop preprocessing matches the released file pipeline numerically and the checked point equals its released argmax. The transformed query is supplied in the embedding's physical coordinate system. The test field is interpolated to the shared crop for evaluating the maximum and the shared centers.
+
+The standalone list orders the same field's voxel centers by descending similarity, with first-index ties and 2.1 mm separation. Its first point remains selected as the prefix grows. Its oracle reports coverage only. For the fit-ordered crossings, the selector is SAM and candidate order comes from the frozen outer residuals. That crossing can increase or decrease selected hits. We treat the fixed-crop result and the native-context diagnostic as separate protocols. Deep Lesion Tracker's public repository supplies annotations and evaluation but lacks an inference checkpoint. The Transformer Lesion Tracker evaluation references absent weights and registration-derived box and mask inputs~\cite{cai2021,tang2022tlt}. The diffusion-guided tracker publishes a two-stage checkpoint, and its refinement demo permits a simulated target-derived initializer in the absence of a coarse map~\cite{zhuang2026diffusion}. The point-only SAM release provides the interface and source provenance for the predeclared common-input comparison.
+
+\input{sam_scope}
+
+\section{Point maps, timing and physical audit}
+\label{sec:timing}
+All splines use SimpleITK~\cite{lowekamp2013} with linear interpolation, mean squares on smoothed normalized HU and an exhaustive translation and HU offset as initialization. The inherited outer masked $2\times2\times3$ spline fits the original fit sector with coefficient bounds $\pm4.5$ mm and 36 iterations / 90 evaluations. Central variants fit stride-two samples inside a 22 mm sphere intersected with the interior safe for coefficient bounds $\pm6$ mm, smoothing and interpolation. The fine mesh is $3\times3\times4$ and the coarse mesh $2\times2\times3$. Both use at most 60 iterations / 140 evaluations. The early-stopped fine variant uses 10 / 24. We require complete metric support and a finite in-crop point. The archived masked and full maps are reused for accuracy and verified on rerun workloads. In development, the masked, early, coarse and full maps hit 85, 96, 97 and 103 of 145 tracks. The corresponding retrospective counts are 161, 196, 206 and 211.
+
+\input{timing_details}
+
+The matched replay compares the routes on the same 32 prepared screening queries. It includes search, feature computation and optimization as appropriate and verifies that every route reproduces the saved point. A single pinned CPU runs each route, and SAM's released network uses an RTX A1000 with a synchronized output. The native replay uses the first four single-query and first four two-query pairs in the archived order. This measures loading and the shared affine once per scan pair and each real query separately. Four-query times are estimates using those same stages. Tab.~\ref{tab:timing-v6} separates boundaries and tails.
+
+\input{decision_expanded}
+
+\section{Status protocols}
+The archived fit gate uses a single local translation and a 2.1 mm prior envelope around the fixed query. It scores positive HU excess over a normal-change margin and weights it with a frozen encoder feature score. A fit reliability of zero precludes a call. The inherited threshold and a two-threshold recalibration are separate comparators.
+
+New routes reuse the same 87 paired absent/present backgrounds with five patient folds for the direct feature model. We cross incident-recall targets of 45, 55, 65, 75 and 85\% with coverage targets of 81, 90 and 98\%. Calibration enumerates adjacent distinct active-score midpoints and extremes for the two thresholds. A feasible pair is within three incident-recall points and five coverage points of the target and has at least 80\% overall coverage. The rule minimizes false-new, then recall deviation, then maximizes prior-visible coverage, then minimizes coverage deviation. When the target is infeasible, the archived fallback minimizes the larger deviation, then their sum, then false-new and prior-visible coverage deficit. Higher coverage targets retain the floor when feasible. The exhaustive best geometry supplies a ranking score when the retained set is empty. Such tracks abstain.
+
+We apply every frozen rule to the held-out controls. For descriptive matched comparisons, achieved recall must lie within three points and achieved overall and both class coverages within five points on the absent and standard insertion pair. We retain all matching grid pairs, including equivalent threshold outcomes from different targets. Each outcome uses its full class denominator. Off-target and shear coverage can differ from standard-control coverage and are reported separately. Curves connect discrete rules as a visual guide. The matched range in Tab.~\ref{tab:status-matched-v6} uses measured rules only.
+
+The shear displaces the same patient's real earlier CT by $\pm[4+2\sin(2\pi z/36+\phi)]$ mm along one in-plane axis, with fixed patient-seeded sign, phase and axis and exact forward transport of the earlier mark. For insertions, each background preserves the current opacity across all conditions. Radii and contrast are drawn from $\{2.5,3.2,4.0\}$ mm and $\{150,250,350\}$ HU. Displacement moves the earlier opacity by 3 mm. The off-target insertion is 4.9 mm away. Absence in these controls is defined for the inserted target by construction. Existing background structures can still supply earlier evidence. Small uses 70\% radius, faint uses 50\% contrast, and combined uses both reductions with displacement. The geometry evaluates the insertion-free backgrounds. We checked that the insertion recipes change zero raw resampled voxels in the original, wide residual, or anchor-patch support unions. Reported counts use full class denominators. The common-resolved analyses condition on both routes returning a status call. At the primary target, 36 of 63 false prior-visible calls for the wide relaxed route have a selected point within 3 mm of the inserted distractor. On the original 28-cap route, this occurs for 60 of 77. These spatial coincidences in a known insertion control quantify where the points land.
+
+\input{status_expanded}
+
+\section{Reviewed and independent evidence}
+The archived TCIA data~\cite{gong2025} have 152 reviewed marks before exclusions, with 47 excluded for overlap with the LUNA25 source and one excluded for physical geometry. There are 104 remaining marks from 80 patients. Of these, 91 are incident and 13 prior-visible. The five archived patient folds fit thresholds on the other patients' clean scans and apply them unchanged after shear. In this exploratory retrospective analysis, Original 7 and the first-shift patch comparator each give two false-new calls, with 57 versus 58 incident detections and 85 versus 87 resolved cases. The clean false-new interval for direct/set versus patch/first is $-40.0$ to $+37.5$ points. With 13 prior-visible marks a single case moves the rate by 7.7 points. The reserved reader analysis requires at least 80\% coverage, incident recall and coverage within five points of its comparator, prior-visible coverage no more than ten points lower, and a false-new reduction of at least ten points with its paired interval below zero.
+
+CREATIS/POPI supplies independent respiratory landmark geometry~\cite{vandemeulebroucke2011}. The archived verified-set oracle reaches 501 of 620 landmarks versus 498 for the masked spline (six patients, paired 95\% CI on the difference $-2.7$ to $+3.4$ points). The earlier-point lesion endpoint requires independently linked lesions.
+
+After exclusions for checkpoint training, development, earlier inspection or scoring, and the reader reserve, 80 LUNA25 source patients remain. None have a released nodule key repeated across two distinct dated series. Public CSTL scans have plausible CT geometry but the released annotation table lacks a verified cross-visit lesion map~\cite{jian2024}. An NLST release has 308 participants with multiple visits outside audited rosters, but scan-specific nodule IDs and unverified coordinate conventions~\cite{farinadata}. DeepLesion's tracking benchmark has associated axial RECIST bookmarks~\cite{cai2021}. In its test metadata the median subvolume spans 60 mm axially and the largest spans 215 mm. Only 12 unordered subvolume pairs have a preliminary 50 mm margin around both marks before affine alignment. The public release lacks evidence of full-chest support for the frozen scan affine. The Longitudinal-CT persistence endpoint uses the independent staging cohort described above.
+
+The independent blinded pilot has 24 unadjudicated cases and the distinct confirmation reserve has 104 patients, with a one-case unadjudicated preview. Pilot calibration requires all cases adjudicated and at least six valid labels per known class, followed by unchanged confirmation thresholds and indeterminate labels retained in the flow. Counterpart locations must be independently marked to measure clinical false associations.
+
+\section{Additional correspondence diagnostics}
+\input{transfer_expanded}
+\input{selection_expanded}
+
+\clearpage
+\onecolumn
+\section{Additional quantitative results}
+
+\begin{figure}[!ht]
+\centering
+\includegraphics[width=.96\textwidth]{figures/paired_effects.pdf}
+\caption{Paired candidate and scorer changes at 3 mm. Points show hit-rate changes in percentage points. Whiskers are paired patient-cluster 95\% intervals. The diversification comparison holds the 28-point count, lattice and scorer fixed. The two cap rows score the same strict lists. The width comparison uses matched support and a cap of 28.}
+\label{fig:paired-effects}
+\end{figure}
+
+\begin{table}[!ht]
+\centering\small
+\caption{Point correspondence at 3 mm. Misses are unreachable (U) or reachable but incorrectly selected (R). The full spline maps a single point. Standalone SAM searches the entire common crop.}
+\label{tab:point-methods}
+\input{tables/primary_methods}
+\end{table}
+
+\clearpage
+\begin{table}[!ht]
+\centering\small
+\caption{Independent Longitudinal-CT participant flow. The full denominator follows the allocation row.}
+\label{tab:external-flow}
+\input{tables/external_flow}
+\end{table}
+
+\begin{table}[!ht]
+\centering\small
+\setlength{\tabcolsep}{3pt}
+\caption{Changes on shared, gained, and lost reach at 3 mm. Shared hits gives first / second on the same tracks. Gain reach gives first-route hits / tracks among newly reachable, and lost reach gives second-route hits / tracks among no longer reachable. Both p90 gives matched available-only error tails in mm.}
+\label{tab:reach-transitions}
+\input{tables/reach_transitions}
+\end{table}
+
+\begin{table}[!ht]
+\centering\small
+\caption{Frozen current-query error bands, from at most 1.5 mm to 1.5--3 mm to above 3 mm. The top table is screening and the bottom is external. Entries are hits / reach at 3 mm. Query-unavailable tracks are included in the unstratified results.}
+\input{tables/query_luna}\par\medskip
+\input{tables/query_external}
+\end{table}
+
+\begin{table}[!ht]
+\centering\small
+\caption{Diagnostic rerun on the retrospective cohort with the annotated current point in the same fixed crop. Entries are hits / reach at 3 mm.}
+\input{tables/current_mark_diagnostic}
+\end{table}
+
+\begin{table}[!ht]
+\centering\small
+\caption{External sensitivity using native baseline millimeters, with all 440 tracks in the denominator.}
+\input{tables/external_native_mm}
+\end{table}
+
+\clearpage
+\begin{table}[!ht]
+\centering\small
+\setlength{\tabcolsep}{4pt}
+\caption{Retrospective screening. Reach and hits use all 309 tracks at 2/3/4 mm. Off is the number of returned points outside 3 mm. Conditional hits and tails are reported separately.}
+\label{tab:point-luna}
+\input{tables/luna_direct}
+\end{table}
+
+\clearpage
+\begin{table}[!ht]
+\centering\small
+\setlength{\tabcolsep}{4pt}
+\caption{External staging CT. Reach and hits use all 440 allocated tracks at 2/3/4 mm. Off is the number of returned points outside 3 mm.}
+\label{tab:point-external}
+\input{tables/external_direct}
+\end{table}
+
+\clearpage
+\begin{table}[!ht]
+\centering\small
+\setlength{\tabcolsep}{3pt}
+\caption{SAM point and candidate crossings in retrospective screening CT. The standalone result uses the whole common crop. SAM field prefixes retain its selected point while adding alternative centers.}
+\input{tables/luna_sam}
+\end{table}
+
+\clearpage
+\begin{table}[!ht]
+\centering\small
+\setlength{\tabcolsep}{3pt}
+\caption{SAM point and candidate crossings in external staging CT. Unavailable crops count as misses throughout.}
+\input{tables/external_sam}
+\end{table}
+
+\begin{table}[!ht]
+\centering\small
+\caption{Wide relaxed budget sweep with the frozen Siamese on identical centers. The external sweep is a secondary transfer diagnostic.}
+\input{tables/siamese_frontier}
+\end{table}
+
+\clearpage
+\begin{table}[!ht]
+\centering\small
+\setlength{\tabcolsep}{4pt}
+\caption{Screening timing. Each entry gives median / p90 seconds. Prepared-crop results use 32 queries. The native replay uses eight pairs, four with two measured queries. The four-query column estimates amortization.}
+\label{tab:timing-v6}
+\input{tables/timing_v6}
+\end{table}
+
+\begin{table}[!ht]
+\centering\small
+\caption{External prepared-crop timing on 24 supported patient pairs, one query per pair. Each entry gives median / p90 seconds.}
+\input{tables/timing_external}
+\end{table}
+
+\begin{table}[!ht]
+\centering\small
+\setlength{\tabcolsep}{4pt}
+\caption{Fixed-budget timing after the accuracy readout. Hit counts use the full staging and screening cohorts. Times are median / p90 seconds of per-query medians from three randomized repetitions on the matched 24 staging and 32 screening workloads. Propose includes residuals, ordering and candidate construction. Score includes descriptor computation and point selection. All replayed counts and selected points equal their saved values.}
+\label{tab:fixed-budget-timing}
+\input{tables/fixed_budget_timing}
+\end{table}
+
+\begin{table}[!ht]
+\centering\small
+\caption{Out-of-fold development with 145 frozen queries. Geometry uses the direct selector.}
+\label{tab:devsearch}
+\input{tables/search_dev}
+\end{table}
+
+\begin{table}[!ht]
+\centering\small
+\caption{Native image sampling audit over the timing workloads. Radii are relative to the crop center, mapped back to the current physical frame. Counts refer to queries whose possible raw support reaches the reserved radius or exceeds the native sampling domain.}
+\label{tab:native}
+\input{tables/native}
+\end{table}
+
+\begin{table}[!ht]
+\centering\small
+\setlength{\tabcolsep}{4pt}
+\caption{Paired training contrasts on identical candidate centers. Entries are percentage-point changes and 95\% paired intervals. Close ranking conditions on tracks with at least one close positive--negative pair.}
+\label{tab:learnpairs}
+\input{tables/learning_pairs}
+\end{table}
+
+\clearpage
+\begin{figure}[!ht]
+\centering
+\includegraphics[width=.96\textwidth]{figures/status_achieved.pdf}
+\caption{Held-out status tradeoffs at three development coverage targets. The horizontal coordinate is achieved recall on absent controls, not its calibration target. Marker area increases with achieved coverage on absent and standard priors. Lines connect evaluated rules. The matched comparisons additionally require similar class coverage.}
+\label{fig:status-achieved}
+\end{figure}
+
+\begin{table}[!ht]
+\centering\small
+\caption{Joint status metrics at the 65\% recall and 81\% coverage target. I and P denote the 181 absent and 181 standard-prior controls. Metrics are percentages of the full applicable denominators, except abstention counts.}
+\input{tables/status_joint_v6}
+\end{table}
+
+\clearpage
+\begin{table}[!ht]
+\centering\small
+\caption{New / prior-visible / unresolved on the held-out controls at the 65\% recall and 81\% coverage target. Clean and shear each use 309 tracks. Absent, standard and off-target each use 181.}
+\input{tables/status_primary_v6}
+\end{table}
+
+\begin{table}[!ht]
+\centering\small
+\caption{Status of weak or displaced prior insertions at the same primary target. Entries are new / prior-visible / unresolved on 181 backgrounds per condition.}
+\input{tables/status_weak_v6}
+\end{table}
+
+\begin{table}[!ht]
+\centering\small
+\caption{Ranges of paired point estimates across the achieved recall and coverage matches, in percentage points. Each entry compares the first route to the second. Match counts can include identical decisions at distinct calibration targets. The full grid and paired intervals accompany the figures in aggregate form.}
+\label{tab:status-matched-v6}
+\input{tables/status_matched_v6}
+\end{table}
+
+\begin{table}[!ht]
+\centering\small
+\caption{Archived exploratory TCIA status. Inc. is incident-new out of 91. FN and P res. use the 13 prior-visible marks. Res. uses all 104. Sheared scans use the same thresholds fitted to the other folds' clean cases.}
+\label{tab:tcia}
+\input{tables/clinical_main}
+\end{table}
+
+\clearpage
+{\small
+\bibliographystyle{ieeenat_fullname}
+\bibliography{refs}
+}
+\end{document}
