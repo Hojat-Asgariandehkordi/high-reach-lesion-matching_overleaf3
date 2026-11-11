@@ -60,6 +60,23 @@ def truth(ax, tau=3.0):
     ax.plot(*Y_REF, marker="*", ms=8, color=S.SPLINE, mec="white", mew=0.5, zorder=6)
 
 
+BR = os.path.join(OUT, "biorender")
+
+
+def biorender(name, crop):
+    """Load BioRender art (high-res PNG export preferred, JPEG preview as fallback).
+    crop = (left, top, right, bottom) as fractions of the image size."""
+    from PIL import Image
+    for ext in ("png", "jpg"):
+        f = os.path.join(BR, f"{name}.{ext}")
+        if os.path.exists(f):
+            im = Image.open(f).convert("RGB")
+            w, h = im.size
+            l, t, r, b = crop
+            return np.asarray(im.crop((int(l * w), int(t * h), int(r * w), int(b * h))))
+    return None
+
+
 def chest(ax, cx, lesion, title, query=None, window=None):
     from matplotlib.patches import Ellipse, Rectangle
     ax.add_patch(Ellipse((cx, 0), 8.6, 6.2, color="#c9c7c0", lw=0))
@@ -79,14 +96,7 @@ def chest(ax, cx, lesion, title, query=None, window=None):
                                lw=0.9, ls=(0, (2, 1.5)), zorder=5))
 
 
-def teaser():
-    K = 12
-    fitonly = order[:K]
-    div = diverse(order, K=K)
-    fig = plt.figure(figsize=(S.PAGE_W, 2.0))
-    gs = fig.add_gridspec(1, 3, width_ratios=[1.9, 1, 1], wspace=0.14)
-    # (a) the problem
-    ax = fig.add_subplot(gs[0])
+def teaser_drawn_a(ax):
     ax.set_xlim(-4.5, 15.3); ax.set_ylim(-4.0, 4.1); ax.set_aspect("equal")
     ax.axis("off")
     chest(ax, 0, (-2.6, 1.0), "Current CT", query=(-2.6, 1.0))
@@ -97,6 +107,23 @@ def teaser():
     ax.text(5.4, 0.75, "same\nframe", ha="center", fontsize=5.8, color=S.INK2)
     ax.text(10.8, -3.6, "zoomed in (b, c)", ha="center", fontsize=6, color="#b39400")
     ax.set_title("(a) Find the same lesion earlier", loc="left")
+
+
+def teaser():
+    K = 12
+    fitonly = order[:K]
+    div = diverse(order, K=K)
+    fig = plt.figure(figsize=(S.PAGE_W, 2.0))
+    gs = fig.add_gridspec(1, 3, width_ratios=[2.35, 1, 1], wspace=0.08)
+    # (a) the problem
+    ax = fig.add_subplot(gs[0])
+    art = biorender("problem", (0, 0, 1, 0.835))
+    if art is not None:
+        ax.imshow(art, interpolation="lanczos")
+        ax.axis("off")
+        ax.set_title("(a) Find the same lesion earlier", loc="left")
+    else:
+        teaser_drawn_a(ax)
     # (b) and (c): the search window, zoomed
     for k, (idx, title) in enumerate([(fitonly, f"(b) Top {K} by fit"),
                                       (div, f"(c) Top {K}, diversified (ours)")]):
@@ -121,6 +148,23 @@ def teaser():
 
 
 def method():
+    art = biorender("pipeline", (0, 0.09, 1, 0.67))
+    if art is None:
+        return method_drawn()
+    h, w = art.shape[:2]
+    fig = plt.figure(figsize=(S.PAGE_W, S.PAGE_W * h / w + 0.32))
+    ax = fig.add_axes([0, 0.32 / (S.PAGE_W * h / w + 0.32), 1, 1 - 0.32 / (S.PAGE_W * h / w + 0.32)])
+    ax.imshow(art, interpolation="lanczos")
+    ax.axis("off")
+    labels = [(0.15, "1  Align, crop, fit/witness shell"), (0.42, "2  Rank shifts by fit $f_t$"),
+              (0.665, "3  Keep if $\\geq r$ from kept"), (0.895, "4  Scorer selects $\\hat{t}$")]
+    for x, t in labels:
+        fig.text(x, 0.02, t, ha="center", va="bottom", fontsize=7.2, fontweight="bold", color=S.INK)
+    fig.savefig(os.path.join(OUT, "method_overview.pdf"), dpi=600)
+    plt.close(fig)
+
+
+def method_drawn():
     fig, axes = plt.subplots(1, 4, figsize=(S.PAGE_W, 1.95))
     plt.subplots_adjust(wspace=0.32)
     # (1) shared frame: shell with alternating fit / witness octants

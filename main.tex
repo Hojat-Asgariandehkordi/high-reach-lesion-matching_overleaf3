@@ -16,10 +16,11 @@
 \includegraphics[width=\linewidth]{figures/teaser.pdf}
 \captionsetup{hypcap=false}
 \captionof{figure}{\textbf{The problem and our idea.}
-(a)~A lesion is marked in the current CT (query $p$). After a global chest alignment, the same lesion lies somewhere inside a small search window (dashed) in the earlier CT, but several nearby spots can match the surrounding anatomy.
+(a)~A lesion is marked in the current CT (query $p$; illustration). After a global chest alignment, the same lesion lies somewhere inside a small search window (dashed) in the earlier CT, but several nearby spots can match the surrounding anatomy.
 (b)~Inside the window, each dot is a candidate location. Keeping the 12 candidates with the best anatomical fit places them all around one fit mode; here that mode is wrong, so no candidate lies within 3\,mm (dashed circle) of the true earlier lesion (star).
 (c)~Our diverse search walks through the same fit order but keeps a candidate only if it is at least a distance $r$ from every candidate kept so far (shaded disks). The same 12 candidates now also cover the correct location, and a lesion classifier can pick it.
-Panels (b,\,c) run the actual selection rule on a synthetic 2D fit landscape.}
+Panels (b,\,c) run the actual selection rule on a synthetic 2D fit landscape. Illustrations in (a) created in BioRender.}
+% TODO(group): replace with BioRender's official citation (includes the creator's name) for the camera-ready version only, to keep the review copy anonymous.
 \captionsetup{hypcap=true}
 \label{fig:teaser}
 \end{strip}
@@ -68,11 +69,12 @@ We apply minimum-distance selection to lesion correspondence hypotheses ordered 
 \centering
 \includegraphics[width=\textwidth]{figures/method_overview.pdf}
 \caption{\textbf{Pipeline.}
-(1)~After a chest affine, both scans share a grid around the query $p$; an outer shell of tissue, split into alternating octants, gives the fit and witness costs.
-(2)~Every candidate translation is ranked by its fit cost $f_t$ (darker is better).
-(3)~Walking down this order, a translation is kept only if its mapped point is at least $r$ from all kept points (shaded disks have radius $r/2$).
-(4)~A frozen lesion scorer with a soft fit penalty (Eq.~\ref{eq:direct}) selects one point; the star marks the reference, used only for evaluation.
-Panels 2--4 are a 2D illustration; the method uses a 3D lattice of 4,851 translations.}
+(1)~A chest alignment brings the current and earlier CT into a common frame, and a crop is taken around the query; an outer shell around the lesion, split into alternating octants, gives the fit and witness costs.
+(2)~Every candidate translation on the lattice is ranked by its fit cost $f_t$ (darker is better).
+(3)~Walking down this order, a translation is kept only if its proposed position is at least $r$ from every kept position (shaded disks).
+(4)~A frozen lesion scorer with a soft fit penalty (Eq.~\ref{eq:direct}) selects one candidate; the star marks the reference, used only for evaluation.
+Schematic; the method uses a 3D lattice of 4,851 translations. Created in BioRender.}
+% TODO(group): official BioRender citation for camera-ready only.
 \label{fig:construction}
 \end{figure*}
 
