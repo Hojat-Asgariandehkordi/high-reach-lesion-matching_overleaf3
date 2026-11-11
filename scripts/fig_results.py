@@ -189,10 +189,6 @@ def fig_speed():
             ax.annotate(lab.replace("Exhaustive", "exhaustive").replace("Fit-only 28", "fit-only 28"),
                         (r[1], 100 * r[2] / N[c]), textcoords="offset points", xytext=off,
                         ha="center", fontsize=5.8, color=S.INK)
-        st, sh = d["spline"]
-        ax.axhline(100 * sh / N[c], color=S.SPLINE, lw=1.0, ls=(0, (1, 1.5)), zorder=1)
-        ax.text(0.295, 100 * sh / N[c] + 1.2, f"B-spline ({st:.1f} s)", ha="right", va="bottom",
-                fontsize=5.8, color=S.SPLINE)
         ax.set_xlim(0.07, 0.30)
         ax.set_xticks([0.1, 0.15, 0.2, 0.25, 0.3])
         ax.set_ylim(35, 92)

@@ -1,23 +1,23 @@
 \begin{table*}[!t]
 \centering
 \small
-\setlength{\tabcolsep}{3.4pt}
-\begin{tabular}{@{}llcccccccccc@{}}
+\setlength{\tabcolsep}{4.6pt}
+\begin{tabular}{@{}llcccccccc@{}}
 \toprule
-& & \multicolumn{5}{c}{Independent staging CT ($n{=}440$)} & \multicolumn{5}{c}{Retrospective screening CT ($n{=}309$)} \\
-\cmidrule(lr){3-7}\cmidrule(l){8-12}
-Method & Candidates & Hit@2 & Hit@3 & Hit@4 & Reach@3 & Time (s) & Hit@2 & Hit@3 & Hit@4 & Reach@3 & Time (s) \\
+& & \multicolumn{4}{c}{Independent staging CT ($n{=}440$)} & \multicolumn{4}{c}{Retrospective screening CT ($n{=}309$)} \\
+\cmidrule(lr){3-6}\cmidrule(l){7-10}
+Method & Candidates & Hit@2 & Hit@3 & Hit@4 & Reach@3 & Hit@2 & Hit@3 & Hit@4 & Reach@3 \\
 \midrule
-B-spline, lesion-incl.~\cite{rueckert1999} & continuous & 199 & 243 & 267 & 243 & 3.617 & 170 & 211 & 231 & 211 & 3.866 \\
-SAM standalone~\cite{yan2022sam} & full crop & 36 & 99 & 184 & 396 & -- & 27 & 80 & 147 & 308 & --$^\ddagger$ \\
-Siamese scorer, Relaxed 28 & 22 / 25$^\ast$ & 134 & 203 & 253 & 264 & 0.106 & 155 & 210 & 232 & 235 & 0.082 \\
+B-spline, lesion-incl.~\cite{rueckert1999} & continuous & 199 & 243 & 267 & 243 & 170 & 211 & 231 & 211 \\
+SAM standalone~\cite{yan2022sam} & full crop & 36 & 99 & 184 & 396 & 27 & 80 & 147 & 308 \\
+Siamese scorer, Relaxed 28 & 22 / 25$^\ast$ & 134 & 203 & 253 & 264 & 155 & 210 & 232 & 235 \\
 \midrule
-Fit-only 28 & 28 & 157 & 205 & 237 & 221 & 0.098$^\dagger$ & 141 & 175 & 196 & 189 & 0.101$^\dagger$ \\
-Diverse 28 & 28 & 197 & 245 & 275 & 274 & 0.120$^\dagger$ & 164 & 212 & 230 & 242 & 0.120$^\dagger$ \\
-\textbf{\ours (ours)} & 365 / 360 & 259 & 289 & 306 & 348 & 0.194 & \textbf{207} & \textbf{244} & \textbf{255} & 289 & 0.185 \\
-Exhaustive & 4,851 & \textbf{277} & \textbf{297} & \textbf{311} & 351 & 0.265$^\dagger$ & 205 & 242 & 253 & 290 & 0.256 \\
+Fit-only 28 & 28 & 157 & 205 & 237 & 221 & 141 & 175 & 196 & 189 \\
+Diverse 28 & 28 & 197 & 245 & 275 & 274 & 164 & 212 & 230 & 242 \\
+\textbf{\ours (ours)} & 365 / 360 & 259 & 289 & 306 & 348 & \textbf{207} & \textbf{244} & \textbf{255} & 289 \\
+Exhaustive & 4,851 & \textbf{277} & \textbf{297} & \textbf{311} & 351 & 205 & 242 & 253 & 290 \\
 \bottomrule
 \end{tabular}
-\caption{Correspondence on both cohorts. Hit@$\tau$ counts tracks whose selected point is within $\tau$\,mm of the earlier reference; Reach@3 counts tracks with any candidate within 3\,mm. All denominators include failures. Time is the median prepared-crop local time per query on one CPU thread. $^\dagger$From the fixed-budget replay (supplement, Tab.~S16). $^\ddagger$SAM runs on a GPU (0.033\,s forward pass on screening), so its time is not comparable with the single-thread CPU times. $^\ast$Mean number of candidates left after the gates (staging / screening). Paired differences with 95\% patient-cluster intervals: \ours vs.\ spline at 2/3/4\,mm $+13.6$/$+10.5$/$+8.9$ (staging) and $+12.0$/$+10.7$/$+7.8$ points (screening).}
+\caption{Correspondence on both cohorts. Hit@$\tau$ counts lesions whose selected point is within $\tau$\,mm of the earlier reference; Reach@3 counts lesions with any candidate within 3\,mm. All denominators include failures. Paired differences with 95\% intervals are in Fig.~\ref{fig:forest}; timing is in Tab.~\ref{tab:timing}. $^\ast$Mean number of candidates left after the gates (staging / screening).}
 \label{tab:main}
 \end{table*}

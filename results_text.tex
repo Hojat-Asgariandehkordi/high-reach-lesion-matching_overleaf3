@@ -37,7 +37,7 @@ Because anatomical fit still enters Eq.~\ref{eq:direct}, fit works best as a sof
 Run to completion, \ours reaches 348 of the 351 lesions reachable on the full lattice in staging and 289 of 290 in screening, while scoring about 365 of 4,851 positions.
 Its hits are within 1.8 points of exhaustive scoring on staging (289 versus 297, interval [0.2, 3.5]) and slightly above it on screening (244 versus 242).
 The covering bound (Eq.~\ref{eq:coverage}) predicts where the remaining gap lies: one kept position represents a cluster of nearby translations, which matters most at tight tolerances, and indeed exhaustive scoring adds 18 staging hits at 2\,mm but only five at 4\,mm.
-The two lists therefore define a clear trade-off: exhaustive scoring is the most accurate on staging, while the diversified list reaches the same lesions with 7.5\% of the candidate evaluations and, at caps of 28 to 112, offers intermediate operating points (Sec.~\ref{sec:latency}).
+The two lists therefore define a clear trade-off: exhaustive scoring is the most accurate on staging, while the diversified list reaches the same lesions with 7.5\% of the candidate evaluations and, at caps of 28 to 112, offers intermediate operating points (Sec.~\ref{sec:latency}). Budgets bind whenever scoring dominates the cost: in the fixed-budget replay, scoring takes 0.201 of the 0.265\,s of exhaustive search, and any heavier per-candidate scorer, such as a learned network, makes the number of scored candidates the main lever on cost.
 
 \subsection{Comparison with registration and anatomical embeddings}
 \label{sec:transfer}
@@ -49,7 +49,7 @@ On the independent staging cohort, \ours places 289 of 440 earlier points within
 On the screening cohort it hits 244 of 309 (79.0\%) versus 211 (68.3\%), with 46 gains and 13 losses, $+10.7$ points [5.8, 15.4].
 Both comparisons meet the criteria fixed before inference, and Fig.~\ref{fig:forest} shows that the advantage holds at every tolerance and, on staging, when every patient is weighted equally ($+9.6$ [3.7, 15.9]) or distances are measured in native earlier-scan millimeters ($+11.4$ [4.1, 18.9]).
 The median error of returned points falls from 2.41 to 1.68\,mm on staging and from 1.70 to 1.46\,mm on screening.
-The spline starts from the best translation on the original lattice, so it shares our anatomical fit and adds continuous local refinement; its deficit against \ours measures the value of wider, diversified coverage followed by lesion-aware selection.
+Three design differences produce this gap, and the paper's own controls separate them. First, the spline starts from the best translation on the smaller original lattice ($\pm4.2$\,mm) and refines it continuously, whereas \ours searches the wide lattice ($\pm7$\,mm); exhaustive scoring of the same wide lattice beats the spline by even more (297 hits), so the extent of the search matters. Second, our scorer selects the most lesion-like candidate, whereas the spline maps the query point itself; with the exact annotated mark as the query, the spline rises from 211 to 239 screening hits while \ours stays at 243 (Sec.~\ref{sec:query}). Third, diversification is what makes a wide, lesion-aware search affordable: it reaches 348 of the 351 lesions that exhaustive scoring reaches with 7.5\% of the candidates. The gain over registration is therefore a property of the whole fit-ordered, lesion-aware search, of which diversification is the efficient allocation step.
 
 Table~\ref{tab:missmodes} shows why the methods differ.
 The spline returns one point, so all of its misses are unreachable by construction.
@@ -97,13 +97,16 @@ Coverage and selection are thus complementary: a wider candidate list is valuabl
 
 \subsection{Compute}
 \label{sec:latency}
-On prepared crops, the median local time is 0.194\,s for \ours versus 3.617\,s for the spline on staging (18.6$\times$) and 0.185 versus 3.866\,s on screening (20.9$\times$); p90 times are 0.458 versus 4.707\,s and 0.190 versus 4.693\,s.
-Figure~\ref{fig:speed} places every budget on one accuracy--latency plot: Diverse 28 costs 22\,ms more than Fit-only 28 for 40 additional staging hits, a cap of 112 gives 278 staging hits at 0.142\,s, and exhaustive scoring adds eight staging hits for about 75\,ms more.
+In the matched comparison on prepared crops, the median local time is 0.194\,s for \ours versus 3.617\,s for the spline on staging (18.6$\times$) and 0.185 versus 3.866\,s on screening (20.9$\times$); p90 times are 0.458 versus 4.707\,s and 0.190 versus 4.693\,s.
+
+\input{tables/local_timing}
+
+Table~\ref{tab:timing} reports both timing protocols side by side, and Fig.~\ref{fig:speed} plots the fixed-budget replay against accuracy. Within the replay, Diverse 28 costs 22\,ms more than Fit-only 28 for 40 additional staging hits, a cap of 112 gives 278 staging hits at 0.142\,s, and exhaustive scoring adds eight staging hits for 75\,ms more (1.4$\times$ the time of \ours). In the single-pass matched comparison, exhaustive scoring took 0.956\,s on staging (4.9$\times$) and 0.256\,s on screening (1.4$\times$), so its relative cost depends on the workload; scoring every position is consistently the slower option.
 End to end on native scans, the shared chest alignment dominates: one query per screening pair takes 29.36\,s for \ours versus 32.87\,s for the spline, and two queries sharing the alignment take 14.88 versus 19.38\,s per query, a relative saving that grows as more lesions share one alignment.
 
 \begin{figure}[!t]
 \centering
 \includegraphics[width=\linewidth]{figures/accuracy_latency.pdf}
-\caption{\textbf{Accuracy versus prepared-crop latency.} Diverse search at caps 28, 56, 112 and the complete list, the fit-only list and exhaustive scoring come from a three-repeat randomized replay on matched workloads of 24 staging and 32 screening queries; the spline point is from the matched prepared-crop comparison. Hit rates use the full cohorts.}
+\caption{\textbf{Accuracy versus local time} in the fixed-budget replay (three randomized repetitions on matched workloads of 24 staging and 32 screening queries). Diverse search at caps 28, 112 and the complete list, the fit-only list and exhaustive scoring; hit rates use the full cohorts. The B-spline (3.6--3.9\,s, Tab.~\ref{tab:timing}) lies far to the right and was timed in a separate protocol, so it is omitted.}
 \label{fig:speed}
 \end{figure}

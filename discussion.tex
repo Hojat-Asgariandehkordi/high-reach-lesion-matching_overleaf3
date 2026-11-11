@@ -17,5 +17,5 @@ A failed chest alignment can leave the lesion outside the local crop (28 staging
 \label{sec:conclusion}
 Matching a lung lesion across CT visits depends on which candidate locations a scorer is allowed to see.
 Keeping the anatomical fit order but requiring candidates to be at least 2.1\,mm apart turns a fixed budget into coverage, adding 9 to 12 points at 28 candidates, and the complete list reaches nearly every lesion that exhaustive scoring reaches at 7.5\% of the cost.
-The resulting matcher improves on lesion-inclusive B-spline registration by about 10 points at 3\,mm in two cohorts while running the local step about 19 times faster.
+Combined with lesion-aware selection, the resulting matcher improves on lesion-inclusive B-spline registration by about 10 points at 3\,mm in two cohorts, most of all when the query is imprecise, while running the local step about 19 times faster.
 Treating candidate allocation as a design choice in its own right, measured through reach and selection, is a simple and broadly applicable way to build stronger correspondence systems.

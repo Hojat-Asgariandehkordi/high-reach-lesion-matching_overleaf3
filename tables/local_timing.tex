@@ -1,0 +1,22 @@
+\begin{table}[!t]
+\centering
+\footnotesize
+\setlength{\tabcolsep}{3pt}
+\begin{tabular}{@{}lcccc@{}}
+\toprule
+& \multicolumn{2}{c}{Matched comparison} & \multicolumn{2}{c}{Fixed-budget replay} \\
+\cmidrule(lr){2-3}\cmidrule(l){4-5}
+Method & Staging & Screening & Staging & Screening \\
+\midrule
+B-spline & 3.617 & 3.866 & -- & -- \\
+Siamese, Relaxed 28 & 0.106 & 0.082 & -- & -- \\
+Fit-only 28 & -- & -- & 0.098 & 0.101 \\
+Diverse 28 & -- & -- & 0.120 & 0.120 \\
+Diverse 112 & -- & -- & 0.142 & 0.144 \\
+\textbf{\ours} & 0.194 & 0.185 & 0.190 & 0.190 \\
+Exhaustive & 0.956 & 0.256 & 0.265 & 0.265 \\
+\bottomrule
+\end{tabular}
+\caption{\textbf{Median local time per query} (s) on prepared crops, one CPU thread, matched workloads of 24 staging and 32 screening queries. The matched comparison is a single timing pass per method; the fixed-budget replay takes the median of three randomized repetitions. SAM runs on a GPU (0.033\,s per screening query) and is not comparable. Supplement, Tabs.~S14--S16.}
+\label{tab:timing}
+\end{table}

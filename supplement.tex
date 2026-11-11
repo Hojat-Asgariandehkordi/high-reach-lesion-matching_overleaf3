@@ -11,6 +11,27 @@
 \begin{document}
 \maketitle
 
+\paragraph{Names used in the main paper.}
+The supplement keeps the analysis names of the original study. The correspondence is:
+\begin{center}\footnotesize
+\setlength{\tabcolsep}{4pt}
+\begin{tabular}{ll}
+\toprule
+Main paper & Supplement \\
+\midrule
+Fit-only $K$ & Wide ungated, undiversified $K$ \\
+Diverse $K$ & Wide ungated $K$ \\
+Diverse search & Wide ungated, diversified all \\
+Exhaustive & Wide raw, all \\
+Gated $K$ & Wide strict $K$ \\
+Relaxed $K$ & Wide relaxed $K$ \\
+Original-lattice gated variants & Original 7, Original 28, Original 28 + fit \\
+B-spline & Full central spline \\
+\bottomrule
+\end{tabular}
+\end{center}
+Sections~\ref{sec:supp-status-scope} onward also report a lesion-status protocol (absent and standard-prior controls) from the same study. It evaluates whether the candidate routes can flag new or resolved lesions; it is not used in the main paper and is included for completeness.
+
 \section{Cohorts and analysis conventions}
 \begin{table}[t]
 \centering\small
@@ -98,6 +119,7 @@ The matched replay compares the routes on the same 32 prepared screening queries
 \input{decision_expanded}
 
 \section{Status protocols}
+\label{sec:supp-status-scope}
 The archived fit gate uses a single local translation and a 2.1 mm prior envelope around the fixed query. It scores positive HU excess over a normal-change margin and weights it with a frozen encoder feature score. A fit reliability of zero precludes a call. The inherited threshold and a two-threshold recalibration are separate comparators.
 
 New routes reuse the same 87 paired absent/present backgrounds with five patient folds for the direct feature model. We cross incident-recall targets of 45, 55, 65, 75 and 85\% with coverage targets of 81, 90 and 98\%. Calibration enumerates adjacent distinct active-score midpoints and extremes for the two thresholds. A feasible pair is within three incident-recall points and five coverage points of the target and has at least 80\% overall coverage. The rule minimizes false-new, then recall deviation, then maximizes prior-visible coverage, then minimizes coverage deviation. When the target is infeasible, the archived fallback minimizes the larger deviation, then their sum, then false-new and prior-visible coverage deficit. Higher coverage targets retain the floor when feasible. The exhaustive best geometry supplies a ranking score when the retained set is empty. Such tracks abstain.
