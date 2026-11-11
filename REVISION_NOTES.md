@@ -42,6 +42,15 @@ Both supplement figures were redrawn in the main paper's style by `python script
 
 **The status-figure numbers were recovered from the vector geometry of the original PDF** (about ±0.2 points; achieved recall matches `tables/status_joint_v6.tex` to 0.1). Replace `STATUS` in `scripts/supp_data.py` with the analysis output when convenient.
 
+
+## Method overview figure (Fig. 2, `figures/overview.pdf`)
+Built by `python scripts/fig_overview.py`. Panels A, B, D and E are text-free BioRender art; every label is typeset in Times by the script. Panel C is drawn in code with the actual selection rule, so both sides have exactly K = 12 (BioRender kept producing unequal counts).
+BioRender figures to export as PNG (300 dpi or higher) and save under `figures/biorender/` with these names:
+- `ov_A_align`: https://app.biorender.com/illustrations/9bc421c3875ebeda744c0eac
+- `ov_B_shell`: https://app.biorender.com/illustrations/dba92eab8c8dc7f9ca5cfccb
+- `ov_D_scorer`: https://app.biorender.com/illustrations/7a68f4638b2ec6676f84a0a7
+- `ov_E_reachhit`: https://app.biorender.com/illustrations/5cdbe4efa5349a52bc3b605c
+
 ## Open decisions for the group
 1. **Qualitative figure is a placeholder** (red TODO). Export patches as described in `scripts/qualitative.py`, then run `python scripts/qualitative.py cases.npz`.
 2. **Query-band CIs need confirming.** For the 1.5–3 mm and >3 mm bands, I read the intervals off the vector geometry of the draft's Fig. 3, because they were not printed anywhere. Please confirm them against the analysis output (`BAND` in `scripts/data.py`).

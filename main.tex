@@ -67,14 +67,14 @@ We apply minimum-distance selection to lesion correspondence hypotheses ordered 
 
 \begin{figure*}[!t]
 \centering
-\includegraphics[width=\textwidth]{figures/method_overview.pdf}
-\caption{\textbf{Pipeline.}
-(1)~A chest alignment brings the current and earlier CT into a common frame, and a crop is taken around the query; an outer shell around the lesion, split into alternating octants, gives the fit and witness costs.
-(2)~Every candidate translation on the lattice is ranked by its fit cost $f_t$ (darker is better).
-(3)~Walking down this order, a translation is kept only if its proposed position is at least $r$ from every kept position (shaded disks).
-(4)~A frozen lesion scorer with a soft fit penalty (Eq.~\ref{eq:direct}) selects one candidate; the star marks the reference, used only for evaluation.
-Schematic; the method uses a 3D lattice of 4,851 translations. Created in BioRender.}
-% TODO(group): official BioRender citation for camera-ready only.
+\includegraphics[width=\textwidth]{figures/overview.pdf}
+\caption{\textbf{Method overview.}
+(A)~A chest affine aligns the earlier CT to the current one; the lesion marked by the query $p$ lies near, but not exactly at, the mapped position.
+(B)~Translations are scored on an outer shell around the lesion: alternating octants give the fit cost $f_t$ and the held-out witness cost $w_t$, and the lesion core is excluded.
+(C)~With the same budget, the 12 best translations by fit crowd around one fit mode, whereas fit-ordered diverse search keeps the order but requires kept positions to be at least $r$ apart (shaded disks), so the list also reaches the true location (star, 3\,mm circle).
+(D)~A frozen lesion scorer combines lesion features with a soft fit penalty (Eq.~\ref{eq:direct}) and selects one candidate.
+(E)~Reach asks whether any candidate lies within tolerance; a hit requires the selected one to.
+Panels A, B, D and E are illustrations created in BioRender; panel C runs the actual selection rule on a synthetic 2D fit landscape.}
 \label{fig:construction}
 \end{figure*}
 
