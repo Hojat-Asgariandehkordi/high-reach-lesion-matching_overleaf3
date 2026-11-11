@@ -57,6 +57,8 @@ Predicted benefit of cycle 1: clarity +1, novelty framing more defensible (no sc
 |---|---|---|---|
 | baseline main@e28aea2 | de17d686a67b | 4/10 (3-5), conf 4 | novelty 3, soundness 6, evidence 5, clarity 4, figs 6. Main issues: claims bundle pipeline gain with diversification; Eq.3/6 oversold; taxonomy; Tab.1 timing; Fig.8; missing spread baselines (needs runs) |
 | cycle 1 @66a52ad | 14ce67264aed | 4/10 (3-5), conf 4 | novelty 3, soundness 6, evidence 5, clarity 5 (+1), figs 6. Fig.1 'excellent', Tab.3 'clear and effective'. Remaining: spline comparison confounded (lesion snapping, lattice extent), timing protocols mixed, naming vs supplement, redundancy of Fig.5, uniform sub-lattice ablation (needs runs) |
+| cycle 2 @a9ae09b | d4f98a988404 | 4/10 (3-5), conf 4 | novelty 3, soundness 6, evidence 6 (+1), clarity 6 (+1), figs 6. Tab. 3 'best table'; numbers consistent. Remaining: diversification vs exhaustive value, missing allocation baselines, spline extent confound, exact-mark staging rerun, layout gaps p10-11 |
+| final @(see STATE) | unscored | — | layout-only correction after the cycle-2 review (float placement; removes blank bands on pp. 10-11). No text or number changes. The cycle-2 score is historical for this snapshot. |
 
 ## Material unresolved items
 - Exhaustive staging timing conflict: 0.956 s (S15) vs 0.265 s (S16).
@@ -66,3 +68,32 @@ Predicted benefit of cycle 1: clarity +1, novelty framing more defensible (no sc
 
 ## Compression map
 (filled at delivery)
+
+**Cycle 2 outcome:** overall score unchanged (4, range 3-5); clarity 5→6 and evidence 5→6 on the reviewer's sub-scores. No factual regressions were found. Decision: **keep**. MAX_CYCLES=2 reached; stopped.
+
+**Post-review correction (unscored):** the cycle-2 reviewer flagged blank bands on pp. 10-11 caused by a float barrier. I removed it and moved three floats earlier. Only layout changed; the text and numbers are identical to the reviewed snapshot.
+
+## Assessment of the score ceiling
+All three independent reviews agree (4/10, novelty 3). The remaining bottlenecks cannot be fixed by writing or presentation: they need new evidence. Next research tasks, ranked by expected reviewer impact:
+1. Allocation baselines at matched K and at completion: a uniform sub-lattice with spacing about r, fit-map local minima, random/stratified subsampling, plus an r sweep (1.4-4.2 mm). These decide whether fit ordering matters beyond coverage. Runs on existing crops; cheap.
+2. Fairer registration comparator: a B-spline initialized from the wide-lattice best translation (or from the Diverse-search output); one learned registration model (uniGradICON has public weights).
+3. Exact-mark rerun on the staging cohort (the analogue of Supp. Tab. S7), and ideally real queries (detector outputs or reader clicks).
+4. A heavier learned scorer (e.g. the Siamese scorer over the full lattice) to demonstrate the regime where diversification, not exhaustive scoring, is the right choice.
+5. A breakdown by lesion diameter and interval size change.
+
+## Material unresolved items (carried)
+- Timing: exhaustive staging 0.956 s (matched comparison, single pass) vs 0.265 s (fixed-budget replay). Now reported transparently in Tab. 4, but the group should confirm which is representative.
+- Recovered values (query-band CIs for bands 2-3; supplement status figure) need confirmation from the analysis output.
+- The 1.5 weight in Eq. 4: no rationale was found in the sources; the paper now states it as fixed.
+- LLM statement policy check; BioRender high-res exports and the official citation at camera-ready.
+
+## Compression map (expanded draft ≈ 9.6 pages of body → 8)
+| Cut | Saves (pages) |
+|---|---|
+| Move Tab. 4 (timing protocols) and Fig. 8 (accuracy-latency) to the supplement; keep the speed ratios in the text | 0.45 |
+| Drop Fig. 5 (forest); intervals already appear in the text and Tab. 1 | 0.35 |
+| Fold Sec. 5.5 (scorer capacity) into Sec. 5.1 (the decomposition figure already shows it) | 0.2 |
+| Remove the `evaluation_expanded` paragraphs (reference geometry, shared inputs, matched workloads) via the compact build switch | 0.4 |
+| Trim Sec. 3.1 notation and Related work by about 25% | 0.3 |
+| Shorten Discussion to one paragraph plus Limitations | 0.15 |
+| **Total** | **≈1.85** |

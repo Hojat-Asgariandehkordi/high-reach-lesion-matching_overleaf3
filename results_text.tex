@@ -44,6 +44,13 @@ The two lists therefore define a clear trade-off: exhaustive scoring is the most
 
 \input{tables/main_results}
 
+\begin{figure*}[!t]
+\centering
+\includegraphics[width=\linewidth]{figures/qualitative.pdf}
+\input{figures/qualitative_caption}
+\end{figure*}
+
+
 Table~\ref{tab:main} compares the resulting matcher with all baselines.
 On the independent staging cohort, \ours places 289 of 440 earlier points within 3\,mm (65.7\%), versus 243 (55.2\%) for the lesion-inclusive B-spline, a paired difference of $+10.5$ points [3.6, 17.6]; it finds 63 lesions that the spline misses and keeps 226 of the 243 spline hits.
 On the screening cohort it hits 244 of 309 (79.0\%) versus 211 (68.3\%), with 46 gains and 13 losses, $+10.7$ points [5.8, 15.4].
@@ -62,16 +69,27 @@ Figure~\ref{fig:qualitative} shows typical successes and failures.
 
 \begin{figure}[!t]
 \centering
+\includegraphics[width=\linewidth]{figures/query_bands.pdf}
+\caption{\textbf{Gain by query error.} Paired 3\,mm difference between \ours and the B-spline within bands of query error (distance between $p$ and the annotated current mark), with 95\% patient-cluster intervals; $n$ is the number of lesions per band. Three unsupported staging queries are excluded here but counted in Tab.~\ref{tab:main}.}
+\label{fig:bands}
+\end{figure}
+
+\begin{figure}[!t]
+\centering
+\includegraphics[width=\linewidth]{figures/accuracy_latency.pdf}
+\caption{\textbf{Accuracy versus local time} in the fixed-budget replay (three randomized repetitions on matched workloads of 24 staging and 32 screening queries). Diverse search at caps 28, 112 and the complete list, the fit-only list and exhaustive scoring; hit rates use the full cohorts. The B-spline (3.6--3.9\,s, Tab.~\ref{tab:timing}) lies far to the right and was timed in a separate protocol, so it is omitted.}
+\label{fig:speed}
+\end{figure}
+
+
+\begin{figure}[!t]
+\centering
 \includegraphics[width=\linewidth]{figures/paired_forest.pdf}
 \caption{\textbf{Paired differences with 95\% patient-cluster intervals.} Top: \ours minus B-spline at three tolerances and in two robustness analyses (staging only). Bottom: changes to the candidate list at 3\,mm (Tab.~\ref{tab:contrasts}); names as in Sec.~\ref{sec:routes}. The dashed line is the 3-point margin fixed before inference; an interval entirely to the right of zero is a significant gain.}
 \label{fig:forest}
 \end{figure}
 
-\begin{figure*}[!t]
-\centering
-\includegraphics[width=\linewidth]{figures/qualitative.pdf}
-\input{figures/qualitative_caption}
-\end{figure*}
+
 
 \subsection{Sensitivity to the query}
 \label{sec:query}
@@ -80,12 +98,7 @@ Figure~\ref{fig:bands} splits lesions by the distance between the query $p$ and 
 The gain is present for well-localized queries: within 1.5\,mm, \ours hits 238 of 322 staging lesions versus 205 for the spline ($+10.2$ points [2.1, 18.4]) and 178 versus 157 of 194 screening lesions ($+10.8$ [5.8, 16.0]), and this band contributes 33 of the 46 net staging gains and 21 of the 33 screening gains.
 When the screening cohort is rerun with the exact annotated mark as the query, the spline improves from 211 to 239 hits while \ours stays at 243, so on screening a large part of the advantage is robustness to an imprecise query, a property that matters whenever the query comes from a click or a detector (supplement, Tab.~S7).
 
-\begin{figure}[!t]
-\centering
-\includegraphics[width=\linewidth]{figures/query_bands.pdf}
-\caption{\textbf{Gain by query error.} Paired 3\,mm difference between \ours and the B-spline within bands of query error (distance between $p$ and the annotated current mark), with 95\% patient-cluster intervals; $n$ is the number of lesions per band. Three unsupported staging queries are excluded here but counted in Tab.~\ref{tab:main}.}
-\label{fig:bands}
-\end{figure}
+
 
 \subsection{Additional reach pays off only with a capable scorer}
 \label{sec:scorer}
@@ -104,9 +117,4 @@ In the matched comparison on prepared crops, the median local time is 0.194\,s f
 Table~\ref{tab:timing} reports both timing protocols side by side, and Fig.~\ref{fig:speed} plots the fixed-budget replay against accuracy. Within the replay, Diverse 28 costs 22\,ms more than Fit-only 28 for 40 additional staging hits, a cap of 112 gives 278 staging hits at 0.142\,s, and exhaustive scoring adds eight staging hits for 75\,ms more (1.4$\times$ the time of \ours). In the single-pass matched comparison, exhaustive scoring took 0.956\,s on staging (4.9$\times$) and 0.256\,s on screening (1.4$\times$), so its relative cost depends on the workload; scoring every position is consistently the slower option.
 End to end on native scans, the shared chest alignment dominates: one query per screening pair takes 29.36\,s for \ours versus 32.87\,s for the spline, and two queries sharing the alignment take 14.88 versus 19.38\,s per query, a relative saving that grows as more lesions share one alignment.
 
-\begin{figure}[!t]
-\centering
-\includegraphics[width=\linewidth]{figures/accuracy_latency.pdf}
-\caption{\textbf{Accuracy versus local time} in the fixed-budget replay (three randomized repetitions on matched workloads of 24 staging and 32 screening queries). Diverse search at caps 28, 112 and the complete list, the fit-only list and exhaustive scoring; hit rates use the full cohorts. The B-spline (3.6--3.9\,s, Tab.~\ref{tab:timing}) lies far to the right and was timed in a separate protocol, so it is omitted.}
-\label{fig:speed}
-\end{figure}
+
