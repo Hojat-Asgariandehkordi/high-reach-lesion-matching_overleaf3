@@ -117,11 +117,25 @@ def teaser():
     gs = fig.add_gridspec(1, 3, width_ratios=[2.35, 1, 1], wspace=0.08)
     # (a) the problem
     ax = fig.add_subplot(gs[0])
-    art = biorender("problem", (0, 0, 1, 0.835))
+    art = biorender("problem_notext", (0, 0.08, 1, 0.86))
     if art is not None:
+        H, W = art.shape[:2]
+        sx, sy = W / 1024.0, H / (572 * 0.78)          # preview pixel -> crop pixel
+        y0 = 572 * 0.08
+        Q = lambda x, y: (x * sx, (y - y0) * sy)
         ax.imshow(art, interpolation="lanczos")
         ax.axis("off")
         ax.set_title("(a) Find the same lesion earlier", loc="left")
+        ax.text(*Q(218, 72), "Current CT", ha="center", va="center", fontsize=7.5, color=S.INK)
+        ax.text(*Q(806, 72), "Earlier CT (aligned)", ha="center", va="center", fontsize=7.5,
+                color=S.INK)
+        ax.text(*Q(512, 238), "chest\nalignment", ha="center", va="center", fontsize=6.8,
+                color=S.INK2, linespacing=1.0)
+        ax.text(*Q(102, 330), "query $p$", ha="center", va="top", fontsize=6.6, color="#ffe14a")
+        ax.text(*Q(712, 196), "search window", ha="center", va="bottom", fontsize=6.6,
+                color="#ffe14a")
+        ax.text(*Q(712, 418), "true earlier\nlesion", ha="center", va="top", fontsize=6.4,
+                color="#ffa04d", linespacing=1.0)
     else:
         teaser_drawn_a(ax)
     # (b) and (c): the search window, zoomed
@@ -148,14 +162,26 @@ def teaser():
 
 
 def method():
-    art = biorender("pipeline", (0, 0.09, 1, 0.67))
+    top, bot = 0.12, 0.70
+    art = biorender("pipeline_notext", (0, top, 1, bot))
     if art is None:
         return method_drawn()
     h, w = art.shape[:2]
+    sx, sy = w / 1024.0, h / (572 * (bot - top))
+    Q = lambda x, y: (x * sx, (y - 572 * top) * sy)
     fig = plt.figure(figsize=(S.PAGE_W, S.PAGE_W * h / w + 0.32))
     ax = fig.add_axes([0, 0.32 / (S.PAGE_W * h / w + 0.32), 1, 1 - 0.32 / (S.PAGE_W * h / w + 0.32)])
     ax.imshow(art, interpolation="lanczos")
     ax.axis("off")
+    ax.text(*Q(80, 92), "current", ha="center", va="center", fontsize=7, color=S.INK)
+    ax.text(*Q(225, 92), "earlier", ha="center", va="center", fontsize=7, color=S.INK)
+    from matplotlib.patches import Rectangle
+    for k, (lab, col) in enumerate((("fit", "#83a1df"), ("witness", "#81c9c5"))):
+        x, y = Q(255, 196 + 26 * k)
+        ax.add_patch(Rectangle((x, y - 9 * sy), 14 * sx, 14 * sy, color=col, lw=0))
+        ax.text(x + 20 * sx, y - 2 * sy, lab, ha="left", va="center", fontsize=6.8, color=S.INK)
+    ax.text(*Q(683, 286), "$r$", ha="center", va="bottom", fontsize=8, color=S.INK)
+    ax.text(*Q(958, 262), "reference", ha="left", va="center", fontsize=6.4, color="#c0571c")
     labels = [(0.15, "1  Align, crop, fit/witness shell"), (0.42, "2  Rank shifts by fit $f_t$"),
               (0.665, "3  Keep if $\\geq r$ from kept"), (0.895, "4  Scorer selects $\\hat{t}$")]
     for x, t in labels:
