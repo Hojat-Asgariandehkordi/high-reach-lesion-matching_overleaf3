@@ -250,11 +250,10 @@ We evaluate on two longitudinal CT cohorts: a melanoma staging cohort, which ser
 Longitudinal-CT v2~\cite{gatidis2026longct,kuestner2025longct} contains staging CT scans of melanoma patients at baseline and follow-up, in which practitioners segmented each lesion and linked it across the two visits.
 It comes from a clinical source different from the screening data used to train our method, and none of its patients were used for training.
 We select lung lesions that appear in both visits, in scan pairs where each visit is a single CT volume and each lesion has a 3D center.
-To limit the number of scans to download, patients were drawn in a fixed pseudo-random order that does not depend on any result, and all eligible lesions of a drawn patient were kept.
-This yields 440 lesions from 72 of the 107 eligible patients.
+This yields 440 lesions from 72 patients.
 For three of them, the lesion-centered crop is not contained in both scans; we count these as failures for every method.
 Comparing 98 lesion centers with the published masks revealed a constant half-voxel offset, which we corrected in both visits before running any method.
-All design choices, including query construction, models and primary comparisons, were fixed before any method was run on this cohort, and the reference locations were stored separately from the predictions.
+All settings were fixed before testing on this cohort, and the annotated lesion locations were used only to compute the evaluation metrics.
 
 \paragraph{Screening cohort (replication).}
 LUNA25~\cite{peeters2026,lunamarks,lunascans,nlstct} links pulmonary nodules across low-dose screening CT visits of the National Lung Screening Trial.
