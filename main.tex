@@ -200,7 +200,7 @@ A list truncated at $K$ entries, or filtered by cost thresholds, offers no such 
 
 \subsection{Lesion-aware selection}
 \label{sec:scorer-def}
-Each retained translation is scored by a logistic-regression lesion scorer that is trained once on training data and then frozen.
+Each retained translation is scored by a logistic-regression lesion scorer that is trained once on the training set (Sec.~\ref{sec:evaluation}) and then frozen.
 Its logit $\ell_t$ combines five descriptors of the candidate position (center contrast, compactness, Hessian tube- and plate-likeness to reject vessels and fissures, and isotropy) with three comparisons to the query lesion (patch correlation and the ratios of contrast and compactness); details are in the supplement (Sec.~S3).
 The final score subtracts a soft penalty for anatomical fit relative to the best candidate in the list,
 \begin{equation}
@@ -239,25 +239,28 @@ The identity holds for any pair of matchers; with the list-invariant score of Eq
 The common grid has $64^3$ voxels of $0.7\times0.7\times1.5$\,mm.
 The wide lattice $\T$ spans $\pm7$\,mm in-plane and $\pm7.5$\,mm axially at voxel spacing ($21\times21\times11 = 4{,}851$ translations); the original lattice ($\pm4.2$, $\pm4.2$, $\pm4.5$\,mm; 1,183 translations) is used in some comparisons.
 The radius is $r = 2.1$\,mm (three in-plane voxels); \ours retains about 365 of the 4,851 translations per query.
-The scales $F = 76.958$\,HU and $W = 99.541$\,HU are the residual limits fitted on training data, and $\lambda = 1.5$ for all variants.
+The scales $F = 76.958$\,HU and $W = 99.541$\,HU are the residual limits fitted on the training set, and $\lambda = 1.5$ for all variants.
 
 
 \section{Evaluation protocol}
 \label{sec:evaluation}
-\paragraph{Independent staging cohort.}
-Longitudinal-CT v2~\cite{gatidis2026longct,kuestner2025longct} contains melanoma staging CT from a clinical source distinct from the screening data.
-Practitioners manually segmented and linked lesions at baseline and follow-up.
-We use clear persistent pulmonary links in single-volume scan pairs with a 3D centroid in each visit.
-An outcome-independent hash order allocates 440 links from 72 of the 107 eligible patients under a scan-retrieval budget, keeping all qualifying lesions of each selected patient.
-Three tracks lack shared crop support and are counted as misses.
-An audit of 98 centroids against the published masks found a uniform half-voxel offset, which we correct in both visits before inference.
-Query construction, models and contrasts were fixed before inference, and reference locations were held separately from predictions.
+We evaluate on two longitudinal CT cohorts: a melanoma staging cohort, which serves as the main test set, and a lung cancer screening cohort, which serves as a replication.
 
-\paragraph{Screening replication.}
-LUNA25 provides nodule keys across NLST screening visits~\cite{peeters2026,lunamarks,lunascans,nlstct}.
-The scorer and all geometry settings were developed on 145 tracks from 100 development patients and then frozen.
-We evaluate on 309 linked tracks from 233 different patients.
-These patients had been inspected earlier in the project, so we treat this cohort as a retrospective replication on a different lesion population and acquisition setting.
+\paragraph{Staging cohort (main test set).}
+Longitudinal-CT v2~\cite{gatidis2026longct,kuestner2025longct} contains staging CT scans of melanoma patients at baseline and follow-up, in which practitioners segmented each lesion and linked it across the two visits.
+It comes from a clinical source different from the screening data used to train our method, and none of its patients were used for training.
+We select lung lesions that appear in both visits, in scan pairs where each visit is a single CT volume and each lesion has a 3D center.
+To limit the number of scans to download, patients were drawn in a fixed pseudo-random order that does not depend on any result, and all eligible lesions of a drawn patient were kept.
+This yields 440 lesions from 72 of the 107 eligible patients.
+For three of them, the lesion-centered crop is not contained in both scans; we count these as failures for every method.
+Comparing 98 lesion centers with the published masks revealed a constant half-voxel offset, which we corrected in both visits before running any method.
+All design choices, including query construction, models and primary comparisons, were fixed before any method was run on this cohort, and the reference locations were stored separately from the predictions.
+
+\paragraph{Screening cohort (replication).}
+LUNA25~\cite{peeters2026,lunamarks,lunascans,nlstct} links pulmonary nodules across low-dose screening CT visits of the National Lung Screening Trial.
+Our \emph{training set} consists of 145 nodule tracks from 100 patients of this dataset; the scorer and all parameters were fitted on it and then frozen.
+We evaluate on 309 tracks from 233 other patients.
+Because these patients had been inspected earlier in the project, we treat this cohort as a replication on a different lesion type (screening nodules rather than metastases) and acquisition setting (low-dose screening rather than staging CT), and the staging cohort as the main test.
 
 \paragraph{Query simulation.}
 In practice the query comes from a radiologist's click or a detector.
@@ -276,13 +279,13 @@ Gates change only which translations reach the scorer, since anatomical fit ente
 
 \paragraph{Parameters.}
 Table~\ref{tab:params} lists the parameters of the anatomical fit cost (Sec.~\ref{sec:fit}).
-All values were fixed on development data and kept unchanged for every experiment.
+All values were fixed on the training set and kept unchanged for every experiment.
 
 \begin{table}[t]
 \centering
 \footnotesize
 \setlength{\tabcolsep}{4pt}
-\caption{\textbf{Parameters of the anatomical fit cost} (Sec.~\ref{sec:fit}), fixed on development data.}
+\caption{\textbf{Parameters of the anatomical fit cost} (Sec.~\ref{sec:fit}), fixed on the training set.}
 \label{tab:params}
 \begin{tabular}{@{}clr@{}}
 \toprule
@@ -302,12 +305,12 @@ $h_1$ & intensity at or above which $g_i = 1$ (tissue) & $-370$\,HU \\
 
 \paragraph{Comparators.}
 The \emph{lesion-inclusive central B-spline} fits a $3\times3\times4$ control mesh to image similarity within 22\,mm of the crop center, starting from the best exhaustive translation on the original lattice, with bounded coefficients~\cite{lowekamp2013}.
-It is the strongest of four spline settings on development; the masked, coarse and early-stopped settings appear in the supplement.
+It is the strongest of four spline settings on the training set; the masked, coarse and early-stopped settings appear in the supplement.
 For SAM~\cite{yan2022sam} we use the released checkpoint (trained on the NIH Lymph Node source; its patient roster is unavailable) with its 2\,mm preprocessing and the mean of coarse and fine cosine similarities.
 We transform the same query into its embedding grid and interpolate the similarity field back onto the common grid.
 We evaluate SAM in two ways: the maximum of its full field (\emph{standalone}), and as a drop-in scorer on our fit-ordered candidate centers (\emph{crossing}).
 The crossing gives the direct and learned scorers identical proposals.
-We also report a frozen local Siamese scorer trained on the same development data.
+We also report a frozen local Siamese scorer trained on the same training set.
 We do not compare against Deep Lesion Tracker~\cite{cai2021} or Transformer Lesion Tracker~\cite{tang2022tlt}, because no inference checkpoints are publicly available, nor against the diffusion-guided tracker~\cite{zhuang2026diffusion}, which requires a coarse registration as input and would therefore be evaluated on a different starting point from the other methods; details are in the supplement (Sec.~S3).
 
 \paragraph{Metrics and statistics.}
