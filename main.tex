@@ -89,14 +89,15 @@ Section~\ref{sec:decomp} defines reach and hit and the decomposition used throug
 Let $I^{c}$ and $I^{e}$ be the current and earlier CT scans of a patient, and let $p \in \mathbb{R}^3$ be an approximate lesion position in $I^{c}$, the \emph{query}.
 The goal is to estimate the position $y$ of the same lesion in $I^{e}$.
 A global affine transform estimated from the two scans is used to resample both onto a common lesion-centered grid, on which equal coordinates correspond approximately to the same anatomy and distances are measured in millimeters.
-We model the remaining misalignment at the lesion as a translation.
-For a translation $t$ in a finite lattice $\T \subset \mathbb{R}^3$, the corresponding candidate position in the earlier scan is
+Within the small neighborhood of the lesion, the misalignment that remains after this global transform is well approximated by a translation.
+We therefore consider a finite set of candidate displacements $\T \subset \mathbb{R}^3$, defined on the voxel grid and centered at zero, and associate with each $t \in \T$ the candidate position
 \begin{equation}
-x_t = p - t ,
+x_t = p - t
 \label{eq:mapped}
 \end{equation}
-and $d(\cdot,\cdot)$ denotes Euclidean distance.
-A matcher must therefore decide which translations to consider and which one to return.
+in the earlier scan, \ie the query corrected by the displacement $t$.
+Estimating $y$ then reduces to two decisions: which candidates $x_t$ to evaluate, and which one to return.
+Throughout, $d(\cdot,\cdot)$ denotes Euclidean distance in millimeters.
 
 \subsection{Anatomical fit cost}
 \label{sec:fit}
