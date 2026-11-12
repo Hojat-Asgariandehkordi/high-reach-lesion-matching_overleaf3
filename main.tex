@@ -147,9 +147,7 @@ The \emph{witness cost} $w_t = E_{\Omega_w}(t)$ is computed on the other four oc
 Because these samples play no role in the ordering, $w_t$ acts as a held-out check: a translation that matches $\Omega_f$ by coincidence, for example by aligning a single vessel on one side of the lesion, tends to incur a high cost on the octants it was not ranked on.
 Both costs enter the final score (Sec.~\ref{sec:scorer-def}).
 
-\paragraph{Parameters.}
-We use $\rho_1 = 23$\,mm and $\rho_2 = 28$\,mm, which yields 436 samples in each of $\Omega_f$ and $\Omega_w$; $\delta = 98$\,HU; $\kappa = 420$\,HU; and $g_0 = 0.25$ with $h_0 = -860$\,HU and $h_1 = -370$\,HU, so that samples darker than $-860$\,HU (air) receive weight $0.25$ and samples brighter than $-370$\,HU (vessels and other soft tissue) receive weight $1$.
-All values were fixed on development data and kept unchanged for every experiment.
+Parameter values are listed in Tab.~\ref{tab:params} (Sec.~\ref{sec:evaluation}).
 
 \subsection{Diverse search}
 \label{sec:diverse}
@@ -269,6 +267,32 @@ All variants share the grid, query, costs and scorer and differ only in which tr
 and \emph{Exhaustive}, all 4,851 translations.
 Budgets are $K \in \{7, 14, 28, 56, 112\}$ or the complete list.
 Gates change only which translations reach the scorer, since anatomical fit enters every score through Eq.~\ref{eq:direct}; gated variants on the original lattice are reported in the supplement.
+
+\paragraph{Parameters.}
+Table~\ref{tab:params} lists the parameters of the anatomical fit cost (Sec.~\ref{sec:fit}).
+All values were fixed on development data and kept unchanged for every experiment.
+
+\begin{table}[t]
+\centering
+\footnotesize
+\setlength{\tabcolsep}{4pt}
+\caption{\textbf{Parameters of the anatomical fit cost} (Sec.~\ref{sec:fit}), fixed on development data.}
+\label{tab:params}
+\begin{tabular}{@{}clr@{}}
+\toprule
+Symbol & Meaning & Value \\
+\midrule
+$\rho_1$ & inner radius of the sampling shell & 23\,mm \\
+$\rho_2$ & outer radius of the sampling shell & 28\,mm \\
+$|\Omega_f|$, $|\Omega_w|$ & samples in the fit and witness sets & 436 each \\
+$\delta$ & clip on the intensity offset $o_t$ & 98\,HU \\
+$\kappa$ & cap on each residual & 420\,HU \\
+$g_0$ & weight of air-like samples & 0.25 \\
+$h_0$ & intensity at or below which $g_i = g_0$ (air) & $-860$\,HU \\
+$h_1$ & intensity at or above which $g_i = 1$ (tissue) & $-370$\,HU \\
+\bottomrule
+\end{tabular}
+\end{table}
 
 \paragraph{Comparators.}
 The \emph{lesion-inclusive central B-spline} fits a $3\times3\times4$ control mesh to image similarity within 22\,mm of the crop center, starting from the best exhaustive translation on the original lattice, with bounded coefficients~\cite{lowekamp2013}.
