@@ -101,22 +101,55 @@ Throughout, $d(\cdot,\cdot)$ denotes Euclidean distance in millimeters.
 
 \subsection{Anatomical fit cost}
 \label{sec:fit}
-Because the lesion itself may grow, shrink or change shape between visits, we rank translations by the surrounding anatomy, \ie vessels, airways and pleura, which is preserved.
-Let $\Omega$ be a set of sample positions in a spherical shell around the query that excludes the lesion.
-We split $\Omega$ into its eight octants; four alternating octants form the \emph{fit} set $\Omega_f$ and the remaining four the \emph{witness} set $\Omega_w$.
-For a sample $i$, let $a_i$ be the intensity of $I^{c}$ and $b_i(t)$ the intensity of $I^{e}$ at the same position displaced by $t$.
-The cost of $t$ on a sample set $S$ is the robust weighted residual
+The lesion may grow, shrink or change shape between visits, so its own appearance is an unreliable cue for alignment.
+We instead rank translations by the anatomy around it, \ie vessels, airways, fissures and pleura, which is largely preserved between visits.
+
+\paragraph{Sampling shell.}
+Let $\{z_i\}$ be sample positions in a spherical shell centered at the query $p$, with inner radius $\rho_1$ and outer radius $\rho_2$.
+The inner radius keeps the lesion and its immediate surroundings out of the cost, and the outer radius keeps the samples close enough to the lesion for the translation model to hold.
+We divide the shell into its eight octants around $p$ and assign them alternately, like the cells of a $2\times2\times2$ checkerboard, to a \emph{fit} set $\Omega_f$ and a \emph{witness} set $\Omega_w$, so that adjacent octants always belong to different sets.
+Each set therefore surrounds the lesion from all directions, but the two sets share no samples.
+
+\paragraph{Robust residual.}
+For a sample $i$, let $a_i = I^{c}(z_i)$ be the current-scan intensity and $b_i(t) = I^{e}(z_i - t)$ the earlier-scan intensity under translation $t$, consistent with Eq.~\ref{eq:mapped}; since translations lie on the grid, no interpolation is needed.
+For the correct translation, $a_i \approx b_i(t)$ up to noise and a global change in intensity.
+We measure the disagreement on a sample set $S$ by
 \begin{equation}
-E_S(t) = \frac{1}{|S|}\sum_{i \in S} g_i(t)\,\min\bigl\{\,|a_i - b_i(t) - o_t|,\ \kappa\,\bigr\}.
+E_S(t) = \frac{1}{|S|}\sum_{i \in S} g_i(t)\,\min\bigl\{\,|a_i - b_i(t) - o_t|,\ \kappa\,\bigr\},
 \label{eq:residual}
 \end{equation}
-The offset $o_t = \mathrm{clip}_{[-\delta,\delta]}\bigl(\mathrm{median}_{i\in\Omega_f}(a_i - b_i(t))\bigr)$ absorbs global intensity differences between acquisitions, the cap $\kappa$ limits the influence of a single mismatched structure, and the weight
+which has three components.
+
+\noindent\emph{Intensity offset $o_t$.}
+Scanners, reconstruction kernels and contrast phases can shift all intensities by a nearly constant amount.
+We estimate this shift as the median difference over the fit samples and clip it to $\pm\delta$,
+\begin{equation}
+o_t = \mathrm{clip}_{[-\delta,\delta]}\Bigl(\mathrm{median}_{i\in\Omega_f}\bigl(a_i - b_i(t)\bigr)\Bigr),
+\end{equation}
+so that the offset absorbs a global change but cannot compensate a genuine anatomical mismatch.
+
+\noindent\emph{Cap $\kappa$.}
+A vessel that appears at a sample in one scan but not in the other produces a residual of several hundred HU and would dominate the mean.
+Truncating each residual at $\kappa$ penalizes such a mismatch without letting a single sample decide the cost.
+
+\noindent\emph{Tissue weight $g_i(t)$.}
+Most shell samples fall in aerated lung, whose nearly uniform intensity carries little positional information.
+The weight
 \begin{equation}
 g_i(t) = g_0 + (1-g_0)\,\mathrm{clip}_{[0,1]}\!\left(\frac{\max\{a_i, b_i(t)\} - h_0}{h_1 - h_0}\right)
 \end{equation}
-rises from $g_0$ for air to $1$ for soft tissue, so that informative structures dominate the cost.
-The \emph{fit cost} $f_t = E_{\Omega_f}(t)$ determines the order in which candidates are considered.
-The \emph{witness cost} $w_t = E_{\Omega_w}(t)$ uses the same offset but samples that play no role in the ordering; it therefore acts as a held-out check, since a translation that matches $\Omega_f$ by chance tends to incur a high $w_t$.
+increases linearly from $g_0$ at intensity $h_0$ (air) to $1$ at $h_1$ (tissue), so that structured anatomy dominates the cost.
+Taking the maximum of the two intensities makes a structure count fully if it is present in either scan, so a translation cannot lower its cost by moving a vessel onto air.
+
+\paragraph{Fit and witness costs.}
+The \emph{fit cost} $f_t = E_{\Omega_f}(t)$ orders the candidates (Sec.~\ref{sec:diverse}).
+The \emph{witness cost} $w_t = E_{\Omega_w}(t)$ is computed on the other four octants with the same offset $o_t$, which is estimated on $\Omega_f$ only, so nothing is refitted on the witness samples.
+Because these samples play no role in the ordering, $w_t$ acts as a held-out check: a translation that matches $\Omega_f$ by coincidence, for example by aligning a single vessel on one side of the lesion, tends to incur a high cost on the octants it was not ranked on.
+Both costs enter the final score (Sec.~\ref{sec:scorer-def}).
+
+\paragraph{Parameters.}
+We use $\rho_1 = 23$\,mm and $\rho_2 = 28$\,mm, which yields 436 samples in each of $\Omega_f$ and $\Omega_w$; $\delta = 98$\,HU; $\kappa = 420$\,HU; and $g_0 = 0.25$ with $h_0 = -860$\,HU and $h_1 = -370$\,HU, so that samples darker than $-860$\,HU (air) receive weight $0.25$ and samples brighter than $-370$\,HU (vessels and other soft tissue) receive weight $1$.
+All values were fixed on development data and kept unchanged for every experiment.
 
 \subsection{Diverse search}
 \label{sec:diverse}
@@ -201,8 +234,6 @@ The identity holds for any pair of matchers; with the list-invariant score of Eq
 \label{sec:impl}
 The common grid has $64^3$ voxels of $0.7\times0.7\times1.5$\,mm.
 The wide lattice $\T$ spans $\pm7$\,mm in-plane and $\pm7.5$\,mm axially at voxel spacing ($21\times21\times11 = 4{,}851$ translations); the original lattice ($\pm4.2$, $\pm4.2$, $\pm4.5$\,mm; 1,183 translations) is used in some comparisons.
-The shell $\Omega$ lies 23--28\,mm from the grid center, with 436 samples in each of $\Omega_f$ and $\Omega_w$.
-We use $\delta = 98$\,HU, $\kappa = 420$\,HU, $g_0 = 0.25$, $h_0 = -860$\,HU and $h_1 = -370$\,HU.
 The radius is $r = 2.1$\,mm (three in-plane voxels); \ours retains about 365 of the 4,851 translations per query.
 The scales $F = 76.958$\,HU and $W = 99.541$\,HU are the residual limits fitted on development data, and $\lambda = 1.5$ for all variants.
 
