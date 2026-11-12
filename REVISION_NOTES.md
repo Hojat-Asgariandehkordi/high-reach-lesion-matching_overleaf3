@@ -68,3 +68,6 @@ BioRender figures to export as PNG (300 dpi or higher) and save under `figures/b
   pixel lettering and typesets every label in Times as real PDF text; it also removes a duplicate
   ground-truth star and adds the 12th candidate so both sides of panel C have K = 12.
 - scripts/fig_overview.py (the earlier code-drawn version) also writes figures/overview.pdf — don't run both.
+- Editable slide: figures/overview.pptx (`python3 scripts/make_overview_pptx.py`): cleaned BioRender
+  artwork as background + Times New Roman text boxes from the same LAYOUT table as the paper figure.
+  BioRender's own PPTX export of this AI-generated figure is a single flat picture, so it is not editable.
