@@ -1,21 +1,22 @@
 \section{Discussion and limitations}
 \label{sec:discussion}
-Hypothesis-based lesion matching has two stages that are usually designed together: proposing candidate locations and choosing among them.
+Lesion matching by candidate search has two stages that are usually designed together: proposing candidate locations and choosing among them.
 Our results show that the first stage deserves separate attention.
-A fit-ranked shortlist is a poor allocation of a small budget, a minimum-distance rule fixes it at negligible cost, and the reach/selection accounting makes the effect directly visible: diversification creates opportunities, and the scorer determines how many are realized.
-The same accounting explains why a general anatomical embedding fails to profit from candidates that a lesion-specific scorer exploits.
-We expect the lesson to transfer to other point-correspondence problems in which an alignment leaves several nearby plausible matches.
+A shortlist ranked only by anatomical fit wastes a small budget on near-duplicates, and a minimum-distance rule corrects this at negligible cost.
+The reach--selection decomposition makes the effect explicit: diverse search creates opportunities, and the scorer determines how many of them are realized.
+It also explains why a general anatomical embedding does not benefit from candidates that a lesion-specific scorer exploits.
+We expect the same principle to apply to other point-correspondence problems in which a global alignment leaves several nearby plausible matches.
 
 \paragraph{Limitations.}
-The task assumes an approximate current location and a known persistent lesion; clinical incident status and wrong-lesion associations require separate adjudication.
-Our query is simulated by perturbing the annotated mark; with the exact mark the screening advantage over the spline shrinks from 33 to 4 hits (Sec.~\ref{sec:query}), so evaluation with real clicks or detector outputs is the most important next step.
+Our task assumes an approximate lesion position in the current scan and a lesion that persists between visits; new lesions and incorrect lesion associations require separate handling.
+The queries are simulated by perturbing the annotated positions; with the exact position as the query, the screening advantage over the spline decreases from 33 to 4 hits (Sec.~\ref{sec:query}), so evaluation with real clicks or detector outputs is an important next step.
 % TODO(group): agree on this wording.
-We compared diversification with the fit-ranked list it replaces; other ways of spreading a budget, such as a coarse sub-lattice or local minima of the fit map, and a sweep over $r$ are natural next experiments, as is a learned-registration baseline.
-A failed chest alignment can leave the lesion outside the local crop (28 staging lesions in two scan pairs, kept in all denominators), the screening cohort is retrospective, and end-to-end time on native scans is dominated by the shared alignment.
+We compared diverse search with the fit-ranked list it replaces; other ways of spreading a budget, such as a coarse sub-lattice or the local minima of the fit cost, a sweep over $r$, and a learned registration baseline remain to be evaluated.
+Finally, a failed chest alignment can leave the lesion outside the local crop (28 staging lesions in two scan pairs, counted as failures), the screening cohort is retrospective, and end-to-end time on native scans is dominated by the shared alignment.
 
 \section{Conclusion}
 \label{sec:conclusion}
-Matching a lung lesion across CT visits depends on which candidate locations a scorer is allowed to see.
-Keeping the anatomical fit order but requiring candidates to be at least 2.1\,mm apart turns a fixed budget into coverage, adding 9 to 12 points at 28 candidates, and the complete list reaches nearly every lesion that exhaustive scoring reaches at 7.5\% of the cost.
-Combined with lesion-aware selection, the resulting matcher improves on lesion-inclusive B-spline registration by about 10 points at 3\,mm in two cohorts, most of all when the query is imprecise, while running the local step about 19 times faster.
-Treating candidate allocation as a design choice in its own right, measured through reach and selection, is a simple and broadly applicable way to build stronger correspondence systems.
+We studied how candidate locations should be allocated when matching a lung lesion across CT visits.
+Keeping the anatomical fit order but requiring candidates to be at least 2.1\,mm apart turns a fixed budget into coverage, improving the hit rate by 9 to 12 points at 28 candidates, and the complete list reaches nearly every lesion that exhaustive scoring reaches with 7.5\% of the candidate evaluations.
+Combined with a lesion-aware scorer, the resulting matcher improves on lesion-inclusive B-spline registration by about 10 points at 3\,mm on two cohorts, most of all when the query is imprecise, while running the local step about 19 times faster.
+Treating candidate allocation as a design choice in its own right, measured through reach and selection, is a simple and broadly applicable way to build stronger correspondence methods.

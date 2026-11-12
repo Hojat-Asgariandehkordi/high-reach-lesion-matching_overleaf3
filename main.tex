@@ -36,7 +36,7 @@ Panels (b,\,c) run the actual selection rule on a synthetic 2D fit landscape. Il
 The rest of the paper is organized as follows.
 Section~\ref{sec:related} reviews longitudinal lesion tracking, image registration, dense anatomical correspondence and diversity in candidate generation.
 Section~\ref{sec:method} formulates the problem and presents the anatomical fit cost, fit-ordered diverse search with its coverage guarantee, the lesion-aware scorer and the reach--selection decomposition.
-Section~\ref{sec:evaluation} describes the cohorts, query simulation, compared methods, parameters and statistics, and Sec.~\ref{sec:results} reports the results.
+Section~\ref{sec:evaluation} describes the datasets, implementation details, baselines and metrics, and Sec.~\ref{sec:results} reports the results.
 Section~\ref{sec:discussion} discusses limitations, and Sec.~\ref{sec:conclusion} concludes.
 
 \section{Related work}
@@ -242,8 +242,9 @@ The radius is $r = 2.1$\,mm (three in-plane voxels); \ours retains about 365 of 
 The scales $F = 76.958$\,HU and $W = 99.541$\,HU are the residual limits fitted on the training set, and $\lambda = 1.5$ for all variants.
 
 
-\section{Evaluation protocol}
+\section{Experiments}
 \label{sec:evaluation}
+\subsection{Datasets}
 We evaluate on two longitudinal CT cohorts: a melanoma staging cohort, which serves as the main test set, and a lung cancer screening cohort, which serves as a replication.
 
 \paragraph{Staging cohort (main test set).}
@@ -261,23 +262,28 @@ Our \emph{training set} consists of 145 nodule tracks from 100 patients of this 
 We evaluate on 309 tracks from 233 other patients.
 Because these patients had been inspected earlier in the project, we treat this cohort as a replication on a different lesion type (screening nodules rather than metastases) and acquisition setting (low-dose screening rather than staging CT), and the staging cohort as the main test.
 
-\paragraph{Query simulation.}
-In practice the query comes from a radiologist's click or a detector.
-We simulate it by displacing the annotated lesion center uniformly by up to 2.5\,mm along each axis and moving the result to the most lesion-like position within 6\,mm with a blob-detection filter~\cite{li2003}.
-All methods receive the same grid and query; the reference $y$ is used only for evaluation.
+\subsection{Experimental settings}
+\paragraph{Queries.}
+In clinical use, the query is a radiologist's click or a detector output and is therefore imprecise.
+We simulate this by displacing the annotated lesion center by a random offset of up to 2.5\,mm along each axis and then moving it to the most lesion-like position within 6\,mm, found with a blob-detection filter~\cite{li2003}.
+All methods receive the same query and the same lesion-centered grid; the annotated locations are used only for evaluation.
 
-\paragraph{Candidate-list variants.}
+\paragraph{Candidate lists.}
 \label{sec:routes}
-All variants share the grid, query, costs and scorer and differ only in which translations reach the scorer:
-\emph{Fit-only $K$}, the $K$ lowest-cost translations of the wide lattice;
-\emph{Diverse $K$} and \emph{\ours} (Sec.~\ref{sec:diverse});
-\emph{Gated $K$}, Diverse $K$ after hard gates that discard translations whose fit cost exceeds an absolute limit or the best cost by more than 24\,HU and, after truncation, those whose witness cost exceeds a limit, with \emph{Relaxed $K$} loosening the fit limit by 20\,HU and the slack to 40\,HU and omitting the witness gate;
-and \emph{Exhaustive}, all 4,851 translations.
-Budgets are $K \in \{7, 14, 28, 56, 112\}$ or the complete list.
-Gates change only which translations reach the scorer, since anatomical fit enters every score through Eq.~\ref{eq:direct}; gated variants on the original lattice are reported in the supplement.
+To isolate the effect of candidate allocation, all variants share the grid, query, costs and scorer, and differ only in which translations are passed to the scorer:
+\begin{itemize}
+\setlength{\itemsep}{0pt}\setlength{\parskip}{0pt}
+\item \emph{Fit-only $K$}: the $K$ lowest-cost translations of the wide lattice.
+\item \emph{Diverse $K$} and \emph{\ours}: fit-ordered diverse search stopped after $K$ candidates or run to completion (Sec.~\ref{sec:diverse}).
+\item \emph{Gated $K$}: Diverse $K$ after hard gates that discard translations whose fit cost exceeds an absolute limit or exceeds the best cost by more than 24\,HU and, after truncation, those whose witness cost exceeds a limit. \emph{Relaxed $K$} raises the fit limit by 20\,HU and the margin to 40\,HU, and drops the witness gate.
+\item \emph{Exhaustive}: all 4,851 translations.
+\end{itemize}
+Budgets are $K \in \{7, 14, 28, 56, 112\}$.
+Because anatomical fit also enters every score (Eq.~\ref{eq:direct}), the gates only change which translations reach the scorer.
+Gated variants on the original lattice are reported in the supplement.
 
 \paragraph{Parameters.}
-Table~\ref{tab:params} lists the parameters of the anatomical fit cost (Sec.~\ref{sec:fit}).
+Table~\ref{tab:params} lists the parameters of the anatomical fit cost (Sec.~\ref{sec:fit}); the remaining settings are given in Sec.~\ref{sec:impl}.
 All values were fixed on the training set and kept unchanged for every experiment.
 
 \begin{table}[t]
@@ -302,27 +308,42 @@ $h_1$ & intensity at or above which $g_i = 1$ (tissue) & $-370$\,HU \\
 \end{tabular}
 \end{table}
 
-\paragraph{Comparators.}
-The \emph{lesion-inclusive central B-spline} fits a $3\times3\times4$ control mesh to image similarity within 22\,mm of the crop center, starting from the best exhaustive translation on the original lattice, with bounded coefficients~\cite{lowekamp2013}.
-It is the strongest of four spline settings on the training set; the masked, coarse and early-stopped settings appear in the supplement.
-For SAM~\cite{yan2022sam} we use the released checkpoint (trained on the NIH Lymph Node source; its patient roster is unavailable) with its 2\,mm preprocessing and the mean of coarse and fine cosine similarities.
-We transform the same query into its embedding grid and interpolate the similarity field back onto the common grid.
-We evaluate SAM in two ways: the maximum of its full field (\emph{standalone}), and as a drop-in scorer on our fit-ordered candidate centers (\emph{crossing}).
-The crossing gives the direct and learned scorers identical proposals.
-We also report a frozen local Siamese scorer trained on the same training set.
+\subsection{Baselines}
+We compare against the two alternatives discussed in Sec.~\ref{sec:related}: deformable registration and learned anatomical embeddings.
+
+\paragraph{Deformable registration.}
+The lesion-inclusive B-spline~\cite{lowekamp2013} fits a $3\times3\times4$ control-point mesh to image similarity within 22\,mm of the crop center, starting from the best exhaustive translation on the original lattice and with bounded coefficients.
+It is the strongest of four spline settings evaluated on the training set; the masked, coarse and early-stopped settings are reported in the supplement.
+Unlike our search, the spline optimizes a continuous deformation and uses image samples that include the lesion.
+
+\paragraph{Anatomical embeddings.}
+For SAM~\cite{yan2022sam}, we use the released checkpoint, trained on the NIH Lymph Node dataset, with its 2\,mm preprocessing and the mean of its coarse and fine cosine similarities.
+We map the query into SAM's embedding grid and interpolate the resulting similarity map back onto our grid.
+We evaluate SAM in two ways: \emph{standalone}, returning the maximum of its similarity map, and as a drop-in scorer on our candidate lists, so that SAM and our scorer choose among exactly the same positions.
+
+\paragraph{Learned scorer.}
+We also replace our logistic scorer with a frozen local Siamese scorer trained on the same training set.
+
+\paragraph{Methods not compared.}
 We do not compare against Deep Lesion Tracker~\cite{cai2021} or Transformer Lesion Tracker~\cite{tang2022tlt}, because no inference checkpoints are publicly available, nor against the diffusion-guided tracker~\cite{zhuang2026diffusion}, which requires a coarse registration as input and would therefore be evaluated on a different starting point from the other methods; details are in the supplement (Sec.~S3).
 
-\paragraph{Metrics and statistics.}
-We report reach and hits (Eq.~\ref{eq:reachhit}) at a primary tolerance of $\tau = 3$\,mm in the shared grid, and also at 2 and 4\,mm and in native earlier-scan coordinates.
+\subsection{Evaluation metrics}
+\paragraph{Accuracy.}
+Our primary metric is the \emph{hit rate}, the fraction of lesions whose predicted position lies within $\tau = 3$\,mm of the annotated position (Eq.~\ref{eq:reachhit}); we also report it at 2 and 4\,mm, together with the \emph{reach rate}.
 Every eligible lesion counts in the denominator, including failures.
-Because lesions in the same patient are correlated, confidence intervals resample patients rather than lesions: we report paired 95\% intervals from 5,000 patient-level bootstrap draws.
-Before inference we fixed the primary staging contrast (Gated $K$ from 7 to 28 under both scorers), the threshold for a useful gain (at least 3 points with an interval above zero), and the criterion for the spline comparison (lower bound above $-5$ points with at least fivefold speed on prepared crops).
+Distances are measured on the common grid.
+As robustness checks, we repeat the staging analysis in native earlier-scan coordinates (median axial spacing 3\,mm) and with every patient weighted equally.
 
-\paragraph{Timing.}
-\emph{Prepared-crop} time starts with both crops and the query in memory and includes candidate generation, features, scoring and any optimization.
-\emph{Native} time adds scan loading, chest alignment, resampling and query localization; in the two-query setting, scan initialization is shared across two lesions of the same pair.
+\paragraph{Statistics.}
+Lesions of the same patient are correlated, so we compare methods by paired differences with 95\% confidence intervals from 5,000 patient-level bootstrap samples.
+Before evaluating on the staging cohort, we fixed the primary comparison (Gated $K$ from 7 to 28, with both scorers), the criterion for a meaningful gain (at least 3 points, with the interval above zero) and the criterion for the comparison with the spline (lower bound above $-5$ points, with at least a fivefold speed-up on prepared crops).
 
-\ifexpandedpaper\input{evaluation_expanded}\fi
+\paragraph{Runtime.}
+\emph{Local} time starts with both crops and the query in memory and covers candidate generation, feature computation, scoring and any optimization; \emph{end-to-end} time additionally includes scan loading, chest alignment, resampling and query localization.
+All methods are timed on the same 24 staging and 32 screening queries with a single CPU thread.
+End-to-end time is measured on eight screening scan pairs, four of which contain two queries that share one chest alignment.
+
+
 
 \input{results_text}
 \input{discussion}
