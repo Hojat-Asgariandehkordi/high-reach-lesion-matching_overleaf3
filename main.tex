@@ -154,7 +154,7 @@ Parameter values are listed in Tab.~\ref{tab:params} (Sec.~\ref{sec:evaluation})
 The standard choice is to pass the $K$ translations with the lowest fit cost to the scorer.
 Since $f_t$ varies smoothly with $t$, these are typically adjacent lattice points around a single minimum (Fig.~\ref{fig:teaser}b): increasing $K$ adds near-duplicates of the same hypothesis rather than alternatives, and if that minimum is wrong, no scorer can recover the lesion.
 
-We instead traverse the translations in order of increasing $f_t$, breaking ties by $\|t\|$, and retain $t$ only if $d(x_t, x_u) \ge r$ for every previously retained $u$ (Algorithm~\ref{alg:diverse}).
+We instead traverse the translations in order of increasing $f_t$, breaking ties by $\|t\|$, and retain $t$ only if $d(x_t, x_u) \ge r$ for every previously retained translation $u$, where $x_u = p - u$ (Algorithm~\ref{alg:diverse}).
 Retained candidates thus keep the fit order, and only near-duplicates are skipped.
 Stopping after $K$ retained translations yields \emph{Diverse $K$}; traversing the whole lattice yields the complete list $\Ss$, which we call \emph{\ours}.
 The rule is greedy non-maximum suppression~\cite{neubeck2006nms} applied to correspondence hypotheses, with the fit cost as the score and a fixed spatial radius.
@@ -167,7 +167,7 @@ The rule is greedy non-maximum suppression~\cite{neubeck2006nms} applied to corr
 \State sort $\T$ by $(f_t, \|t\|)$ ascending
 \State $\Ss \gets \emptyset$ \Comment{retained translations}
 \For{$t$ in sorted $\T$}
-  \If{$d(x_t, x_u) \ge r$ for all $u \in \Ss$} \Comment{$x_t = p - t$}
+  \If{$d(x_t, x_u) \ge r$ for all $u \in \Ss$} \Comment{$x_t = p - t$, $x_u = p - u$}
     \State $\Ss \gets \Ss \cup \{t\}$
     \If{$|\Ss| = K$} \textbf{break} \EndIf
   \EndIf
