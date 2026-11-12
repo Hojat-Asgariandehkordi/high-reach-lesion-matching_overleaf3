@@ -51,9 +51,11 @@ Studies of registration uncertainty show that good image agreement does not guar
 We use a lesion-inclusive B-spline as the registration comparator.
 
 \paragraph{Dense anatomical correspondence.}
-Self-supervised anatomical embeddings (SAM)~\cite{yan2022sam} assign each voxel a descriptor of its anatomical position, so a point query can be matched by finding the most similar descriptor in another scan; diffusion-guided position encodings follow the same principle~\cite{zhuang2026diffusion}.
-We compare against the released SAM model, which supports point queries without retraining; this SAM is unrelated to Segment Anything.
-Deep Lesion Tracker and Transformer Lesion Tracker lack public inference weights, and the diffusion-guided tracker expects a coarse registration as input, so we do not run them (supplement, Sec.~S3).
+A third line of work learns a descriptor of anatomical position for every voxel.
+Self-supervised anatomical embeddings (SAM)~\cite{yan2022sam}\footnote{Not to be confused with the Segment Anything Model.} are trained so that the same anatomical point receives similar descriptors in different scans; a point marked in one scan is matched by finding the most similar descriptor in the other.
+Diffusion-guided position encodings follow the same principle~\cite{zhuang2026diffusion}.
+These methods replace an explicit search over shifts with a learned similarity, but they still report a single most-similar location, so when several locations look alike the error lies in selection rather than in coverage (Sec.~\ref{sec:transfer}).
+We use SAM as a baseline because its released model accepts a point query directly (Sec.~\ref{sec:evaluation}).
 
 \paragraph{Diversity in candidate generation.}
 Selecting a few good hypotheses from many is common across vision.
@@ -271,6 +273,7 @@ We transform the same query into its embedding grid and interpolate the similari
 We evaluate SAM in two ways: the maximum of its full field (\emph{standalone}), and as a drop-in scorer on our fit-ordered candidate centers (\emph{crossing}).
 The crossing gives the direct and learned scorers identical proposals.
 We also report a frozen local Siamese scorer trained on the same development data.
+We do not compare against Deep Lesion Tracker~\cite{cai2021} or Transformer Lesion Tracker~\cite{tang2022tlt}, because no inference checkpoints are publicly available, nor against the diffusion-guided tracker~\cite{zhuang2026diffusion}, which requires a coarse registration as input and would therefore be evaluated on a different starting point from the other methods; details are in the supplement (Sec.~S3).
 
 \paragraph{Metrics and statistics.}
 We report reach and hits (Eq.~\ref{eq:reachhit}) at a primary tolerance of $\tau = 3$\,mm in the shared grid, and also at 2 and 4\,mm and in native earlier-scan coordinates.
