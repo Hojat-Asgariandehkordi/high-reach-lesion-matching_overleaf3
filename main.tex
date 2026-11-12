@@ -194,7 +194,7 @@ A list truncated at $K$ entries, or filtered by cost thresholds, offers no such 
 
 \subsection{Lesion-aware selection}
 \label{sec:scorer-def}
-Each retained translation is scored by a logistic-regression lesion scorer that is trained once on development data and then frozen.
+Each retained translation is scored by a logistic-regression lesion scorer that is trained once on training data and then frozen.
 Its logit $\ell_t$ combines five descriptors of the candidate position (center contrast, compactness, Hessian tube- and plate-likeness to reject vessels and fissures, and isotropy) with three comparisons to the query lesion (patch correlation and the ratios of contrast and compactness); details are in the supplement (Sec.~S3).
 The final score subtracts a soft penalty for anatomical fit relative to the best candidate in the list,
 \begin{equation}
@@ -233,14 +233,14 @@ The identity holds for any pair of matchers; with the list-invariant score of Eq
 The common grid has $64^3$ voxels of $0.7\times0.7\times1.5$\,mm.
 The wide lattice $\T$ spans $\pm7$\,mm in-plane and $\pm7.5$\,mm axially at voxel spacing ($21\times21\times11 = 4{,}851$ translations); the original lattice ($\pm4.2$, $\pm4.2$, $\pm4.5$\,mm; 1,183 translations) is used in some comparisons.
 The radius is $r = 2.1$\,mm (three in-plane voxels); \ours retains about 365 of the 4,851 translations per query.
-The scales $F = 76.958$\,HU and $W = 99.541$\,HU are the residual limits fitted on development data, and $\lambda = 1.5$ for all variants.
+The scales $F = 76.958$\,HU and $W = 99.541$\,HU are the residual limits fitted on training data, and $\lambda = 1.5$ for all variants.
 
 
 \section{Evaluation protocol}
 \label{sec:evaluation}
 \paragraph{Independent staging cohort.}
 Longitudinal-CT v2~\cite{gatidis2026longct,kuestner2025longct} contains melanoma staging CT from a clinical source distinct from the screening data.
-Readers manually segmented and linked lesions at baseline and follow-up.
+Practitioners manually segmented and linked lesions at baseline and follow-up.
 We use clear persistent pulmonary links in single-volume scan pairs with a 3D centroid in each visit.
 An outcome-independent hash order allocates 440 links from 72 of the 107 eligible patients under a scan-retrieval budget, keeping all qualifying lesions of each selected patient.
 Three tracks lack shared crop support and are counted as misses.
