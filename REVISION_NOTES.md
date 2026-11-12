@@ -60,3 +60,11 @@ BioRender figures to export as PNG (300 dpi or higher) and save under `figures/b
 6. **Verify the 9 new references** at the end of `refs.bib`.
 7. **Optional:** add a learned-registration baseline (e.g. uniGradICON). The Limitations section now names this gap.
 8. Before submitting, uncomment `\renewcommand{\TODO}[1]{}` in `preamble.tex`.
+
+## Fig. 2 (method overview) — detailed BioRender version (2026-11-12)
+- Source art: figures/biorender/overview_detailed.png (BioRender figure 73f66514e70d747895a24ac9,
+  generated from the authors' sketch figures/biorender/sketch_reference.jpg).
+- Build: `python3 scripts/fig_overview_br.py` → figures/overview.pdf. The script removes BioRender's
+  pixel lettering and typesets every label in Times as real PDF text; it also removes a duplicate
+  ground-truth star and adds the 12th candidate so both sides of panel C have K = 12.
+- scripts/fig_overview.py (the earlier code-drawn version) also writes figures/overview.pdf — don't run both.
