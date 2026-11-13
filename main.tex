@@ -60,7 +60,7 @@ Location Registration and Recognition (LRR)~\cite{sofka2010} is the closest desi
 Rafael-Palou \etal~\cite{rafaelpalou2021} instead re-identify detected nodules with a 3D Siamese network, avoiding explicit registration, while Deep Lesion Tracker~\cite{cai2021} and Transformer Lesion Tracker~\cite{tang2022tlt} learn to combine lesion appearance with anatomical context and predict the earlier location directly.
 These systems differ mainly in their scoring function; how candidate locations are allocated before scoring has received less attention, and it is the question we study.
 Registration offers a second route to the earlier location.
-Free-form deformation with B-splines~\cite{rueckert1999} is a standard way to estimate a continuous map between two CT scans, and discrete registration evaluates a set of candidate displacements per control point and optimizes them jointly~\cite{glocker2008dense,heinrich2013mrf}, which is close in spirit to scoring a lattice of translations.
+Free-form deformation with B-splines~\cite{rueckert1999}, often called B-spline registration, is a standard way to estimate a continuous map between two CT scans, and discrete registration evaluates a set of candidate displacements per control point and optimizes them jointly~\cite{glocker2008dense,heinrich2013mrf}, which is close in spirit to scoring a lattice of translations.
 Learned methods predict deformation fields in a single forward pass~\cite{balakrishnan2019voxelmorph,ghazipour2021}, and recent foundation models and benchmarks cover many anatomies, including lung CT~\cite{tian2024unigradicon,hering2023learn2reg}.
 Studies of registration uncertainty show that good image agreement does not guarantee a reliable mapped location~\cite{eppenhof2018,luo2017}, which motivates keeping several hypotheses rather than committing to one; we use a lesion-inclusive B-spline as the registration comparator.
 A third line of work learns a descriptor of anatomical position for every voxel.
@@ -289,8 +289,9 @@ To measure the effect of candidate selection alone, we compare candidate lists t
 We use budgets from $K = 7$ to $K = 112$.
 
 \subsection{Baselines}
-We compare against a lesion-inclusive B-spline registration~\cite{lowekamp2013}, the strongest of four settings on the training set, and against the released SAM model~\cite{yan2022sam}, used both standalone and as a drop-in scorer on our candidate lists.
-We also replace our scorer with a Siamese scorer trained on the same data.
+We compare against lesion-inclusive B-spline registration~\cite{lowekamp2013} (hereafter \emph{the spline}), which warps the earlier scan with a smooth deformation controlled by a coarse grid of control points, optimizes image similarity in a region that includes the lesion, and maps the query through the resulting deformation; we use the strongest of four spline settings on the training set.
+We also compare against the released SAM model~\cite{yan2022sam}, used both standalone and as a drop-in scorer on our candidate lists.
+Finally, we replace our scorer with a Siamese scorer trained on the same data.
 Learned lesion trackers~\cite{cai2021,tang2022tlt} are trained end to end on large annotated longitudinal datasets, whereas our method needs only a small training set; we therefore represent learned correspondence by SAM, which can be applied without retraining. The diffusion-guided tracker~\cite{zhuang2026diffusion} refines a given registration and is thus complementary to, rather than an alternative for, our search.
 
 \subsection{Evaluation metrics}
