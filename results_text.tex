@@ -20,6 +20,11 @@ Both comparisons meet the criteria fixed before evaluation.
 As shown in Fig.~\ref{fig:forest}, the advantage holds at every tolerance and remains when every staging patient is weighted equally ($+9.6$ [3.7, 15.9]) or when distances are measured in native earlier-scan coordinates ($+11.4$ [4.1, 18.9]).
 The median error of the predicted positions decreases from 2.41 to 1.68\,mm on staging and from 1.70 to 1.46\,mm on screening.
 
+The other rows of Table~\ref{tab:main} place these results in context.
+Among the baselines, the released SAM model is far weaker as a standalone matcher (99 and 80 hits, 22.5\% and 25.9\%), although its similarity map contains a correct location for most lesions (Reach@3 of 396 and 308), and the learned Siamese scorer applied to Relaxed 28 lists reaches 203 and 210 hits.
+Within our own pipeline, a fit-ranked list of 28 candidates (Fit-only 28) yields 205 and 175 hits; enforcing a minimum spacing at the same budget (Diverse 28) raises this to 245 and 212 (Sec.~\ref{sec:diversity}), and running the diverse search to completion gives the 289 and 244 hits reported above.
+Scoring all 4,851 translations (Exhaustive) yields 297 and 242 hits, so \ours is within eight hits of exhaustive scoring on staging and two hits better on screening while scoring about 7.5\% of the candidates (Sec.~\ref{sec:complete}).
+
 Three differences explain the gain over registration.
 First, the spline is initialized from the best translation on the smaller original lattice ($\pm4.2$\,mm), whereas \ours searches the wide lattice ($\pm7$\,mm); exhaustive scoring of the wide lattice outperforms the spline by an even larger margin (297 hits), so the extent of the search matters.
 Second, our scorer selects the most lesion-like candidate, whereas the spline maps the query itself; with the exact annotated position as the query, the spline improves from 211 to 239 screening hits, while \ours remains at 243 (Sec.~\ref{sec:query}).
