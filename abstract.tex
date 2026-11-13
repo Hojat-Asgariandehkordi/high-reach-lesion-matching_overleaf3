@@ -1,8 +1,7 @@
-Measuring how a lung lesion changes over time requires finding it again in the patient's earlier CT scan.
-After a global chest alignment, a small residual shift remains, and several nearby locations can match the surrounding anatomy.
-Hypothesis-based matchers rank candidate shifts by anatomical fit and let a lesion scorer choose among the best few.
-We show that this design spends its budget poorly: the best-fitting shifts are near-duplicates of a single alignment mode, so when that mode is wrong the scorer never sees the lesion.
-We introduce \emph{fit-ordered diverse search}, which keeps the fit ordering but accepts a shift only if it lies at least 2.1\,mm from every shift already accepted.
-With the same 28 candidates, this raises the hit rate by 9.1 and 12.0 percentage points on two CT cohorts, and an accounting of reach and selection shows that the entire gain comes from coverage.
-Run to completion, the diversified list reaches 348 of the 351 lesions that scoring every shift can reach while evaluating 7.5\% of the shifts.
-On 440 metastases from an independent staging cohort, the resulting matcher finds the earlier lesion within 3\,mm in 289 cases, compared with 243 for lesion-inclusive deformable registration, by combining a wider search with lesion-aware selection; the advantage replicates on 309 screening nodules, is largest when the query is imprecise, and comes with a local matching step about 19 times faster.
+Measuring how a lung lesion changes over time requires finding the same lesion again in the patient's earlier CT scan.
+After the two scans are aligned, several nearby positions can still look anatomically plausible, so practical matchers propose a short list of candidate positions and let a lesion classifier choose one.
+We show that the usual way of building this list wastes it: the best-matching candidates are near-copies of a single guess, and when that guess is wrong the classifier never sees the lesion.
+We propose to keep the same ranking but to accept a candidate only if it is sufficiently far from those already accepted, so that the same budget covers several distinct guesses.
+This simple change improves the matching rate by 9 to 12 percentage points on two CT cohorts, and we show that the gain comes entirely from the list containing the lesion more often.
+On an independent cohort of 440 metastases, the resulting matcher finds the earlier lesion within 3\,mm in 66\% of cases, compared with 55\% for deformable registration, while running about 19 times faster.
+The results suggest that deciding which candidates to consider deserves as much attention as deciding how to score them.

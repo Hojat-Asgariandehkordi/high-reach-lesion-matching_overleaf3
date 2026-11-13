@@ -113,10 +113,11 @@ def teaser():
     K = 12
     fitonly = order[:K]
     div = diverse(order, K=K)
-    fig = plt.figure(figsize=(S.PAGE_W, 2.0))
-    gs = fig.add_gridspec(1, 3, width_ratios=[2.35, 1, 1], wspace=0.08)
-    # (a) the problem
-    ax = fig.add_subplot(gs[0])
+    fig = plt.figure(figsize=(S.COL_W, 3.2))
+    gs = fig.add_gridspec(2, 2, height_ratios=[1.0, 1.08], hspace=0.32, wspace=0.12,
+                          left=0.01, right=0.99, top=0.95, bottom=0.07)
+    # (a) the problem, full column width on top
+    ax = fig.add_subplot(gs[0, :])
     art = biorender("problem_notext", (0, 0.08, 1, 0.86))
     if art is not None:
         H, W = art.shape[:2]
@@ -142,8 +143,8 @@ def teaser():
         teaser_drawn_a(ax)
     # (b) and (c): the search window, zoomed
     for k, (idx, title) in enumerate([(fitonly, f"(b) Top {K} by fit"),
-                                      (div, f"(c) Top {K}, diversified (ours)")]):
-        ax = fig.add_subplot(gs[k + 1])
+                                      (div, f"(c) Top {K}, diversified")]):
+        ax = fig.add_subplot(gs[1, k])
         landscape(ax)
         for sp in ax.spines.values():
             sp.set_color("#ffd400"); sp.set_linestyle((0, (2, 1.5))); sp.set_linewidth(0.9)

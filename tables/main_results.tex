@@ -1,23 +1,30 @@
-\begin{table*}[!t]
+\begin{table}[t]
 \centering
-\small
-\setlength{\tabcolsep}{4.6pt}
-\begin{tabular}{@{}llcccccccc@{}}
+\footnotesize
+\setlength{\tabcolsep}{3.3pt}
+\begin{tabular}{@{}lrrrrr@{}}
 \toprule
-& & \multicolumn{4}{c}{Independent staging CT ($n{=}440$)} & \multicolumn{4}{c}{Retrospective screening CT ($n{=}309$)} \\
-\cmidrule(lr){3-6}\cmidrule(l){7-10}
-Method & Candidates & Hit@2 & Hit@3 & Hit@4 & Reach@3 & Hit@2 & Hit@3 & Hit@4 & Reach@3 \\
+Method & Cand. & Hit@2 & Hit@3 & Hit@4 & Reach@3 \\
 \midrule
-B-spline, lesion-incl.~\cite{rueckert1999} & continuous & 199 & 243 & 267 & 243 & 170 & 211 & 231 & 211 \\
-SAM standalone~\cite{yan2022sam} & full crop & 36 & 99 & 184 & 396 & 27 & 80 & 147 & 308 \\
-Siamese scorer, Relaxed 28 & 22 / 25$^\ast$ & 134 & 203 & 253 & 264 & 155 & 210 & 232 & 235 \\
+\multicolumn{6}{@{}l}{\emph{Independent staging cohort} ($n{=}440$)} \\
+B-spline, lesion-incl.~\cite{rueckert1999} & -- & 199 & 243 & 267 & 243 \\
+SAM standalone~\cite{yan2022sam} & -- & 36 & 99 & 184 & 396 \\
+Siamese scorer, Relaxed 28 & 22$^\ast$ & 134 & 203 & 253 & 264 \\
+Fit-only 28 & 28 & 157 & 205 & 237 & 221 \\
+Diverse 28 & 28 & 197 & 245 & 275 & 274 \\
+\textbf{\ours (ours)} & 365 & 259 & 289 & 306 & 348 \\
+Exhaustive & 4,851 & \textbf{277} & \textbf{297} & \textbf{311} & 351 \\
 \midrule
-Fit-only 28 & 28 & 157 & 205 & 237 & 221 & 141 & 175 & 196 & 189 \\
-Diverse 28 & 28 & 197 & 245 & 275 & 274 & 164 & 212 & 230 & 242 \\
-\textbf{\ours (ours)} & 365 / 360 & 259 & 289 & 306 & 348 & \textbf{207} & \textbf{244} & \textbf{255} & 289 \\
-Exhaustive & 4,851 & \textbf{277} & \textbf{297} & \textbf{311} & 351 & 205 & 242 & 253 & 290 \\
+\multicolumn{6}{@{}l}{\emph{Screening cohort} ($n{=}309$)} \\
+B-spline, lesion-incl.~\cite{rueckert1999} & -- & 170 & 211 & 231 & 211 \\
+SAM standalone~\cite{yan2022sam} & -- & 27 & 80 & 147 & 308 \\
+Siamese scorer, Relaxed 28 & 25$^\ast$ & 155 & 210 & 232 & 235 \\
+Fit-only 28 & 28 & 141 & 175 & 196 & 189 \\
+Diverse 28 & 28 & 164 & 212 & 230 & 242 \\
+\textbf{\ours (ours)} & 360 & \textbf{207} & \textbf{244} & \textbf{255} & 289 \\
+Exhaustive & 4,851 & 205 & 242 & 253 & 290 \\
 \bottomrule
 \end{tabular}
-\caption{Correspondence on both cohorts. Hit@$\tau$ counts lesions whose selected point is within $\tau$\,mm of the earlier reference; Reach@3 counts lesions with any candidate within 3\,mm. All denominators include failures. Paired differences with 95\% intervals are in Fig.~\ref{fig:forest}; timing is in Tab.~\ref{tab:timing}. $^\ast$Mean number of candidates left after the gates (staging / screening).}
+\caption{\textbf{Correspondence on both cohorts} (number of lesions). Hit@$\tau$: selected point within $\tau$\,mm of the annotated earlier position; Reach@3: any candidate within 3\,mm; all denominators include failures. Cand.: number of scored candidates; the B-spline optimizes a continuous deformation and SAM searches its full similarity map, so neither has a candidate count. $^\ast$Mean number of candidates left after the gates. Paired differences with 95\% intervals are in Fig.~\ref{fig:forest}; timing is in Tab.~\ref{tab:timing}.}
 \label{tab:main}
-\end{table*}
+\end{table}

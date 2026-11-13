@@ -21,6 +21,12 @@ To see \emph{why} a change in the candidate list helps, we track two quantities.
 Splitting the change in hits into a reach term and a selection term is a simple accounting identity, but it becomes informative here because our scorer ranks any two candidates the same way regardless of the rest of the list, so the selection term isolates genuine changes in choice.
 The accounting shows that diversification works entirely through coverage, and that extra coverage pays off only for a scorer that can use it: enlarging the list helps a lesion-specific scorer but not a general anatomical embedding~\cite{yan2022sam}, even though both see identical candidates.
 
+A toy example makes the failure concrete.
+Figure~\ref{fig:teaser}(b,c) uses a synthetic two-dimensional fit landscape on a lattice with 0.7\,mm steps, in which a deeper fit minimum lies 6.4\,mm from the true lesion and a shallower minimum sits at the lesion.
+The 12 best-fitting candidates all fall within 1.4\,mm of the wrong minimum, and the closest of them is 5.3\,mm from the lesion, so no scorer can succeed.
+With a minimum spacing of $r = 2.1$\,mm, the same 12 candidates spread over both minima, four of them lie within 3\,mm of the lesion, and the closest is 0.4\,mm away.
+The ranking is unchanged; only the allocation of the budget differs.
+
 We evaluate on an independent melanoma staging cohort and replicate on a lung screening cohort, with success criteria fixed before inference.
 Our paper offers the following contributions.
 \textbf{A diagnosis and a remedy for candidate allocation:} we show that fit-ranked shortlists collapse onto one alignment mode and introduce fit-ordered diverse search, which inherits the covering property of greedy suppression, so that the complete list stays within $r$ of every lattice position while scoring 7.5\% of them (Sec.~\ref{sec:method}).

@@ -16,7 +16,12 @@ Finally, a failed chest alignment can leave the lesion outside the local crop (2
 
 \section{Conclusion}
 \label{sec:conclusion}
-We studied how candidate locations should be allocated when matching a lung lesion across CT visits.
-Keeping the anatomical fit order but requiring candidates to be at least 2.1\,mm apart turns a fixed budget into coverage, improving the hit rate by 9 to 12 points at 28 candidates, and the complete list reaches nearly every lesion that exhaustive scoring reaches with 7.5\% of the candidate evaluations.
+We asked whether matching a lung lesion across CT visits is limited by how candidates are scored or by which candidates are scored, and the evidence points to the latter.
+Keeping the anatomical fit order but requiring candidates to be at least 2.1\,mm apart turns a fixed budget into coverage: at 28 candidates the hit rate improves by 9 to 12 points, the reach--selection decomposition attributes the entire gain to lesions that become reachable, and the complete list reaches 348 of the 351 lesions that exhaustive scoring reaches while evaluating 7.5\% of the candidates.
 Combined with a lesion-aware scorer, the resulting matcher improves on lesion-inclusive B-spline registration by about 10 points at 3\,mm on two cohorts, most of all when the query is imprecise, while running the local step about 19 times faster.
-Treating candidate allocation as a design choice in its own right, measured through reach and selection, is a simple and broadly applicable way to build stronger correspondence methods.
+The same analysis also shows where the approach stops helping: extra coverage pays off only for a scorer that can tell the lesion apart from similar anatomy, and with an exact query on the screening cohort the advantage over registration largely disappears.
+These findings suggest three directions.
+First, the remaining errors are mostly errors of selection, so stronger lesion scorers, including learned ones evaluated on the diverse lists, are the most direct route to further gains.
+Second, the spacing $r$ and the lattice could adapt to the local fit landscape, for example by seeding candidates at the minima of the fit cost, and should be compared with other ways of spreading a budget.
+Third, the evaluation should move from simulated queries to real clicks and detector outputs, and the approach should be tested on other point-correspondence problems in which a global alignment leaves several nearby plausible matches.
+More generally, treating candidate allocation as a design choice in its own right, measured through reach and selection, is a simple and broadly applicable way to build stronger correspondence methods.

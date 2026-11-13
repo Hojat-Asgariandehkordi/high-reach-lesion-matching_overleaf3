@@ -25,26 +25,24 @@
 \begin{document}
 \maketitle
 
-% ---- Figure 1: schematic of the problem and the idea ----
-\begin{strip}
-\centering
-\includegraphics[width=\linewidth]{figures/teaser.pdf}
-\captionsetup{hypcap=false}
-\captionof{figure}{\textbf{The problem and our idea.}
-(a)~A lesion is marked in the current CT (query $p$; illustration). After a global chest alignment, the same lesion lies somewhere inside a small search window (dashed) in the earlier CT, but several nearby spots can match the surrounding anatomy.
-(b)~Inside the window, each dot is a candidate location. Keeping the 12 candidates with the best anatomical fit places them all around one fit mode; here that mode is wrong, so no candidate lies within 3\,mm (dashed circle) of the true earlier lesion (star).
-(c)~Our diverse search walks through the same fit order but keeps a candidate only if it is at least a distance $r$ from every candidate kept so far (shaded disks). The same 12 candidates now also cover the correct location, and a lesion classifier can pick it.
-Panels (b,\,c) run the actual selection rule on a synthetic 2D fit landscape. Illustrations in (a) created in BioRender.}
-% TODO(group): replace with BioRender's official citation (includes the creator's name) for the camera-ready version only, to keep the review copy anonymous.
-\captionsetup{hypcap=true}
-\label{fig:teaser}
-\end{strip}
 
 \begin{abstract}
 \input{abstract}
 \end{abstract}
 
 \section{Introduction}
+% ---- Figure 1: schematic of the problem and the idea ----
+\begin{figure}[t]
+\centering
+\includegraphics[width=\linewidth]{figures/teaser.pdf}
+\caption{\textbf{The problem and our idea.}
+(a)~A lesion is marked in the current CT (query $p$; illustration). After a global chest alignment, the same lesion lies somewhere inside a small search window (dashed) in the earlier CT, but several nearby spots can match the surrounding anatomy.
+(b)~Inside the window, each dot is a candidate location. Keeping the 12 candidates with the best anatomical fit places them all around one fit mode; here that mode is wrong, so no candidate lies within 3\,mm (dashed circle) of the true earlier lesion (star).
+(c)~Our diverse search walks through the same fit order but keeps a candidate only if it is at least a distance $r$ from every candidate kept so far (shaded disks). The same 12 candidates now also cover the correct location, and a lesion classifier can pick it.
+Panels (b,\,c) run the actual selection rule on a synthetic 2D fit landscape. Illustrations in (a) created in BioRender.}
+% TODO(group): replace with BioRender's official citation (includes the creator's name) for the camera-ready version only, to keep the review copy anonymous.
+\label{fig:teaser}
+\end{figure}
 \input{intro_findings}
 \ifexpandedpaper\input{intro_expanded}\fi
 
@@ -207,30 +205,40 @@ A list truncated at $K$ entries, or filtered by cost thresholds, offers no such 
 \label{sec:scorer-def}
 Each retained translation is scored by a logistic-regression lesion scorer that is trained once on the training set (Sec.~\ref{sec:evaluation}) and then frozen.
 Its logit $\ell_t$ combines five descriptors of the candidate position (center contrast, compactness, Hessian tube- and plate-likeness to reject vessels and fissures, and isotropy) with three comparisons to the query lesion (patch correlation and the ratios of contrast and compactness); details are in the supplement (Sec.~S3).
-The final score subtracts a soft penalty for anatomical fit relative to the best candidate in the list,
+The final score subtracts a soft penalty for anatomical fit relative to the best candidate in the list.
+Let $F$ and $W$ be fixed scales that bring the fit and witness costs to comparable units, and let $\lambda > 0$ weight the penalty against the lesion evidence; then
 \begin{equation}
 s(t) = \ell_t - \lambda\left(\frac{f_t - \min_{u\in\Ss} f_u}{F} + \frac{w_t - \min_{u\in\Ss} w_u}{W}\right),
 \label{eq:direct}
 \end{equation}
-where $F$ and $W$ normalize the two costs and $\lambda$ weights the penalty.
-The prediction is $x_{\hat t}$ with $\hat t = \argmax_{t\in\Ss} s(t)$.
-Because the minima in Eq.~\ref{eq:direct} are shared by all candidates, extending a list shifts the scores of existing candidates by the same amount; their ranking is preserved, and the prediction changes only if a new candidate outranks the previous one.
+and the prediction is $x_{\hat t}$ with $\hat t = \argmax_{t\in\Ss} s(t)$.
+Both penalty terms are zero for the best-fitting candidate and grow linearly as a candidate fits worse than the best one in the list, so a candidate with clearly lesion-like appearance can still win despite a slightly worse fit.
+
+\noindent\textbf{Lemma 1 (list invariance).} \emph{Let $\Ss \subseteq \Ss'$ be two candidate lists and $s, s'$ the corresponding scores. Then $s'(t) - s'(u) = s(t) - s(u)$ for all $t, u \in \Ss$.}
+
+\noindent\emph{Proof.}
+By Eq.~\ref{eq:direct}, $s'(t) = s(t) + \lambda (c_f/F + c_w/W)$ with $c_f = \min_{u\in\Ss} f_u - \min_{u\in\Ss'} f_u \ge 0$ and $c_w$ defined analogously; the shift is the same for every $t \in \Ss$ and cancels in the difference. \hfill$\square$
+
+\noindent Extending a list therefore never reorders the existing candidates: the prediction changes only if a new candidate outranks the previous winner.
 Section~\ref{sec:decomp} relies on this property.
 
 \subsection{Reach and selection}
 \label{sec:decomp}
 A matcher can fail because no candidate lies near the reference, or because the scorer selects the wrong one.
-For lesion $i$ with reference $y_i$, retained set $\Ss_i$, prediction $\hat x_i$ and tolerance $\tau$ (3\,mm unless stated otherwise), we define
+For lesion $i$, let $y_i$ be its annotated earlier position, $\Ss_i$ the retained candidate list, $\hat x_i$ the prediction and $\tau$ the tolerance (3\,mm unless stated otherwise), and write $d(y_i, \Ss_i) = \min_{t\in\Ss_i} d(y_i, x_t)$ for the distance to the nearest retained position.
+We define the reach and hit indicators
 \begin{align}
 R_i &= \mathbf{1}\{d(y_i, \Ss_i) \le \tau\}, &
 H_i &= \mathbf{1}\{d(\hat{x}_i, y_i) \le \tau\},
 \label{eq:reachhit}
 \end{align}
-where $d(y_i, \Ss_i)$ is the distance to the nearest retained position.
-A lesion is \emph{reachable} if $R_i = 1$ and a \emph{hit} if $H_i = 1$; a hit implies reach.
+where $\mathbf{1}\{\cdot\}$ is $1$ if the condition holds and $0$ otherwise.
+A lesion is \emph{reachable} if $R_i = 1$ and a \emph{hit} if $H_i = 1$; since the prediction is one of the retained positions, $H_i \le R_i$, so a hit implies reach.
 
-To compare two matchers on the same lesions, we partition the lesions reachable by at least one of them into $\mathcal{J}$ (reachable by both), $\mathcal{G}$ (reachable only by matcher~2) and $\mathcal{O}$ (reachable only by matcher~1).
-The change in the number of hits then decomposes exactly as
+To compare two matchers on the same lesions, let $R_{i,m}$ and $H_{i,m}$ denote the indicators of matcher $m \in \{1, 2\}$, and let $\Delta H = \sum_i (H_{i,2} - H_{i,1})$ be the change in the number of hits.
+We partition the lesions reachable by at least one matcher into $\mathcal{J} = \{i : R_{i,1} = R_{i,2} = 1\}$ (reachable by both), $\mathcal{G} = \{i : R_{i,1} = 0, R_{i,2} = 1\}$ (reachable only by matcher~2) and $\mathcal{O} = \{i : R_{i,1} = 1, R_{i,2} = 0\}$ (reachable only by matcher~1).
+Lesions reachable by neither matcher contribute nothing to $\Delta H$, because $H_{i,m} \le R_{i,m} = 0$; on $\mathcal{G}$ we have $H_{i,1} = 0$ and on $\mathcal{O}$ we have $H_{i,2} = 0$.
+Splitting the sum over the three sets therefore gives the exact decomposition
 \begin{equation}
 \Delta H = \underbrace{\sum_{i\in\mathcal{J}} (H_{i,2} - H_{i,1})}_{\text{selection}} \;+\; \underbrace{\sum_{i\in\mathcal{G}} H_{i,2} \;-\; \sum_{i\in\mathcal{O}} H_{i,1}}_{\text{reach}} .
 \label{eq:decomp}
