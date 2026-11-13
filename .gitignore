@@ -1,3 +1,15 @@
 # Patient CT crops: keep out of the (public) repository
 scripts/cases.npz
 __pycache__/
+
+# LaTeX build files
+*.aux
+*.bbl
+*.blg
+*.brf
+*.fdb_latexmk
+*.fls
+*.log
+*.out
+/main.pdf
+/supplement.pdf
