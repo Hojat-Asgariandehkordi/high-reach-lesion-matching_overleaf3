@@ -291,20 +291,10 @@ To measure the effect of candidate selection alone, we compare candidate lists t
 We use budgets from $K = 7$ to $K = 112$.
 
 \subsection{Baselines}
-We compare against the two alternatives discussed in Sec.~\ref{sec:related}: deformable registration and learned anatomical embeddings.
-
-\paragraph{Deformable registration.}
-The lesion-inclusive B-spline~\cite{lowekamp2013} fits a $3\times3\times4$ control-point mesh to image similarity within 22\,mm of the crop center, starting from the best exhaustive translation on the original lattice and with bounded coefficients.
-It is the strongest of four spline settings evaluated on the training set; the masked, coarse and early-stopped settings are reported in the supplement.
-Unlike our search, the spline optimizes a continuous deformation and uses image samples that include the lesion.
-
-\paragraph{Anatomical embeddings.}
-For SAM~\cite{yan2022sam}, we use the released checkpoint, trained on the NIH Lymph Node dataset, with its 2\,mm preprocessing and the mean of its coarse and fine cosine similarities.
-We map the query into SAM's embedding grid and interpolate the resulting similarity map back onto our grid.
-We evaluate SAM in two ways: \emph{standalone}, returning the maximum of its similarity map, and as a drop-in scorer on our candidate lists, so that SAM and our scorer choose among exactly the same positions.
-
-\paragraph{Learned scorer.}
-We also replace our logistic scorer with a frozen local Siamese scorer trained on the same training set.
+We compare against the two alternatives discussed in Sec.~\ref{sec:related}.
+For deformable registration, we use a lesion-inclusive B-spline~\cite{lowekamp2013}, the strongest of four spline settings evaluated on the training set (the others are reported in the supplement); unlike our search, it optimizes a continuous deformation using image samples that include the lesion.
+For anatomical embeddings, we use the released SAM model~\cite{yan2022sam} in two ways: standalone, returning the most similar position, and as a drop-in replacement for our scorer on the same candidate lists.
+Finally, we replace our scorer with a learned Siamese scorer trained on the same training set.
 
 \paragraph{Methods not compared.}
 We do not compare against Deep Lesion Tracker~\cite{cai2021} or Transformer Lesion Tracker~\cite{tang2022tlt}, because no inference checkpoints are publicly available, nor against the diffusion-guided tracker~\cite{zhuang2026diffusion}, which requires a coarse registration as input and would therefore be evaluated on a different starting point from the other methods; details are in the supplement (Sec.~S3).
