@@ -31,23 +31,14 @@
 \end{abstract}
 
 \section{Introduction}
-% ---- Figure 1: schematic of the problem and the idea ----
-\begin{figure}[t]
-\centering
-\includegraphics[width=\linewidth]{figures/teaser.pdf}
-\caption{The problem and our idea. (a)~After chest alignment, the lesion marked in the current CT lies in a small window of the earlier CT. (b)~The 12 best-fitting candidates crowd around one wrong fit mode and miss the lesion (star, 3\,mm circle). (c)~Requiring candidates to be at least $r$ apart spreads the same 12 so that they cover the lesion. Panels (b,\,c) run our selection rule on a synthetic landscape; (a) created in BioRender.}
-% TODO(group): replace with BioRender's official citation (includes the creator's name) for the camera-ready version only, to keep the review copy anonymous.
-\label{fig:teaser}
-\end{figure}
+
 \input{intro_findings}
 \ifexpandedpaper\input{intro_expanded}\fi
-
 The rest of the paper is organized as follows.
 Section~\ref{sec:related} reviews longitudinal lesion tracking, image registration, dense anatomical correspondence and diversity in candidate generation.
 Section~\ref{sec:method} formulates the problem and presents the anatomical fit cost, fit-ordered diverse search with its coverage guarantee, the lesion-aware scorer and the reach--selection decomposition.
 Section~\ref{sec:evaluation} describes the datasets, implementation details, baselines and metrics, and Sec.~\ref{sec:results} reports the results.
 Section~\ref{sec:discussion} discusses limitations, and Sec.~\ref{sec:conclusion} concludes.
-
 \section{Related work}
 \label{sec:related}
 

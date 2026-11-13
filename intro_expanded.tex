@@ -1,3 +1,12 @@
+% ---- Figure 1: schematic of the problem and the idea ----
+\begin{figure}[t]
+\centering
+\includegraphics[width=\linewidth]{figures/teaser.pdf}
+\caption{The problem and our idea. (a)~After chest alignment, the lesion marked in the current CT lies in a small window of the earlier CT. (b)~The 12 best-fitting candidates crowd around one wrong fit mode and miss the lesion (star, 3\,mm circle). (c)~Requiring candidates to be at least $r$ apart spreads the same 12 so that they cover the lesion. Panels (b,\,c) run our selection rule on a synthetic landscape; (a) created in BioRender.}
+% TODO(group): replace with BioRender's official citation (includes the creator's name) for the camera-ready version only, to keep the review copy anonymous.
+\label{fig:teaser}
+\end{figure}
 The separation also makes compute a design variable.
 An exhaustive lattice provides a useful accuracy reference, while the complete diversified list limits how many local descriptors need to be computed.
 We evaluate both and measure local matching separately from shared scan initialization.
+
