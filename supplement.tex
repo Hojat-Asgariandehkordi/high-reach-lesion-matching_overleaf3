@@ -72,6 +72,32 @@ Before crop preparation, each scan must have a robust lung extent of at least 13
 The evaluation uses de-identified research data and previously supplied annotations. The original NLST reports written consent and institutional review~\cite{aberlenslt}. The secondary analysis involved no participant contact or new imaging.
 
 \section{Physical support and candidate generation}
+\paragraph{Parameters.}
+Table~\ref{tab:params} lists the parameters of the anatomical fit cost (main paper, Sec.~3.2); the remaining settings are given in the main paper (Sec.~3.6).
+All values were fixed on the training set and kept unchanged for every experiment.
+
+\begin{table}[t]
+\centering
+\footnotesize
+\setlength{\tabcolsep}{4pt}
+\caption{\textbf{Parameters of the anatomical fit cost} (main paper, Sec.~3.2), fixed on the training set.}
+\label{tab:params}
+\begin{tabular}{@{}clr@{}}
+\toprule
+Symbol & Meaning & Value \\
+\midrule
+$\rho_1$ & inner radius of the sampling shell & 23\,mm \\
+$\rho_2$ & outer radius of the sampling shell & 28\,mm \\
+$|\Omega_f|$, $|\Omega_w|$ & samples in the fit and witness sets & 436 each \\
+$\delta$ & clip on the intensity offset $o_t$ & 98\,HU \\
+$\kappa$ & cap on each residual & 420\,HU \\
+$g_0$ & weight of air-like samples & 0.25 \\
+$h_0$ & intensity at or below which $g_i = g_0$ (air) & $-860$\,HU \\
+$h_1$ & intensity at or above which $g_i = 1$ (tissue) & $-370$\,HU \\
+\bottomrule
+\end{tabular}
+\end{table}
+
 \paragraph{Residual support details (moved from the main paper).}
 The fit and witness octants use strided centers that stay valid across the lattice after smoothing and displacement.
 The residual support excludes a 10\,mm core on the resampled grid, while the final lesion score and the central spline can use the lesion-bearing interior.
