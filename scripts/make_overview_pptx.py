@@ -12,10 +12,10 @@ from pptx.util import Inches, Pt, Emu
 from pptx.enum.text import PP_ALIGN, MSO_ANCHOR
 from pptx.dml.color import RGBColor
 sys.path.insert(0, os.path.dirname(__file__))
-from fig_overview_br import LAYOUT, FW, FH, CLEAN, ROOT, split_math
+from fig_overview_br import LAYOUT, FW, FH, TOP, CLEAN, ROOT, split_math
 
 SLIDE_W = 13.333                       # inches
-SLIDE_H = SLIDE_W * FH / FW
+SLIDE_H = SLIDE_W * (FH - TOP) / FW
 PT_SCALE = SLIDE_W / 6.875             # paper figure is 6.875 in wide
 FONT = "Times New Roman"
 
@@ -25,14 +25,22 @@ def emu_x(x):
 
 
 def emu_y(y):
-    return Emu(int(y / FH * Inches(SLIDE_H)))
+    return Emu(int((y - TOP) / (FH - TOP) * Inches(SLIDE_H)))
+
+
+def emu_h(h):
+    return Emu(int(h / (FH - TOP) * Inches(SLIDE_H)))
 
 
 def main():
     prs = Presentation()
     prs.slide_width, prs.slide_height = Inches(SLIDE_W), Inches(SLIDE_H)
     slide = prs.slides.add_slide(prs.slide_layouts[6])          # blank
-    pic = slide.shapes.add_picture(CLEAN, 0, 0, prs.slide_width, prs.slide_height)
+    from PIL import Image
+    im = Image.open(CLEAN)
+    cropped = os.path.join(ROOT, "figures", "biorender", "overview_clean_notitle.png")
+    im.crop((0, round(TOP / FH * im.height), im.width, im.height)).save(cropped)   # drop the old title banner
+    pic = slide.shapes.add_picture(cropped, 0, 0, prs.slide_width, prs.slide_height)
     pic.name = "BioRender artwork (text removed)"
 
     for n, (x, y, s, size, o) in enumerate(LAYOUT):
@@ -40,13 +48,13 @@ def main():
         pt = size * PT_SCALE
         # box generous enough for the longest line; text is aligned inside it
         w = max(len(l) for l in lines) * pt * 0.62 / 72 * FW / SLIDE_W + 20
-        h = len(lines) * pt * 1.2 / 72 * FH / SLIDE_H + 6
+        h = len(lines) * pt * 1.2 / 72 * (FH - TOP) / SLIDE_H + 6
         rot = o.get("rot", 0)
         bw, bh = (w, h) if not rot else (w, h)
         ha = o.get("ha", "center")
         left = x if ha == "left" else x - bw / 2
         top = y - bh / 2
-        tb = slide.shapes.add_textbox(emu_x(left), emu_y(top), emu_x(bw), emu_y(bh))
+        tb = slide.shapes.add_textbox(emu_x(left), emu_y(top), emu_x(bw), emu_h(bh))
         tb.name = f"label {n}: {lines[0][:30]}"
         if rot:
             tb.rotation = -rot % 360

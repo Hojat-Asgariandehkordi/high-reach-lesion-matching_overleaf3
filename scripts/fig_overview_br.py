@@ -25,6 +25,7 @@ SRC = os.path.join(ROOT, "figures", "biorender", "overview_detailed.png")
 CLEAN = os.path.join(ROOT, "figures", "biorender", "overview_clean.png")
 FW, FH = 2000, 1116
 K = 12                                    # candidate budget drawn in panel C
+TOP = 92                                  # rows above this (the old title banner) are cropped away
 
 # Font sizes in points at paper size (figure width = 6.875 in).
 TITLE, HEAD, LAB, SUB = 12.5, 8.4, 6.4, 5.8
@@ -32,7 +33,6 @@ TITLE, HEAD, LAB, SUB = 12.5, 8.4, 6.4, 5.8
 # (x, y, text, size, options). Options: b=bold, i=italic, ha, rot.
 # Inline $...$ marks an italic math symbol.
 LAYOUT = [
-    (1000, 47, "LONGITUDINAL PULMONARY CT CORRESPONDENCE PIPELINE", TITLE, {}),
     # panel heads
     (52, 130, "A. Initial Alignment", HEAD, dict(b=1, ha="left")),
     (797, 130, "B. Candidate Generation & Ranking", HEAD, dict(b=1, ha="left")),
@@ -158,10 +158,10 @@ def render_paper(img):
     plt.rcParams.update({"pdf.fonttype": 42, "font.family": "serif",
                          "font.serif": ["Times New Roman", "TeX Gyre Termes", "Nimbus Roman", "Times"]})
     W = S.PAGE_W
-    fig = plt.figure(figsize=(W, W * FH / FW))
+    fig = plt.figure(figsize=(W, W * (FH - TOP) / FW))
     ax = fig.add_axes([0, 0, 1, 1])
     ax.imshow(img[:, :, ::-1], extent=[0, FW, FH, 0], interpolation="lanczos")
-    ax.set_xlim(0, FW); ax.set_ylim(FH, 0); ax.axis("off")
+    ax.set_xlim(0, FW); ax.set_ylim(FH, TOP); ax.axis("off")
     for x, y, s, size, o in LAYOUT:
         ax.text(x, y, s, fontsize=size, fontweight="bold" if o.get("b") else "normal",
                 style="italic" if o.get("i") else "normal", ha=o.get("ha", "center"),
