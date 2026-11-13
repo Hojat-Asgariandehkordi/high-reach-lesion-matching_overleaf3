@@ -35,11 +35,7 @@
 \begin{figure}[t]
 \centering
 \includegraphics[width=\linewidth]{figures/teaser.pdf}
-\caption{The problem and our idea.
-(a)~A lesion is marked in the current CT (query $p$; illustration). After a global chest alignment, the same lesion lies somewhere inside a small search window (dashed) in the earlier CT, but several nearby spots can match the surrounding anatomy.
-(b)~Inside the window, each dot is a candidate location. Keeping the 12 candidates with the best anatomical fit places them all around one fit mode; here that mode is wrong, so no candidate lies within 3\,mm (dashed circle) of the true earlier lesion (star).
-(c)~Our diverse search walks through the same fit order but keeps a candidate only if it is at least a distance $r$ from every candidate kept so far (shaded disks). The same 12 candidates now also cover the correct location, and a lesion classifier can pick it.
-Panels (b,\,c) run the actual selection rule on a synthetic 2D fit landscape. Illustrations in (a) created in BioRender.}
+\caption{The problem and our idea. (a)~After chest alignment, the lesion marked in the current CT lies in a small window of the earlier CT. (b)~The 12 best-fitting candidates crowd around one wrong fit mode and miss the lesion (star, 3\,mm circle). (c)~Requiring candidates to be at least $r$ apart spreads the same 12 so that they cover the lesion. Panels (b,\,c) run our selection rule on a synthetic landscape; (a) created in BioRender.}
 % TODO(group): replace with BioRender's official citation (includes the creator's name) for the camera-ready version only, to keep the review copy anonymous.
 \label{fig:teaser}
 \end{figure}
@@ -79,13 +75,7 @@ We apply minimum-distance selection to lesion correspondence hypotheses ordered 
 \begin{figure*}[!t]
 \centering
 \includegraphics[width=\textwidth]{figures/overview.pdf}
-\caption{Method overview.
-(A)~A chest affine aligns the earlier CT to the current one; the lesion marked in the current scan lies near, but not exactly at, the mapped position (residual displacement).
-(B)~Candidate translations from a lattice are scored on an anatomical shell around the lesion: alternating octants give the fit cost $f_t$ and the held-out witness cost $w_t$, and the lesion core is excluded.
-(C)~With the same budget, the best translations by fit crowd around one fit mode (darker green: better fit), whereas fit-ordered diverse search keeps the fit order but requires retained positions to be at least $r$ apart, so one of them reaches the true location (star, 3\,mm circle).
-(D)~A frozen logistic-regression scorer combines lesion appearance features with a soft anatomical-fit penalty (Eq.~\ref{eq:direct}) and selects the highest-scoring candidate.
-(E)~Reach asks whether any candidate lies within 3\,mm; a hit requires the selected one (black ring) to.
-Illustration created in BioRender; schematic, distances not to scale.}
+\caption{Method overview. (A)~Chest alignment leaves a residual displacement. (B)~Translations are scored on a shell around the lesion: fit octants give $f_t$, witness octants $w_t$. (C)~At the same budget, diverse search spreads the candidates so that one reaches the lesion. (D)~A frozen scorer selects the final candidate (Eq.~\ref{eq:direct}). (E)~Reach versus hit. Created in BioRender; not to scale.}
 \label{fig:construction}
 \end{figure*}
 

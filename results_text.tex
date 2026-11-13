@@ -43,7 +43,7 @@ The frozen Siamese scorer, applied to the same Relaxed 28 lists as our scorer, n
 \begin{figure}[!t]
 \centering
 \includegraphics[width=\linewidth]{figures/paired_forest.pdf}
-\caption{Paired differences with 95\% patient-cluster intervals. Top: \ours minus B-spline at three tolerances and in two robustness analyses (staging only). Bottom: changes to the candidate list at 3\,mm (Tab.~\ref{tab:contrasts}); names as in Sec.~\ref{sec:routes}. The dashed line is the 3-point margin fixed before evaluation; an interval entirely to the right of zero is a significant gain.}
+\caption{Paired differences in hit rate with 95\% patient-level intervals. Top: \ours minus the spline; bottom: candidate-list changes (Tab.~\ref{tab:contrasts}). Dashed: 3-point margin.}
 \label{fig:forest}
 \end{figure}
 
@@ -60,7 +60,7 @@ The improvement is therefore entirely due to coverage.
 \begin{figure}[!t]
 \centering
 \includegraphics[width=\linewidth]{figures/budget_reach.pdf}
-\caption{Reach and hits versus candidate budget at fixed wide extent and image support. Dashed: share of lesions with any candidate within 3\,mm (reach). Solid: share whose selected point is within 3\,mm (hits). At $K{=}28$ the diversified list (blue) beats the fit-only list (diamond) by 9.1 and 12.0 points; Gated $K$ (green) gains little beyond $K{=}28$. Exh.: all 4,851 positions.}
+\caption{Reach (dashed) and hits (solid) versus candidate budget. At $K{=}28$, diverse search beats the fit-only list (diamond) by 9.1 and 12.0 points.}
 \label{fig:budget}
 \end{figure}
 
@@ -69,7 +69,7 @@ The improvement is therefore entirely due to coverage.
 \begin{figure}[!t]
 \centering
 \includegraphics[width=\linewidth]{figures/reach_selection.pdf}
-\caption{Where additional hits come from (Eq.~\ref{eq:decomp}), in points. Blue: reach term (hits on newly reachable lesions minus hits lost with reach). Hatched: selection term (change on lesions reachable by both lists). Black: net change with its 95\% interval. Diversification and a larger cap gain through reach with the direct scorer; SAM, given identical candidates, loses more on shared lesions than it gains.}
+\caption{Where additional hits come from (Eq.~\ref{eq:decomp}): reach term (blue), selection term (hatched) and net change with 95\% interval (black). Gains come through reach; SAM loses on shared lesions.}
 \label{fig:attribution}
 \end{figure}
 
@@ -94,7 +94,7 @@ The number of scored candidates matters whenever scoring dominates the cost: in 
 \begin{figure}[!t]
 \centering
 \includegraphics[width=\linewidth]{figures/query_bands.pdf}
-\caption{Gain by query error. Paired 3\,mm difference between \ours and the B-spline within bands of query error (distance between $p$ and the annotated current mark), with 95\% patient-cluster intervals; $n$ is the number of lesions per band. Three unsupported staging queries are excluded here but counted in Tab.~\ref{tab:main}.}
+\caption{Gain over the spline by query error, with 95\% patient-level intervals; $n$: lesions per band. The gain is present even for accurate queries.}
 \label{fig:bands}
 \end{figure}
 
@@ -121,7 +121,7 @@ Coverage and selection are therefore complementary: a wider candidate list helps
 \begin{figure}[!t]
 \centering
 \includegraphics[width=\linewidth]{figures/accuracy_latency.pdf}
-\caption{Accuracy versus local time in the fixed-budget replay (three randomized repetitions on matched workloads of 24 staging and 32 screening queries). Diverse search at caps 28, 112 and the complete list, the fit-only list and exhaustive scoring; hit rates use the full cohorts. The B-spline (3.6--3.9\,s, Tab.~\ref{tab:timing}) lies far to the right and was timed in a separate protocol, so it is omitted.}
+\caption{Hit rate versus local time per query. Diverse search comes close to exhaustive accuracy at lower cost; the spline (3.6--3.9\,s) is off the scale.}
 \label{fig:speed}
 \end{figure}
 

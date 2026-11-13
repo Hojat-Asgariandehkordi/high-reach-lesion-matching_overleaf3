@@ -113,11 +113,11 @@ def teaser():
     K = 12
     fitonly = order[:K]
     div = diverse(order, K=K)
-    fig = plt.figure(figsize=(S.COL_W, 3.2))
-    gs = fig.add_gridspec(2, 2, height_ratios=[1.0, 1.08], hspace=0.32, wspace=0.12,
-                          left=0.01, right=0.99, top=0.95, bottom=0.07)
-    # (a) the problem, full column width on top
-    ax = fig.add_subplot(gs[0, :])
+    fig = plt.figure(figsize=(S.COL_W, 1.12))
+    gs = fig.add_gridspec(1, 3, width_ratios=[2.3, 1, 1], wspace=0.07,
+                          left=0.005, right=0.995, top=0.86, bottom=0.13)
+    # (a) the problem; (b), (c) the search window zoomed, all in one row
+    ax = fig.add_subplot(gs[0])
     art = biorender("problem_notext", (0, 0.08, 1, 0.86))
     if art is not None:
         H, W = art.shape[:2]
@@ -126,39 +126,34 @@ def teaser():
         Q = lambda x, y: (x * sx, (y - y0) * sy)
         ax.imshow(art, interpolation="lanczos")
         ax.axis("off")
-        ax.set_title("(a) Find the same lesion earlier", loc="left")
-        ax.text(*Q(218, 72), "Current CT", ha="center", va="center", fontsize=7.5, color=S.INK)
-        ax.text(*Q(806, 72), "Earlier CT (aligned)", ha="center", va="center", fontsize=7.5,
-                color=S.INK)
+        ax.set_title("(a) Task", loc="left", fontsize=6.5, pad=2)
         import matplotlib.patheffects as pe
-        halo = [pe.withStroke(linewidth=2.2, foreground="black")]
-        ax.text(*Q(512, 238), "chest\nalignment", ha="center", va="center", fontsize=6.8,
-                color=S.INK2, linespacing=1.0)
-        ax.text(*Q(102, 330), "query $p$", ha="center", va="top", fontsize=6.6, color="#ffe14a", path_effects=halo)
-        ax.text(*Q(712, 196), "search window", ha="center", va="bottom", fontsize=6.6,
-                color="#ffe14a", path_effects=halo)
-        ax.text(*Q(712, 418), "true earlier\nlesion", ha="center", va="top", fontsize=6.4,
-                color="#ffa04d", linespacing=1.0, path_effects=halo)
+        halo = [pe.withStroke(linewidth=1.8, foreground="black")]
+        ax.text(*Q(218, 72), "Current CT", ha="center", va="center", fontsize=5.6, color=S.INK)
+        ax.text(*Q(806, 72), "Earlier CT", ha="center", va="center", fontsize=5.6, color=S.INK)
+        ax.text(*Q(102, 330), "query $p$", ha="center", va="top", fontsize=5.4, color="#ffe14a", path_effects=halo)
+        ax.text(*Q(712, 418), "lesion", ha="center", va="top", fontsize=5.4,
+                color="#ffa04d", path_effects=halo)
     else:
         teaser_drawn_a(ax)
     # (b) and (c): the search window, zoomed
     for k, (idx, title) in enumerate([(fitonly, f"(b) Top {K} by fit"),
-                                      (div, f"(c) Top {K}, diversified")]):
-        ax = fig.add_subplot(gs[1, k])
+                                      (div, f"(c) Diversified")]):
+        ax = fig.add_subplot(gs[k + 1])
         landscape(ax)
         for sp in ax.spines.values():
             sp.set_color("#ffd400"); sp.set_linestyle((0, (2, 1.5))); sp.set_linewidth(0.9)
         if k == 1:
             for i in idx:
                 ax.add_patch(Circle(P[i], 2.1 / 2, color=S.OURS, alpha=0.12, lw=0))
-        ax.scatter(P[idx, 0], P[idx, 1], s=12, color=S.OURS if k else S.INK2,
+        ax.scatter(P[idx, 0], P[idx, 1], s=5, color=S.OURS if k else S.INK2,
                    edgecolor="white", linewidth=0.5, zorder=5)
         truth(ax)
         hit = [i for i in idx if np.linalg.norm(P[i] - Y_REF) <= 3.0]
-        msg = "all in one wrong mode" if not hit else "also covers the lesion"
-        ax.text(0.5, -0.06, msg, transform=ax.transAxes, ha="center", va="top", fontsize=6.2,
+        msg = "misses lesion" if not hit else "covers lesion"
+        ax.text(0.5, -0.05, msg, transform=ax.transAxes, ha="center", va="top", fontsize=5.4,
                 color=S.SPLINE if not hit else S.OURS, fontweight="bold")
-        ax.set_title(title, loc="left", fontsize=7)
+        ax.set_title(title, loc="left", fontsize=6.5, pad=2)
     fig.savefig(os.path.join(OUT, "teaser.pdf"))
     plt.close(fig)
     return fitonly, div
