@@ -284,17 +284,11 @@ All methods receive the same query and the same lesion-centered grid; the annota
 
 \paragraph{Candidate lists.}
 \label{sec:routes}
-To isolate the effect of candidate allocation, all variants share the grid, query, costs and scorer, and differ only in which translations are passed to the scorer:
-\begin{itemize}
-\setlength{\itemsep}{0pt}\setlength{\parskip}{0pt}
-\item \emph{Fit-only $K$}: the $K$ lowest-cost translations of the wide lattice.
-\item \emph{Diverse $K$} and \emph{\ours}: fit-ordered diverse search stopped after $K$ candidates or run to completion (Sec.~\ref{sec:diverse}).
-\item \emph{Gated $K$}: Diverse $K$ after hard gates that discard translations whose fit cost exceeds an absolute limit or exceeds the best cost by more than 24\,HU and, after truncation, those whose witness cost exceeds a limit. \emph{Relaxed $K$} raises the fit limit by 20\,HU and the margin to 40\,HU, and drops the witness gate.
-\item \emph{Exhaustive}: all 4,851 translations.
-\end{itemize}
-Budgets are $K \in \{7, 14, 28, 56, 112\}$.
-Because anatomical fit also enters every score (Eq.~\ref{eq:direct}), the gates only change which translations reach the scorer.
-Gated variants on the original lattice are reported in the supplement.
+To measure the effect of candidate selection alone, we compare candidate lists that differ only in which translations reach the scorer, with everything else unchanged.
+\emph{Fit-only $K$} keeps the $K$ best-fitting translations, \emph{Diverse $K$} applies our diverse search until $K$ candidates are retained, and \emph{\ours} runs it to completion.
+\emph{Gated $K$} additionally discards candidates with a poor fit or witness cost, and \emph{Relaxed $K$} uses looser limits.
+\emph{Exhaustive} scores every translation.
+We use budgets from $K = 7$ to $K = 112$.
 
 \paragraph{Parameters.}
 Table~\ref{tab:params} lists the parameters of the anatomical fit cost (Sec.~\ref{sec:fit}); the remaining settings are given in Sec.~\ref{sec:impl}.
