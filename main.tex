@@ -296,20 +296,10 @@ We also replace our scorer with a Siamese scorer trained on the same data.
 Learned lesion trackers~\cite{cai2021,tang2022tlt} are trained end to end on large annotated longitudinal datasets, whereas our method needs only a small training set; we therefore represent learned correspondence by SAM, which can be applied without retraining. The diffusion-guided tracker~\cite{zhuang2026diffusion} refines a given registration and is thus complementary to, rather than an alternative for, our search.
 
 \subsection{Evaluation metrics}
-\paragraph{Accuracy.}
-Our primary metric is the \emph{hit rate}, the fraction of lesions whose predicted position lies within $\tau = 3$\,mm of the annotated position (Eq.~\ref{eq:reachhit}); we also report it at 2 and 4\,mm, together with the \emph{reach rate}.
-Every eligible lesion counts in the denominator, including failures.
-Distances are measured on the common grid.
-As robustness checks, we repeat the staging analysis in native earlier-scan coordinates (median axial spacing 3\,mm) and with every patient weighted equally.
-
-\paragraph{Statistics.}
-Lesions of the same patient are correlated, so we compare methods by paired differences with 95\% confidence intervals from 5,000 patient-level bootstrap samples.
-Before evaluating on the staging cohort, we fixed the primary comparison (Gated $K$ from 7 to 28, with both scorers), the criterion for a meaningful gain (at least 3 points, with the interval above zero) and the criterion for the comparison with the spline (lower bound above $-5$ points, with at least a fivefold speed-up on prepared crops).
-
-\paragraph{Runtime.}
-\emph{Local} time starts with both crops and the query in memory and covers candidate generation, feature computation, scoring and any optimization; \emph{end-to-end} time additionally includes scan loading, chest alignment, resampling and query localization.
-All methods are timed on the same 24 staging and 32 screening queries with a single CPU thread.
-End-to-end time is measured on eight screening scan pairs, four of which contain two queries that share one chest alignment.
+Our primary metric is the hit rate, the fraction of lesions whose predicted position lies within $\tau = 3$\,mm of the annotated position (Eq.~\ref{eq:reachhit}); we also report it at 2 and 4\,mm, together with the reach rate, and count failures as misses.
+Because lesions of the same patient are correlated, we report paired differences with 95\% confidence intervals from a patient-level bootstrap with 5,000 samples.
+Before evaluating on the staging cohort, we fixed the main comparisons, a margin of 3 points for a meaningful gain, and the criterion for the comparison with the spline (lower bound above $-5$ points with at least a fivefold speed-up).
+Runtime is measured on a single CPU thread, either for the local matching step alone or end to end, including scan loading and chest alignment.
 
 
 
