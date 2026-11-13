@@ -14,7 +14,7 @@
 
 Table~\ref{tab:main} summarizes the results on both cohorts.
 On the staging cohort, \ours places 289 of 440 predictions within 3\,mm (65.7\%), compared with 243 (55.2\%) for the lesion-inclusive B-spline, a paired improvement of $+10.5$ points [3.6, 17.6].
-It finds 63 lesions that the spline misses and keeps 226 of the spline's 243 hits.
+It finds 63 lesions that the spline misses and keeps 226 of the spline's 243 hits; Fig.~\ref{fig:qualitative} shows typical successes and failures of both methods on this cohort.
 On the screening cohort, it reaches 244 of 309 (79.0\%) versus 211 (68.3\%), with 46 gains and 13 losses ($+10.7$ points [5.8, 15.4]).
 Both comparisons meet the criteria fixed before evaluation.
 As shown in Fig.~\ref{fig:forest}, the advantage holds at every tolerance and remains when every staging patient is weighted equally ($+9.6$ [3.7, 15.9]) or when distances are measured in native earlier-scan coordinates ($+11.4$ [4.1, 18.9]).
@@ -30,7 +30,6 @@ Because the spline returns a single point, all of its misses are unreachable by 
 \ours reduces unreachable misses from 197 to 92 on staging and from 98 to 20 on screening, so most of its remaining errors are errors of selection.
 SAM shows the opposite profile: its similarity map contains a correct location for 396 staging and 308 screening lesions, yet its maximum is correct for only 99 and 80.
 The frozen Siamese scorer, applied to the same Relaxed 28 lists as our scorer, nearly matches the spline on screening (210 versus 211) but not on staging (203 versus 243).
-Figure~\ref{fig:qualitative} shows typical successes and failures.
 
 \input{tables/miss_modes}
 
