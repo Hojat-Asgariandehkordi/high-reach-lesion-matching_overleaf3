@@ -293,7 +293,7 @@ We use budgets from $K = 7$ to $K = 112$.
 \subsection{Baselines}
 We compare against a lesion-inclusive B-spline registration~\cite{lowekamp2013}, the strongest of four settings on the training set, and against the released SAM model~\cite{yan2022sam}, used both standalone and as a drop-in scorer on our candidate lists.
 We also replace our scorer with a Siamese scorer trained on the same data.
-Deep Lesion Tracker~\cite{cai2021} and Transformer Lesion Tracker~\cite{tang2022tlt} are not included because their weights are not public, nor is the diffusion-guided tracker~\cite{zhuang2026diffusion}, which requires a registration as input (supplement, Sec.~S3).
+Learned lesion trackers~\cite{cai2021,tang2022tlt} are trained end to end on large annotated longitudinal datasets, whereas our method needs only a small training set; we therefore represent learned correspondence by SAM, which can be applied without retraining. The diffusion-guided tracker~\cite{zhuang2026diffusion} refines a given registration and is thus complementary to, rather than an alternative for, our search.
 
 \subsection{Evaluation metrics}
 \paragraph{Accuracy.}
