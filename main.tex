@@ -291,13 +291,9 @@ To measure the effect of candidate selection alone, we compare candidate lists t
 We use budgets from $K = 7$ to $K = 112$.
 
 \subsection{Baselines}
-We compare against the two alternatives discussed in Sec.~\ref{sec:related}.
-For deformable registration, we use a lesion-inclusive B-spline~\cite{lowekamp2013}, the strongest of four spline settings evaluated on the training set (the others are reported in the supplement); unlike our search, it optimizes a continuous deformation using image samples that include the lesion.
-For anatomical embeddings, we use the released SAM model~\cite{yan2022sam} in two ways: standalone, returning the most similar position, and as a drop-in replacement for our scorer on the same candidate lists.
-Finally, we replace our scorer with a learned Siamese scorer trained on the same training set.
-
-\paragraph{Methods not compared.}
-We do not compare against Deep Lesion Tracker~\cite{cai2021} or Transformer Lesion Tracker~\cite{tang2022tlt}, because no inference checkpoints are publicly available, nor against the diffusion-guided tracker~\cite{zhuang2026diffusion}, which requires a coarse registration as input and would therefore be evaluated on a different starting point from the other methods; details are in the supplement (Sec.~S3).
+We compare against a lesion-inclusive B-spline registration~\cite{lowekamp2013}, the strongest of four settings on the training set, and against the released SAM model~\cite{yan2022sam}, used both standalone and as a drop-in scorer on our candidate lists.
+We also replace our scorer with a Siamese scorer trained on the same data.
+Deep Lesion Tracker~\cite{cai2021} and Transformer Lesion Tracker~\cite{tang2022tlt} are not included because their weights are not public, nor is the diffusion-guided tracker~\cite{zhuang2026diffusion}, which requires a registration as input (supplement, Sec.~S3).
 
 \subsection{Evaluation metrics}
 \paragraph{Accuracy.}
