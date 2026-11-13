@@ -40,15 +40,15 @@ def fig_budget():
         ax.set_title(TITLES[c], loc="left")
         ax.set_xlabel("Candidate budget $K$")
         ax.grid(axis="x", visible=False)
-    axes[0].set_ylabel("Tracks within 3 mm (%)")
+    axes[0].set_ylabel("Lesions within 3 mm (%)")
     from matplotlib.lines import Line2D
-    h = [Line2D([], [], color=S.OURS, marker="o", ms=3, label="Diverse, no gates: hits"),
-         Line2D([], [], color=S.OURS, ls="--", label="Diverse, no gates: reach"),
-         Line2D([], [], color=S.ALT, marker="s", ms=3, label="Gated K: hits"),
+    h = [Line2D([], [], color=S.OURS, marker="o", ms=3, label="Diverse $K$: hits"),
+         Line2D([], [], color=S.OURS, ls="--", label="Diverse $K$: reach"),
+         Line2D([], [], color=S.ALT, marker="s", ms=3, label="Gated $K$: hits"),
          Line2D([], [], color=S.INK, marker="D", ls="none", ms=4.5, label="Fit-only 28"),
          Line2D([], [], color=S.INK, marker="^", ls="none", ms=4.5, label="Exhaustive"),
-         Line2D([], [], color=S.SPLINE, ls=(0, (1, 1.5)), lw=1, label="B-spline hits")]
-    fig.legend(handles=h, loc="lower center", ncol=3, bbox_to_anchor=(0.5, -0.06),
+         Line2D([], [], color=S.SPLINE, ls=(0, (1, 1.5)), lw=1, label="B-spline: hits")]
+    fig.legend(handles=h, loc="lower center", ncol=3, bbox_to_anchor=(0.5, 0.0),
                handlelength=1.8, columnspacing=0.9)
     fig.tight_layout(w_pad=0.6)
     fig.subplots_adjust(bottom=0.36)
@@ -85,11 +85,11 @@ def fig_decomp():
     hd = [mp.Patch(color=S.OURS, label="Reach component"),
           mp.Patch(facecolor=S.MUTED, hatch="//////", edgecolor="white", label="Selection component"),
           Line2D([], [], marker="D", color=S.INK, ls="-", lw=1.1, ms=3.5, label="Net, 95% CI")]
-    fig.legend(handles=hd, loc="lower center", ncol=3, bbox_to_anchor=(0.5, -0.12),
+    fig.legend(handles=hd, loc="lower center", ncol=3, bbox_to_anchor=(0.5, -0.02),
                handlelength=1.4, columnspacing=0.8)
-    fig.supxlabel("Change in hit rate at 3 mm (points)", fontsize=7, color=S.INK2, y=0.1)
+    fig.supxlabel("Change in hit rate at 3 mm (points)", fontsize=7, color=S.INK2, y=0.15)
     fig.tight_layout(w_pad=0.5)
-    fig.subplots_adjust(bottom=0.36)
+    fig.subplots_adjust(bottom=0.33)
     fig.savefig(os.path.join(OUT, "reach_selection.pdf"))
     plt.close(fig)
 
@@ -186,7 +186,7 @@ def fig_speed():
             r = [r for r in d["routes"] if r[0] == lab][0]
             ax.plot([r[1]], [100 * r[2] / N[c]], marker=mk, ms=5.5, color=S.INK, ls="none",
                     mec="white", mew=0.6, zorder=4)
-            ax.annotate(lab.replace("Exhaustive", "exhaustive").replace("Fit-only 28", "fit-only 28"),
+            ax.annotate(lab,
                         (r[1], 100 * r[2] / N[c]), textcoords="offset points", xytext=off,
                         ha="center", fontsize=5.8, color=S.INK)
         ax.set_xlim(0.07, 0.30)

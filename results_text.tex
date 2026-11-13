@@ -1,6 +1,5 @@
 \section{Results}
 \label{sec:results}
-We first compare the full matcher with the baselines (Sec.~\ref{sec:transfer}) and then analyze where its gain comes from: the effect of diverse search at a fixed budget (Sec.~\ref{sec:diversity}), the gap to exhaustive scoring (Sec.~\ref{sec:complete}), the sensitivity to query error (Sec.~\ref{sec:query}), the role of the scorer (Sec.~\ref{sec:scorer}) and the runtime (Sec.~\ref{sec:latency}).
 
 \subsection{Comparison with baselines}
 \label{sec:transfer}
@@ -21,13 +20,11 @@ Both comparisons meet the criteria fixed before evaluation.
 As shown in Fig.~\ref{fig:forest}, the advantage holds at every tolerance and remains when every staging patient is weighted equally ($+9.6$ [3.7, 15.9]) or when distances are measured in native earlier-scan coordinates ($+11.4$ [4.1, 18.9]).
 The median error of the predicted positions decreases from 2.41 to 1.68\,mm on staging and from 1.70 to 1.46\,mm on screening.
 
-\paragraph{Where the gain over registration comes from.}
-Three differences contribute.
+Three differences explain the gain over registration.
 First, the spline is initialized from the best translation on the smaller original lattice ($\pm4.2$\,mm), whereas \ours searches the wide lattice ($\pm7$\,mm); exhaustive scoring of the wide lattice outperforms the spline by an even larger margin (297 hits), so the extent of the search matters.
 Second, our scorer selects the most lesion-like candidate, whereas the spline maps the query itself; with the exact annotated position as the query, the spline improves from 211 to 239 screening hits, while \ours remains at 243 (Sec.~\ref{sec:query}).
 Third, diverse search makes such a wide, lesion-aware search affordable, reaching 348 of the 351 lesions reachable by exhaustive scoring with 7.5\% of the candidates (Sec.~\ref{sec:complete}).
 
-\paragraph{Failure modes.}
 Table~\ref{tab:missmodes} separates misses into lesions that were never reachable and lesions that were reachable but not selected.
 Because the spline returns a single point, all of its misses are unreachable by construction.
 \ours reduces unreachable misses from 197 to 92 on staging and from 98 to 20 on screening, so most of its remaining errors are errors of selection.

@@ -129,13 +129,15 @@ def teaser():
         ax.text(*Q(218, 72), "Current CT", ha="center", va="center", fontsize=7.5, color=S.INK)
         ax.text(*Q(806, 72), "Earlier CT (aligned)", ha="center", va="center", fontsize=7.5,
                 color=S.INK)
+        import matplotlib.patheffects as pe
+        halo = [pe.withStroke(linewidth=2.2, foreground="black")]
         ax.text(*Q(512, 238), "chest\nalignment", ha="center", va="center", fontsize=6.8,
                 color=S.INK2, linespacing=1.0)
-        ax.text(*Q(102, 330), "query $p$", ha="center", va="top", fontsize=6.6, color="#ffe14a")
+        ax.text(*Q(102, 330), "query $p$", ha="center", va="top", fontsize=6.6, color="#ffe14a", path_effects=halo)
         ax.text(*Q(712, 196), "search window", ha="center", va="bottom", fontsize=6.6,
-                color="#ffe14a")
+                color="#ffe14a", path_effects=halo)
         ax.text(*Q(712, 418), "true earlier\nlesion", ha="center", va="top", fontsize=6.4,
-                color="#ffa04d", linespacing=1.0)
+                color="#ffa04d", linespacing=1.0, path_effects=halo)
     else:
         teaser_drawn_a(ax)
     # (b) and (c): the search window, zoomed

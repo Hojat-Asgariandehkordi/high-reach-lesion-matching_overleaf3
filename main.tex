@@ -57,31 +57,21 @@ Section~\ref{sec:discussion} discusses limitations, and Sec.~\ref{sec:conclusion
 \section{Related work}
 \label{sec:related}
 
-\paragraph{Longitudinal lesion tracking.}
 Matching a lesion across visits is a prerequisite for measuring growth and response in follow-up imaging.
 Location Registration and Recognition (LRR)~\cite{sofka2010} is the closest design to ours: it generates local registration hypotheses around a supplied nodule position, refines them, and verifies them with a lesion model.
-Rafael-Palou \etal~\cite{rafaelpalou2021} instead re-identify detected nodules with a 3D Siamese network, avoiding explicit registration.
-Deep Lesion Tracker~\cite{cai2021} and Transformer Lesion Tracker~\cite{tang2022tlt} learn to combine lesion appearance with anatomical context and predict the earlier location directly.
+Rafael-Palou \etal~\cite{rafaelpalou2021} instead re-identify detected nodules with a 3D Siamese network, avoiding explicit registration, while Deep Lesion Tracker~\cite{cai2021} and Transformer Lesion Tracker~\cite{tang2022tlt} learn to combine lesion appearance with anatomical context and predict the earlier location directly.
 These systems differ mainly in their scoring function; how candidate locations are allocated before scoring has received less attention, and it is the question we study.
-
-\paragraph{Image registration.}
-Free-form deformation with B-splines~\cite{rueckert1999} is a standard way to estimate a continuous map between two CT scans.
-Discrete registration evaluates a set of candidate displacements per control point and optimizes them jointly~\cite{glocker2008dense,heinrich2013mrf}, which is close in spirit to scoring a lattice of translations.
+Registration offers a second route to the earlier location.
+Free-form deformation with B-splines~\cite{rueckert1999} is a standard way to estimate a continuous map between two CT scans, and discrete registration evaluates a set of candidate displacements per control point and optimizes them jointly~\cite{glocker2008dense,heinrich2013mrf}, which is close in spirit to scoring a lattice of translations.
 Learned methods predict deformation fields in a single forward pass~\cite{balakrishnan2019voxelmorph,ghazipour2021}, and recent foundation models and benchmarks cover many anatomies, including lung CT~\cite{tian2024unigradicon,hering2023learn2reg}.
-Studies of registration uncertainty show that good image agreement does not guarantee a reliable mapped location~\cite{eppenhof2018,luo2017}, which motivates keeping several hypotheses rather than committing to one.
-We use a lesion-inclusive B-spline as the registration comparator.
-
-\paragraph{Dense anatomical correspondence.}
+Studies of registration uncertainty show that good image agreement does not guarantee a reliable mapped location~\cite{eppenhof2018,luo2017}, which motivates keeping several hypotheses rather than committing to one; we use a lesion-inclusive B-spline as the registration comparator.
 A third line of work learns a descriptor of anatomical position for every voxel.
-Self-supervised anatomical embeddings (SAM)~\cite{yan2022sam}\footnote{Not to be confused with the Segment Anything Model.} are trained so that the same anatomical point receives similar descriptors in different scans; a point marked in one scan is matched by finding the most similar descriptor in the other.
-Diffusion-guided position encodings follow the same principle~\cite{zhuang2026diffusion}.
+Self-supervised anatomical embeddings (SAM)~\cite{yan2022sam}\footnote{Not to be confused with the Segment Anything Model.} are trained so that the same anatomical point receives similar descriptors in different scans, and a point marked in one scan is matched by finding the most similar descriptor in the other; diffusion-guided position encodings follow the same principle~\cite{zhuang2026diffusion}.
 These methods replace an explicit search over shifts with a learned similarity, but they still report a single most-similar location, so when several locations look alike the error lies in selection rather than in coverage (Sec.~\ref{sec:transfer}).
 We use SAM as a baseline because its released model accepts a point query directly (Sec.~\ref{sec:evaluation}).
 
-\paragraph{Diversity in candidate generation.}
-Selecting a few good hypotheses from many is common across vision.
-Non-maximum suppression greedily removes detections that overlap a higher-scoring one~\cite{neubeck2006nms}.
-Diverse $M$-best methods return several high-scoring but mutually different solutions so that a later stage can choose among them~\cite{batra2012diverse}.
+Selecting a few good hypotheses from many is a recurring problem across vision.
+Non-maximum suppression greedily removes detections that overlap a higher-scoring one~\cite{neubeck2006nms}, and diverse $M$-best methods return several high-scoring but mutually different solutions so that a later stage can choose among them~\cite{batra2012diverse}.
 Farthest-point sampling spreads samples to cover a domain with a bounded gap~\cite{eldar1997farthest}, and randomized correspondence search propagates good matches while sampling widely~\cite{barnes2009patchmatch}.
 We apply minimum-distance selection to lesion correspondence hypotheses ordered by anatomical fit, and we measure its effect on coverage separately from its effect on the final choice.
 
@@ -308,7 +298,7 @@ Runtime is measured on a single CPU thread, for the local matching step and end 
 \label{sec:main-end}
 \section*{LLM Usage Statement}
 % TODO(group): check against the CVPR 2027 LLM policy, and mention the AI assistance used for this revision.
-OpenAI Codex assisted with study design, literature and data screening, code, experiment execution, analysis, figures and tables, manuscript drafting and editing, and source and layout checks. The numerical results are computed from the specified inputs using the recorded analysis. The authors are responsible for verification and for the submitted work.
+OpenAI Codex assisted with study design, literature and data screening, code, experiment execution, analysis, figures and tables, manuscript drafting and editing, and source and layout checks. Anthropic Claude assisted with revising the manuscript text, figures and layout. Schematic illustrations were created with BioRender. The numerical results are computed from the specified inputs using the recorded analysis. The authors are responsible for verification and for the submitted work.
 
 {\small
 \bibliographystyle{ieeenat_fullname}

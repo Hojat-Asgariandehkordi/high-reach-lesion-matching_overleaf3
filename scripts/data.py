@@ -31,13 +31,13 @@ SWEEP = {
 DECOMP = {
     "staging": [
         ("Diversify at 28", 44, -4),        # 45 gained - 1 lost; shared -4 -> +40
-        ("Gated, K 7→28 (direct)", 33, -6),  # 33 new; shared 192->186 -> +27
-        ("Gated, K 7→28 (SAM)", 10, -15),    # 10 new; shared 144->129 -> -5
+        ("Gated, K 7 → 28 (our scorer)", 33, -6),  # 33 new; shared 192->186 -> +27
+        ("Gated, K 7 → 28 (SAM)", 10, -15),    # 10 new; shared 144->129 -> -5
     ],
     "screening": [
         ("Diversify at 28", 41, -4),        # -> +37
-        ("Gated, K 7→28 (direct)", 23, 5),   # shared 167->172 -> +28
-        ("Gated, K 7→28 (SAM)", 14, -17),    # shared 121->104 -> -3
+        ("Gated, K 7 → 28 (our scorer)", 23, 5),   # shared 167->172 -> +28
+        ("Gated, K 7 → 28 (SAM)", 14, -17),    # shared 121->104 -> -3
     ],
 }
 
@@ -72,12 +72,12 @@ FOREST = {
         "vs spline, equal patient weight": (9.6, 3.7, 15.9),
         "vs spline, native mm": (11.4, 4.1, 18.9),
         "Diversify at 28": (9.1, 6.0, 12.2),
-        "Gated, K 7→28 (direct)": (6.1, 3.6, 9.1),
-        "Gated, K 7→28 (SAM)": (-1.1, -3.6, 1.4),
+        "Gated, K 7 → 28 (our scorer)": (6.1, 3.6, 9.1),
+        "Gated, K 7 → 28 (SAM)": (-1.1, -3.6, 1.4),
         "Gated 28, wider lattice": (-0.2, -2.8, 2.1),
-        "Relaxed, 28→all": (6.1, 3.3, 9.1),
+        "Relaxed, 28 → all": (6.1, 3.3, 9.1),
         "Remove gates, all": (5.7, 2.3, 9.1),
-        "Diverse search→exhaustive": (1.8, 0.2, 3.5),
+        "Diverse search → exhaustive": (1.8, 0.2, 3.5),
     },
     "screening": {
         "vs spline, 2 mm": (12.0, 6.1, 17.6),
@@ -86,12 +86,12 @@ FOREST = {
         "vs spline, equal patient weight": None,
         "vs spline, native mm": None,
         "Diversify at 28": (12.0, 7.5, 16.4),
-        "Gated, K 7→28 (direct)": (9.1, 6.0, 12.3),
-        "Gated, K 7→28 (SAM)": (-1.0, -5.5, 3.3),
+        "Gated, K 7 → 28 (our scorer)": (9.1, 6.0, 12.3),
+        "Gated, K 7 → 28 (SAM)": (-1.0, -5.5, 3.3),
         "Gated 28, wider lattice": (0.6, -1.9, 3.2),
-        "Relaxed, 28→all": (4.2, 2.0, 6.7),
+        "Relaxed, 28 → all": (4.2, 2.0, 6.7),
         "Remove gates, all": (8.7, 5.4, 12.1),
-        "Diverse search→exhaustive": (-0.6, -3.1, 1.7),
+        "Diverse search → exhaustive": (-0.6, -3.1, 1.7),
     },
 }
 
