@@ -1,27 +1,14 @@
-\section{Discussion and limitations}
-\label{sec:discussion}
-Lesion matching by candidate search has two stages that are usually designed together: proposing candidate locations and choosing among them.
-Our results show that the first stage deserves separate attention.
-A shortlist ranked only by anatomical fit wastes a small budget on near-duplicates, and a minimum-distance rule corrects this at negligible cost.
-The reach--selection decomposition makes the effect explicit: diverse search creates opportunities, and the scorer determines how many of them are realized.
-It also explains why a general anatomical embedding does not benefit from candidates that a lesion-specific scorer exploits.
-We expect the same principle to apply to other point-correspondence problems in which a global alignment leaves several nearby plausible matches.
-
-\paragraph{Limitations.}
-Our task assumes an approximate lesion position in the current scan and a lesion that persists between visits; new lesions and incorrect lesion associations require separate handling.
-The queries are simulated by perturbing the annotated positions; with the exact position as the query, the screening advantage over the Spline decreases from 33 to 4 hits (Sec.~\ref{sec:query}), so evaluation with real clicks or detector outputs is an important next step.
-% TODO(group): agree on this wording.
-We compared diverse search with the fit-ranked list it replaces; other ways of spreading a budget, such as a coarse sub-lattice or the local minima of the fit cost, a sweep over $r$, and a learned registration baseline remain to be evaluated.
-Finally, a failed chest alignment can leave the lesion outside the local crop (28 staging lesions in two scan pairs, counted as failures), the screening cohort is retrospective, and end-to-end time on native scans is dominated by the shared alignment.
-
 \section{Conclusion}
 \label{sec:conclusion}
+\label{sec:discussion}
 We asked whether matching a lung lesion across CT visits is limited by how candidates are scored or by which candidates are scored, and the evidence points to the latter.
-Keeping the anatomical fit order but requiring candidates to be at least 2.1\,mm apart turns a fixed budget into coverage: at 28 candidates the hit rate improves by 9 to 12 points, the reach--selection decomposition attributes the entire gain to lesions that become reachable, and the complete list reaches 348 of the 351 lesions that exhaustive scoring reaches while evaluating 7.5\% of the candidates.
-Combined with a lesion-aware scorer, the resulting matcher improves on lesion-inclusive B-spline registration by about 10 points at 3\,mm on two cohorts, most of all when the query is imprecise, while running the local step about 19 times faster.
-The same analysis also shows where the approach stops helping: extra coverage pays off only for a scorer that can tell the lesion apart from similar anatomy, and with an exact query on the screening cohort the advantage over registration largely disappears.
-These findings suggest three directions.
-First, the remaining errors are mostly errors of selection, so stronger lesion scorers, including learned ones evaluated on the diverse lists, are the most direct route to further gains.
-Second, the spacing $r$ and the lattice could adapt to the local fit landscape, for example by seeding candidates at the minima of the fit cost, and should be compared with other ways of spreading a budget.
-Third, the evaluation should move from simulated queries to real clicks and detector outputs, and the approach should be tested on other point-correspondence problems in which a global alignment leaves several nearby plausible matches.
-More generally, treating candidate allocation as a design choice in its own right, measured through reach and selection, is a simple and broadly applicable way to build stronger correspondence methods.
+Keeping the anatomical fit order but requiring candidates to be at least 2.1\,mm apart turns a fixed budget into coverage: at 28 candidates the hit rate improves by 9 to 12 points, entirely through lesions that become reachable, and the complete list reaches 348 of the 351 lesions reachable by exhaustive scoring with 7.5\% of the candidates.
+Combined with a lesion-aware scorer, the matcher improves on lesion-inclusive B-spline registration by about 10 points at 3\,mm on two cohorts while running the local step about 19 times faster.
+
+The approach has limitations.
+It assumes an approximate lesion position and a lesion that persists between visits, and it helps only with a scorer that can distinguish the lesion from similar anatomy.
+Our queries are simulated; with the exact annotated position, the screening advantage over the Spline drops from 33 to 4 hits.
+% TODO(group): agree on this wording.
+A failed chest alignment can also leave the lesion outside the crop (28 staging lesions).
+Future work should evaluate real clicks and detector outputs, compare other ways of spreading a budget and learned registration baselines, and pair diverse lists with stronger scorers, since most remaining errors are errors of selection.
+More broadly, candidate allocation deserves to be treated as a design choice in its own right in correspondence problems.
