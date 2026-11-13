@@ -41,7 +41,7 @@ Exhaustive & Wide raw, all \\
 Gated $K$ & Wide strict $K$ \\
 Relaxed $K$ & Wide relaxed $K$ \\
 Original-lattice gated variants & Original 7, Original 28, Original 28 + fit \\
-B-spline & Full central spline \\
+B-spline & Full central Spline \\
 \bottomrule
 \end{tabular}
 \end{center}
@@ -100,7 +100,7 @@ $h_1$ & intensity at or above which $g_i = 1$ (tissue) & $-370$\,HU \\
 
 \paragraph{Residual support details (moved from the main paper).}
 The fit and witness octants use strided centers that stay valid across the lattice after smoothing and displacement.
-The residual support excludes a 10\,mm core on the resampled grid, while the final lesion score and the central spline can use the lesion-bearing interior.
+The residual support excludes a 10\,mm core on the resampled grid, while the final lesion score and the central Spline can use the lesion-bearing interior.
 The residual limits are fitted on training-side controls.
 The wide and matched narrow comparison uses the same safe shell centers and limits, a subset of the original 824 samples per sector, so translation extent is compared on identical physical observations.
 
@@ -125,7 +125,7 @@ A 2.2 mm isotropic Gaussian smooths the pooled votes on the wide lattice. The fi
 \paragraph{Order-dependent reach.}
 Distance to the continuous box is the norm of the excess beyond its three shift bounds. The original stage audit gives 274, 274, 251, 241, 229, 200, and 198 reachable tracks for the continuous box, lattice, absolute fit, slack, diversification, cap, and witness. Replacing the fixed query by the current mark while holding geometry costs fixed gives 222 final reachable tracks. Of the 111 originally unreachable tracks, 32 have current-query errors above 3 mm. The witness-first alternative achieves 199 reachable and 185 selected hits, one more of each than the original set. These counts describe the implemented stage order, and current-query displacement can affect which step removes reach. The wide lattice reaches 286, 290, and 292 tracks at 2, 3, and 4 mm before screening.
 
-In the extended sweeps, all means the complete fit-ordered list after the specified gates and 2.1 mm diversification. The ungated and raw references keep the fit and witness residuals in the frozen direct score. All methods use the same current and earlier crops. The raw reference uses one descriptor computation over all centers and the same candidate score as the shorter lists. Greedy diversification can recover better spatial support at a fixed cap, while the dense reference shows the cost of pruning at full candidate count. The same-region comparisons in Tabs.~\ref{tab:point-luna} and \ref{tab:point-external} record actual candidate counts after the witness step. Query bands are $[0,1.5]$, $(1.5,3]$ and $(3,\infty)$ mm. Replacing the frozen query by the known current mark is a separate diagnostic. Its crop, residual costs and spline objectives remain fixed.
+In the extended sweeps, all means the complete fit-ordered list after the specified gates and 2.1 mm diversification. The ungated and raw references keep the fit and witness residuals in the frozen direct score. All methods use the same current and earlier crops. The raw reference uses one descriptor computation over all centers and the same candidate score as the shorter lists. Greedy diversification can recover better spatial support at a fixed cap, while the dense reference shows the cost of pruning at full candidate count. The same-region comparisons in Tabs.~\ref{tab:point-luna} and \ref{tab:point-external} record actual candidate counts after the witness step. Query bands are $[0,1.5]$, $(1.5,3]$ and $(3,\infty)$ mm. Replacing the frozen query by the known current mark is a separate diagnostic. Its crop, residual costs and Spline objectives remain fixed.
 
 \section{Appearance supervision and evaluation}
 \paragraph{Fixed descriptors.}
@@ -151,7 +151,7 @@ The standalone list orders the same field's voxel centers by descending similari
 
 \section{Point maps, timing and physical audit}
 \label{sec:timing}
-All splines use SimpleITK~\cite{lowekamp2013} with linear interpolation, mean squares on smoothed normalized HU and an exhaustive translation and HU offset as initialization. The inherited outer masked $2\times2\times3$ spline fits the original fit sector with coefficient bounds $\pm4.5$ mm and 36 iterations / 90 evaluations. Central variants fit stride-two samples inside a 22 mm sphere intersected with the interior safe for coefficient bounds $\pm6$ mm, smoothing and interpolation. The fine mesh is $3\times3\times4$ and the coarse mesh $2\times2\times3$. Both use at most 60 iterations / 140 evaluations. The early-stopped fine variant uses 10 / 24. We require complete metric support and a finite in-crop point. The archived masked and full maps are reused for accuracy and verified on rerun workloads. In development, the masked, early, coarse and full maps hit 85, 96, 97 and 103 of 145 tracks. The corresponding retrospective counts are 161, 196, 206 and 211.
+All Splines use SimpleITK~\cite{lowekamp2013} with linear interpolation, mean squares on smoothed normalized HU and an exhaustive translation and HU offset as initialization. The inherited outer masked $2\times2\times3$ Spline fits the original fit sector with coefficient bounds $\pm4.5$ mm and 36 iterations / 90 evaluations. Central variants fit stride-two samples inside a 22 mm sphere intersected with the interior safe for coefficient bounds $\pm6$ mm, smoothing and interpolation. The fine mesh is $3\times3\times4$ and the coarse mesh $2\times2\times3$. Both use at most 60 iterations / 140 evaluations. The early-stopped fine variant uses 10 / 24. We require complete metric support and a finite in-crop point. The archived masked and full maps are reused for accuracy and verified on rerun workloads. In development, the masked, early, coarse and full maps hit 85, 96, 97 and 103 of 145 tracks. The corresponding retrospective counts are 161, 196, 206 and 211.
 
 \input{timing_details}
 
@@ -174,7 +174,7 @@ The shear displaces the same patient's real earlier CT by $\pm[4+2\sin(2\pi z/36
 \section{Reviewed and independent evidence}
 The archived TCIA data~\cite{gong2025} have 152 reviewed marks before exclusions, with 47 excluded for overlap with the LUNA25 source and one excluded for physical geometry. There are 104 remaining marks from 80 patients. Of these, 91 are incident and 13 prior-visible. The five archived patient folds fit thresholds on the other patients' clean scans and apply them unchanged after shear. In this exploratory retrospective analysis, Original 7 and the first-shift patch comparator each give two false-new calls, with 57 versus 58 incident detections and 85 versus 87 resolved cases. The clean false-new interval for direct/set versus patch/first is $-40.0$ to $+37.5$ points. With 13 prior-visible marks a single case moves the rate by 7.7 points. The reserved reader analysis requires at least 80\% coverage, incident recall and coverage within five points of its comparator, prior-visible coverage no more than ten points lower, and a false-new reduction of at least ten points with its paired interval below zero.
 
-CREATIS/POPI supplies independent respiratory landmark geometry~\cite{vandemeulebroucke2011}. The archived verified-set oracle reaches 501 of 620 landmarks versus 498 for the masked spline (six patients, paired 95\% CI on the difference $-2.7$ to $+3.4$ points). The earlier-point lesion endpoint requires independently linked lesions.
+CREATIS/POPI supplies independent respiratory landmark geometry~\cite{vandemeulebroucke2011}. The archived verified-set oracle reaches 501 of 620 landmarks versus 498 for the masked Spline (six patients, paired 95\% CI on the difference $-2.7$ to $+3.4$ points). The earlier-point lesion endpoint requires independently linked lesions.
 
 After exclusions for checkpoint training, development, earlier inspection or scoring, and the reader reserve, 80 LUNA25 source patients remain. None have a released nodule key repeated across two distinct dated series. Public CSTL scans have plausible CT geometry but the released annotation table lacks a verified cross-visit lesion map~\cite{jian2024}. An NLST release has 308 participants with multiple visits outside audited rosters, but scan-specific nodule IDs and unverified coordinate conventions~\cite{farinadata}. DeepLesion's tracking benchmark has associated axial RECIST bookmarks~\cite{cai2021}. In its test metadata the median subvolume spans 60 mm axially and the largest spans 215 mm. Only 12 unordered subvolume pairs have a preliminary 50 mm margin around both marks before affine alignment. The public release lacks evidence of full-chest support for the frozen scan affine. The Longitudinal-CT persistence endpoint uses the independent staging cohort described above.
 
@@ -197,7 +197,7 @@ The independent blinded pilot has 24 unadjudicated cases and the distinct confir
 
 \begin{table}[!ht]
 \centering\small
-\caption{Point correspondence at 3 mm. Misses are unreachable (U) or reachable but incorrectly selected (R). The full spline maps a single point. Standalone SAM searches the entire common crop.}
+\caption{Point correspondence at 3 mm. Misses are unreachable (U) or reachable but incorrectly selected (R). The full Spline maps a single point. Standalone SAM searches the entire common crop.}
 \label{tab:point-methods}
 \input{tables/primary_methods}
 \end{table}

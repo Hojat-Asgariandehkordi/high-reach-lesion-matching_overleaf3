@@ -70,7 +70,7 @@ def main(path):
     d = load(path)
     dz, dy, dx = (float(v) for v in d["spacing_zyx"])
     half = float(d["half_mm"])
-    labels = [str(s) for s in d["labels"]]
+    labels = [str(s).replace("spline", "Spline") for s in d["labels"]]
 
     plt.rcParams.update({"font.family": "serif",
                          "font.serif": ["Times New Roman", "TeX Gyre Termes", "Liberation Serif", "Nimbus Roman", "Times"],

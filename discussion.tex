@@ -9,7 +9,7 @@ We expect the same principle to apply to other point-correspondence problems in 
 
 \paragraph{Limitations.}
 Our task assumes an approximate lesion position in the current scan and a lesion that persists between visits; new lesions and incorrect lesion associations require separate handling.
-The queries are simulated by perturbing the annotated positions; with the exact position as the query, the screening advantage over the spline decreases from 33 to 4 hits (Sec.~\ref{sec:query}), so evaluation with real clicks or detector outputs is an important next step.
+The queries are simulated by perturbing the annotated positions; with the exact position as the query, the screening advantage over the Spline decreases from 33 to 4 hits (Sec.~\ref{sec:query}), so evaluation with real clicks or detector outputs is an important next step.
 % TODO(group): agree on this wording.
 We compared diverse search with the fit-ranked list it replaces; other ways of spreading a budget, such as a coarse sub-lattice or the local minima of the fit cost, a sweep over $r$, and a learned registration baseline remain to be evaluated.
 Finally, a failed chest alignment can leave the lesion outside the local crop (28 staging lesions in two scan pairs, counted as failures), the screening cohort is retrospective, and end-to-end time on native scans is dominated by the shared alignment.
