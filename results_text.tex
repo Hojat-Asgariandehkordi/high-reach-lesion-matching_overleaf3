@@ -15,7 +15,6 @@
 Table~\ref{tab:main} summarizes the results on both cohorts.
 Its rows are the lesion-inclusive B-spline registration; SAM used standalone, which returns the most similar position in its similarity map; our candidate lists scored by the learned Siamese network; the 28 best-fitting translations (Fit-only 28); diverse search stopped at 28 candidates (Diverse 28) or run to completion (\ours); and all translations scored (Exhaustive) (Sec.~\ref{sec:routes}).
 The B-spline optimizes a continuous deformation and SAM searches its full similarity map, so neither has a candidate count.
-Paired differences with 95\% intervals are shown in Fig.~\ref{fig:forest}, and runtimes in Tab.~\ref{tab:timing}.
 On the staging cohort, \ours places 289 of 440 predictions within 3\,mm (65.7\%), compared with 243 (55.2\%) for the lesion-inclusive B-spline, a paired improvement of $+10.5$ points [3.6, 17.6].
 It finds 63 lesions that the spline misses and keeps 226 of the spline's 243 hits; Fig.~\ref{fig:qualitative} shows typical successes and failures of both methods on this cohort.
 On the screening cohort, it reaches 244 of 309 (79.0\%) versus 211 (68.3\%), with 46 gains and 13 losses ($+10.7$ points [5.8, 15.4]).
