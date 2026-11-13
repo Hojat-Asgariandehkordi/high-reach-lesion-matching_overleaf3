@@ -296,14 +296,12 @@ We also replace our scorer with a Siamese scorer trained on the same data.
 Learned lesion trackers~\cite{cai2021,tang2022tlt} are trained end to end on large annotated longitudinal datasets, whereas our method needs only a small training set; we therefore represent learned correspondence by SAM, which can be applied without retraining. The diffusion-guided tracker~\cite{zhuang2026diffusion} refines a given registration and is thus complementary to, rather than an alternative for, our search.
 
 \subsection{Evaluation metrics}
-A prediction is counted as correct, a \emph{hit}, if it lies within $\tau = 3$\,mm of the annotated lesion position in the earlier scan (Eq.~\ref{eq:reachhit}), and our primary metric is the \emph{hit rate}, the percentage of lesions with a hit.
-We also report the hit rate at 2 and 4\,mm, and the \emph{reach rate}, the percentage of lesions for which at least one candidate lies within 3\,mm, which shows whether a method could have found the lesion at all.
-Every lesion is counted, so a method that fails to produce a prediction is scored as a miss.
-Distances are measured on the common grid; to check that the conclusions do not depend on this choice, we repeat the staging analysis in the original resolution of the earlier scan (median slice spacing 3\,mm) and with each patient given equal weight, so that patients with many lesions do not dominate.
-Because lesions of the same patient are not independent, we compare two methods on the same lesions and report the difference in hit rate with a 95\% confidence interval, obtained by resampling patients (5,000 bootstrap samples).
-To avoid choosing comparisons after seeing the results, we fixed three decisions before evaluating on the staging cohort: the main comparison (increasing the budget of Gated $K$ from 7 to 28, with both scorers); what counts as a meaningful gain (at least 3 points, with the confidence interval above zero); and what counts as a successful comparison with the B-spline (a confidence interval whose lower bound is above $-5$ points, together with a local step at least five times faster).
-For runtime, we report two times: \emph{local} time, which assumes both image crops and the query are already in memory and covers candidate generation, feature computation, scoring and any optimization; and \emph{end-to-end} time, which additionally includes loading the scans, the global chest alignment, resampling and locating the query.
-All methods are timed with a single CPU thread on the same 24 staging and 32 screening queries; end-to-end time is measured on eight screening scan pairs, four of which contain two lesions that share one chest alignment.
+A prediction is a \emph{hit} if it lies within $\tau = 3$\,mm of the annotated lesion position in the earlier scan (Eq.~\ref{eq:reachhit}), and our primary metric is the \emph{hit rate}, the percentage of lesions with a hit; failures count as misses.
+We also report the hit rate at 2 and 4\,mm, and the \emph{reach rate}, the percentage of lesions with at least one candidate within 3\,mm, which shows whether a method could have found the lesion at all.
+As robustness checks, we repeat the staging analysis in the original resolution of the earlier scan and with each patient given equal weight.
+Because lesions of the same patient are not independent, we report paired differences in hit rate with 95\% confidence intervals from a patient-level bootstrap (5,000 samples).
+To avoid choosing comparisons after seeing the results, we fixed before evaluating on the staging cohort the main comparison (Gated $K$ from 7 to 28), the threshold for a meaningful gain (at least 3 points, with the interval above zero), and the criterion against the B-spline (lower bound above $-5$ points with a local step at least five times faster).
+We report \emph{local} time, which covers candidate generation, scoring and any optimization once the crops and query are in memory, and \emph{end-to-end} time, which also includes scan loading, chest alignment and query localization, both on a single CPU thread.
 
 
 
