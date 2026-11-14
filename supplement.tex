@@ -19,6 +19,7 @@
 \renewcommand{\thesection}{S\arabic{section}}
 \renewcommand{\thetable}{S\arabic{table}}
 \renewcommand{\thefigure}{S\arabic{figure}}
+\renewcommand{\thealgorithm}{S\arabic{algorithm}}
 \title{\paperTitle}
 \author{Anonymous CVPR submission}
 \hypersetup{pdftitle={\paperTitle\ - Supplement}}
@@ -72,6 +73,25 @@ Before crop preparation, each scan must have a robust lung extent of at least 13
 The evaluation uses de-identified research data and previously supplied annotations. The original NLST reports written consent and institutional review~\cite{aberlenslt}. The secondary analysis involved no participant contact or new imaging.
 
 \section{Physical support and candidate generation}
+Algorithm~\ref{alg:diverse} gives the complete fit-ordered diverse search (main paper, Sec.~3.3).
+
+\begin{algorithm}[!ht]
+\caption{Fit-ordered diverse search}
+\label{alg:diverse}
+\begin{algorithmic}[1]
+\Require query $p$, translations $\T$, fit costs $\{f_t\}$, radius $r$, budget $K$ ($K{=}\infty$ for \ours)
+\State sort $\T$ by $(f_t, \|t\|)$ ascending
+\State $\Ss \gets \emptyset$ \Comment{retained translations}
+\For{$t$ in sorted $\T$}
+  \If{$d(x_t, x_u) \ge r$ for all $u \in \Ss$} \Comment{$x_t = p - t$, $x_u = p - u$}
+    \State $\Ss \gets \Ss \cup \{t\}$
+    \If{$|\Ss| = K$} \textbf{break} \EndIf
+  \EndIf
+\EndFor
+\State \Return $\hat{t} = \argmax_{t \in \Ss} s(t)$ \Comment{score of main-paper Eq.~(6)}
+\end{algorithmic}
+\end{algorithm}
+
 \paragraph{Parameters.}
 Table~\ref{tab:params} lists the parameters of the anatomical fit cost (main paper, Sec.~3.2); the remaining settings are given in the main paper (Sec.~3.6).
 All values were fixed on the training set and kept unchanged for every experiment.
@@ -150,6 +170,15 @@ The standalone list orders the same field's voxel centers by descending similari
 \input{sam_scope}
 
 \section{Point maps, timing and physical audit}
+Figure~\ref{fig:speed} plots hit rate against local time in the fixed-budget replay, complementing the local times in main-paper Tab.~4.
+
+\begin{figure}[!ht]
+\centering
+\includegraphics[width=\linewidth]{figures/accuracy_latency.pdf}
+\caption{Hit rate versus local time per query. Diverse search comes close to exhaustive accuracy at lower cost; the Spline (3.6--3.9\,s) is off the scale.}
+\label{fig:speed}
+\end{figure}
+
 \label{sec:timing}
 All Splines use SimpleITK~\cite{lowekamp2013} with linear interpolation, mean squares on smoothed normalized HU and an exhaustive translation and HU offset as initialization. The inherited outer masked $2\times2\times3$ Spline fits the original fit sector with coefficient bounds $\pm4.5$ mm and 36 iterations / 90 evaluations. Central variants fit stride-two samples inside a 22 mm sphere intersected with the interior safe for coefficient bounds $\pm6$ mm, smoothing and interpolation. The fine mesh is $3\times3\times4$ and the coarse mesh $2\times2\times3$. Both use at most 60 iterations / 140 evaluations. The early-stopped fine variant uses 10 / 24. We require complete metric support and a finite in-crop point. The archived masked and full maps are reused for accuracy and verified on rerun workloads. In development, the masked, early, coarse and full maps hit 85, 96, 97 and 103 of 145 tracks. The corresponding retrospective counts are 161, 196, 206 and 211.
 
