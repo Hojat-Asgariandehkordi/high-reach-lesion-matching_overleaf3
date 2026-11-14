@@ -12,9 +12,9 @@ SAM standalone~\cite{yan2022sam} & -- & 36 & 99 & 184 & 396 \\
 Siamese scorer, Relaxed 28 & 22$^\ast$ & 134 & 203 & 253 & 264 \\
 Fit-only 28 & 28 & 157 & 205 & 237 & 221 \\
 Diverse 28 & 28 & 197 & 245 & 275 & 274 \\
-\textbf{\ours (ours)} & 365 & \textbf{259} & \textbf{289} & \textbf{306} & 348 \\
+\textbf{\ours (ours)} & 363 & \textbf{259} & \textbf{289} & \textbf{306} & 348 \\
 \cmidrule(l){1-6}
-Exhaustive (reference) & 4,851 & 277 & 297 & 311 & 351 \\
+Exhaustive (reference) & 4,818 & 277 & 297 & 311 & 351 \\
 \midrule
 \multicolumn{6}{@{}l}{\emph{Screening cohort} ($n{=}309$)} \\
 B-spline, lesion-incl.~\cite{rueckert1999} & -- & 170 & 211 & 231 & 211 \\
@@ -27,6 +27,6 @@ Diverse 28 & 28 & 164 & 212 & 230 & 242 \\
 Exhaustive (reference) & 4,851 & 205 & 242 & 253 & 290 \\
 \bottomrule
 \end{tabular}
-\caption{Correspondence on both cohorts (number of lesions). Hit@$\tau$: selected point within $\tau$\,mm of the annotated earlier position; Reach@3: any candidate within 3\,mm; failures count as misses. Cand.: number of scored candidates (--: not applicable); $^\ast$mean after the gates. Bold: best method excluding the exhaustive reference.}
+\caption{Correspondence on both cohorts (number of lesions). Hit@$\tau$: selected point within $\tau$\,mm of the annotated earlier position; Reach@3: any candidate within 3\,mm; failures count as misses. Cand.: mean number of candidates scored per query (--: not applicable); $^\ast$mean after the gates. Bold: best method excluding the exhaustive reference.}
 \label{tab:main}
 \end{table}

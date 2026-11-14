@@ -229,7 +229,7 @@ The identity holds for any pair of matchers; with the list-invariant score of Eq
 \label{sec:impl}
 The common grid has $64^3$ voxels of $0.7\times0.7\times1.5$\,mm.
 The wide lattice $\T$ spans $\pm7$\,mm in-plane and $\pm7.5$\,mm axially at voxel spacing ($21\times21\times11 = 4{,}851$ translations); the original lattice ($\pm4.2$, $\pm4.2$, $\pm4.5$\,mm; 1,183 translations) is used in some comparisons.
-The radius is $r = 2.1$\,mm (three in-plane voxels); \ours retains about 365 of the 4,851 translations per query.
+The radius is $r = 2.1$\,mm (three in-plane voxels); \ours retains about 360 of the 4,851 translations per query.
 The scales $F = 76.958$\,HU and $W = 99.541$\,HU are the residual limits fitted on the training set, and $\lambda = 1.5$ for all variants.
 
 
@@ -249,7 +249,7 @@ All settings were fixed before testing on this cohort, and the annotated lesion 
 
 \paragraph{Screening cohort (replication).}
 LUNA25~\cite{peeters2026,lunamarks,lunascans,nlstct} links pulmonary nodules across low-dose screening CT visits of the National Lung Screening Trial.
-Our \emph{training set} consists of 145 nodule tracks from 100 patients of this dataset; the scorer and all parameters were fitted on it and then frozen.
+Our \emph{training set} consists of 145 nodule tracks from 101 patients of this dataset; the scorer and all parameters were fitted on it and then frozen.
 We evaluate on 309 nodules from 233 other patients.
 
 \subsection{Experimental settings}
