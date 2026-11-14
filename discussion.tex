@@ -6,17 +6,9 @@ Candidate search has two stages that are usually designed together, proposing lo
 A shortlist ranked only by anatomical fit spends a small budget on near-duplicates of a single alignment, and a simple minimum-distance rule corrects this at negligible cost.
 Keeping the fit order but requiring candidates to be at least 2.1\,mm apart improves the hit rate by 9 to 12 points at a budget of 28 candidates, and the reach--selection decomposition attributes the entire gain to lesions that become reachable.
 Run to completion, the diverse list reaches 348 of the 351 lesions reachable by exhaustive scoring while evaluating only 7.5\% of the candidates.
-Combined with a lesion-aware scorer, the resulting matcher improves on lesion-inclusive B-spline registration by about 10 points at 3\,mm on two independent cohorts, with the largest gains when the query is imprecise, and it runs the local matching step about 19 times faster.
-
-The same analysis clarifies when the approach helps.
+Combined with a lesion-aware scorer, the resulting matcher improves on lesion-inclusive B-spline registration by about 10 points at 3\,mm on two independent cohorts, with the largest gains when the query is imprecise, and it runs the local matching step about 19 times faster. The same analysis clarifies when the approach helps.
 Diverse search creates opportunities, but the scorer determines how many of them are realized: a lesion-specific scorer exploits the additional candidates, whereas a general anatomical embedding does not.
-Coverage and selection should therefore be designed and evaluated together, and the reach--selection decomposition offers a simple way to attribute changes in accuracy to each.
-
-Several limitations remain.
-Our formulation assumes an approximate lesion position in the current scan and a lesion that persists between visits, so new lesions and incorrect lesion associations require separate handling.
-The queries are simulated by perturbing annotated positions; with the exact annotated position as the query, the screening advantage over the Spline decreases from 33 to 4 hits, which makes evaluation with real clicks and detector outputs essential.
-% TODO(group): agree on this wording.
-In addition, a failed global alignment can leave the lesion outside the local crop, as for 28 staging lesions in two scan pairs, and we have not yet compared diverse search with other ways of spreading a budget, such as coarse sub-lattices or the local minima of the fit cost, or with learned registration.
+Coverage and selection should therefore be designed and evaluated together, and the reach--selection decomposition offers a simple way to attribute changes in accuracy to each. Our formulation assumes an approximate lesion position in the current scan and a lesion that persists between visits, so new lesions and incorrect lesion associations require separate handling. The queries are simulated by perturbing annotated positions; with the exact annotated position as the query, the screening advantage over the Spline decreases from 33 to 4 hits, which makes evaluation with real clicks and detector outputs essential.
 
 These findings suggest clear directions for future work.
 Because most remaining errors are errors of selection, stronger lesion scorers, including learned scorers trained and evaluated on diverse candidate lists, are the most direct route to further gains.

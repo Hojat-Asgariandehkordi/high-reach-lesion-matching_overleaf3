@@ -62,7 +62,7 @@ We apply minimum-distance selection to lesion correspondence hypotheses ordered 
 
 \begin{figure*}[!t]
 \centering
-\includegraphics[width=\textwidth]{figures/overview.pdf}
+\includegraphics[width=0.8\textwidth]{figures/overview.pdf}
 \caption{Method overview. (A)~Chest alignment leaves a residual displacement. (B)~Translations are scored on a shell around the lesion: fit octants give $f_t$, witness octants $w_t$. (C)~At the same budget, diverse search spreads the candidates so that one reaches the lesion. (D)~A frozen scorer selects the final candidate (Eq.~\ref{eq:direct}). (E)~Reach versus hit. Created in BioRender; not to scale.}
 \label{fig:construction}
 \end{figure*}
@@ -89,53 +89,32 @@ Throughout, $d(\cdot,\cdot)$ denotes Euclidean distance in millimeters.
 \subsection{Anatomical fit cost}
 \label{sec:fit}
 The lesion may grow, shrink or change shape between visits, so its own appearance is an unreliable cue for alignment.
-We instead rank translations by the anatomy around it, \ie vessels, airways, fissures and pleura, which is largely preserved between visits.
-
-\paragraph{Sampling shell.}
-Let $\{z_i\}$ be sample positions in a spherical shell centered at the query $p$, with inner radius $\rho_1$ and outer radius $\rho_2$.
+We instead rank translations by the anatomy around it, \ie vessels, airways, fissures and pleura, which is largely preserved between visits. Let $\{z_i\}$ be sample positions in a spherical shell centered at the query $p$, with inner radius $\rho_1$ and outer radius $\rho_2$.
 The inner radius keeps the lesion and its immediate surroundings out of the cost, and the outer radius keeps the samples close enough to the lesion for the translation model to hold.
 We divide the shell into its eight octants around $p$ and assign them alternately, like the cells of a $2\times2\times2$ checkerboard, to a \emph{fit} set $\Omega_f$ and a \emph{witness} set $\Omega_w$, so that adjacent octants always belong to different sets.
-Each set therefore surrounds the lesion from all directions, but the two sets share no samples.
-
-\paragraph{Robust residual.}
-For a sample $i$, let $a_i = I^{c}(z_i)$ be the current-scan intensity and $b_i(t) = I^{e}(z_i - t)$ the earlier-scan intensity under translation $t$, consistent with Eq.~\ref{eq:mapped}; since translations lie on the grid, no interpolation is needed.
+Each set therefore surrounds the lesion from all directions, but the two sets share no samples. For a sample $i$, let $a_i = I^{c}(z_i)$ be the current-scan intensity and $b_i(t) = I^{e}(z_i - t)$ the earlier-scan intensity under translation $t$, consistent with Eq.~\ref{eq:mapped}; since translations lie on the grid, no interpolation is needed.
 For the correct translation, $a_i \approx b_i(t)$ up to noise and a global change in intensity.
 We measure the disagreement on a sample set $S$ by
 \begin{equation}
 E_S(t) = \frac{1}{|S|}\sum_{i \in S} g_i(t)\,\min\bigl\{\,|a_i - b_i(t) - o_t|,\ \kappa\,\bigr\},
 \label{eq:residual}
 \end{equation}
-which has three components.
-
-\noindent\emph{Intensity offset $o_t$.}
-Scanners, reconstruction kernels and contrast phases can shift all intensities by a nearly constant amount.
+which has three components. Scanners, reconstruction kernels and contrast phases can shift all intensities by a nearly constant amount.
 We estimate this shift as the median difference over the fit samples and clip it to $\pm\delta$,
 \begin{equation}
 o_t = \mathrm{clip}_{[-\delta,\delta]}\Bigl(\mathrm{median}_{i\in\Omega_f}\bigl(a_i - b_i(t)\bigr)\Bigr),
 \end{equation}
-so that the offset absorbs a global change but cannot compensate a genuine anatomical mismatch.
-
-\noindent\emph{Cap $\kappa$.}
-A vessel that appears at a sample in one scan but not in the other produces a residual of several hundred HU and would dominate the mean.
-Truncating each residual at $\kappa$ penalizes such a mismatch without letting a single sample decide the cost.
-
-\noindent\emph{Tissue weight $g_i(t)$.}
-Most shell samples fall in aerated lung, whose nearly uniform intensity carries little positional information.
+so that the offset absorbs a global change but cannot compensate a genuine anatomical mismatch. A vessel that appears at a sample in one scan but not in the other produces a residual of several hundred HU and would dominate the mean.
+Truncating each residual at $\kappa$ penalizes such a mismatch without letting a single sample decide the cost. Most shell samples fall in aerated lung, whose nearly uniform intensity carries little positional information.
 The weight
 \begin{equation}
 g_i(t) = g_0 + (1-g_0)\,\mathrm{clip}_{[0,1]}\!\left(\frac{\max\{a_i, b_i(t)\} - h_0}{h_1 - h_0}\right)
 \end{equation}
 increases linearly from $g_0$ at intensity $h_0$ (air) to $1$ at $h_1$ (tissue), so that structured anatomy dominates the cost.
-Taking the maximum of the two intensities makes a structure count fully if it is present in either scan, so a translation cannot lower its cost by moving a vessel onto air.
-
-\paragraph{Fit and witness costs.}
-The \emph{fit cost} $f_t = E_{\Omega_f}(t)$ orders the candidates (Sec.~\ref{sec:diverse}).
+Taking the maximum of the two intensities makes a structure count fully if it is present in either scan, so a translation cannot lower its cost by moving a vessel onto air. The \emph{fit cost} $f_t = E_{\Omega_f}(t)$ orders the candidates (Sec.~\ref{sec:diverse}).
 The \emph{witness cost} $w_t = E_{\Omega_w}(t)$ is computed on the other four octants with the same offset $o_t$, which is estimated on $\Omega_f$ only, so nothing is refitted on the witness samples.
 Because these samples play no role in the ordering, $w_t$ acts as a held-out check: a translation that matches $\Omega_f$ by coincidence, for example by aligning a single vessel on one side of the lesion, tends to incur a high cost on the octants it was not ranked on.
-Both costs enter the final score (Sec.~\ref{sec:scorer-def}).
-
-Parameter values are listed in the supplement (Tab.~S2).
-
+Both costs enter the final score (Sec.~\ref{sec:scorer-def}). Parameter values are listed in the supplement (Tab.~S2).
 \subsection{Diverse search}
 \label{sec:diverse}
 The standard choice is to pass the $K$ translations with the lowest fit cost to the scorer.
@@ -162,8 +141,6 @@ The rule is greedy non-maximum suppression~\cite{neubeck2006nms} applied to corr
 \State \Return $\hat{t} = \argmax_{t \in \Ss} s(t)$ \Comment{score of Eq.~\ref{eq:direct}}
 \end{algorithmic}
 \end{algorithm}
-
-\paragraph{Coverage.}
 The complete list inherits the covering property of greedy suppression.
 Let $\mathcal{X} = \{x_t : t \in \T\}$ be all candidate positions, $\mathcal{D} = \{x_t : t \in \Ss\}$ those retained by \ours, and $d(y, \mathcal{A}) = \min_{x \in \mathcal{A}} d(y, x)$.
 
@@ -236,9 +213,7 @@ The scales $F = 76.958$\,HU and $W = 99.541$\,HU are the residual limits fitted 
 \section{Experiments}
 \label{sec:evaluation}
 \subsection{Datasets}
-We evaluate on two longitudinal CT cohorts: a melanoma staging cohort, which serves as the main test set, and a lung cancer screening cohort, which serves as a replication.
-
-\paragraph{Staging cohort (main test set).}
+We evaluate on two longitudinal CT cohorts: a melanoma staging cohort, which serves as the main test set, and a lung cancer screening cohort, which serves as a replication: \textbf{Staging cohort (main test set):}
 Longitudinal-CT v2~\cite{gatidis2026longct,kuestner2025longct} contains staging CT scans of melanoma patients at baseline and follow-up, in which practitioners segmented each lesion and linked it across the two visits.
 It comes from a clinical source different from the screening data used to train our method, and none of its patients were used for training.
 We select lung lesions that appear in both visits, in scan pairs where each visit is a single CT volume and each lesion has a 3D center.
@@ -246,28 +221,19 @@ This yields 440 lesions from 72 patients.
 For three of them, the lesion-centered crop is not contained in both scans; we count these as failures for every method.
 Comparing 98 lesion centers with the published masks revealed a constant half-voxel offset, which we corrected in both visits before running any method.
 All settings were fixed before testing on this cohort, and the annotated lesion locations were used only to compute the evaluation metrics.
-
-\paragraph{Screening cohort (replication).}
+\textbf{Screening cohort (replication).}
 LUNA25~\cite{peeters2026,lunamarks,lunascans,nlstct} links pulmonary nodules across low-dose screening CT visits of the National Lung Screening Trial.
 Our \emph{training set} consists of 145 nodule tracks from 101 patients of this dataset; the scorer and all parameters were fitted on it and then frozen.
 We evaluate on 309 nodules from 233 other patients.
 
 \subsection{Experimental settings}
-\paragraph{Queries.}
 In clinical use, the query is a radiologist's click or a detector output and is therefore imprecise.
 We simulate this by displacing the annotated lesion center by a random offset of up to 2.5\,mm along each axis and then moving it to the most lesion-like position within 6\,mm, found with a blob-detection filter~\cite{li2003}.
-All methods receive the same query and the same lesion-centered grid; the annotated locations are used only for evaluation.
-
-\paragraph{Candidate lists.}
-\label{sec:routes}
-To measure the effect of candidate selection alone, we compare candidate lists that differ only in which translations reach the scorer, with everything else unchanged.
+All methods receive the same query and the same lesion-centered grid; the annotated locations are used only for evaluation. To measure the effect of candidate selection alone, we compare candidate lists that differ only in which translations reach the scorer, with everything else unchanged.
 \emph{Fit-only $K$} keeps the $K$ best-fitting translations, \emph{Diverse $K$} applies our diverse search until $K$ candidates are retained, and \emph{\ours} runs it to completion.
 \emph{Gated $K$} additionally discards candidates with a poor fit or witness cost, and \emph{Relaxed $K$} uses looser limits.
 \emph{Exhaustive} scores every translation.
-We use budgets from $K = 7$ to $K = 112$.
-
-\subsection{Baselines}
-We compare against lesion-inclusive B-spline registration~\cite{lowekamp2013} (hereafter \emph{the Spline}), which warps the earlier scan with a smooth deformation controlled by a coarse grid of control points, optimizes image similarity in a region that includes the lesion, and maps the query through the resulting deformation; we use the strongest of four Spline settings on the training set.
+We use budgets from $K = 7$ to $K = 112$. We compare against lesion-inclusive B-spline registration~\cite{lowekamp2013} (hereafter \emph{the Spline}), which warps the earlier scan with a smooth deformation controlled by a coarse grid of control points, optimizes image similarity in a region that includes the lesion, and maps the query through the resulting deformation; we use the strongest of four Spline settings on the training set.
 We also compare against the released SAM model~\cite{yan2022sam}, used both standalone and as a drop-in scorer on our candidate lists.
 Finally, we replace our scorer with a Siamese scorer trained on the same data.
 Learned lesion trackers~\cite{cai2021,tang2022tlt} are trained end to end on large annotated longitudinal datasets, whereas our method needs only a small training set; we therefore represent learned correspondence by SAM, which can be applied without retraining. The diffusion-guided tracker~\cite{zhuang2026diffusion} refines a given registration and is thus complementary to, rather than an alternative for, our search.

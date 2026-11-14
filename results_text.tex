@@ -13,26 +13,20 @@
 \end{figure*}
 
 Table~\ref{tab:main} summarizes the results on both cohorts.
-Its rows are the lesion-inclusive B-spline registration; SAM used standalone, which returns the most similar position in its similarity map; our candidate lists scored by the learned Siamese network; the 28 best-fitting translations (Fit-only 28); diverse search stopped at 28 candidates (Diverse 28) or run to completion (\ours); and all translations scored (Exhaustive) (Sec.~\ref{sec:routes}).
+Its rows are the lesion-inclusive B-spline registration; SAM used standalone, which returns the most similar position in its similarity map; our candidate lists scored by the learned Siamese network; the 28 best-fitting translations (Fit-only 28); diverse search stopped at 28 candidates (Diverse 28) or run to completion (\ours); and all translations scored (Exhaustive).
 The B-spline optimizes a continuous deformation and SAM searches its full similarity map, so neither has a candidate count.
 On the staging cohort, \ours places 289 of 440 predictions within 3\,mm (65.7\%), compared with 243 (55.2\%) for the lesion-inclusive B-spline, a paired improvement of $+10.5$ points [3.6, 17.6].
 It finds 63 lesions that the Spline misses and keeps 226 of the Spline's 243 hits; Fig.~\ref{fig:qualitative} shows typical successes and failures of both methods on this cohort.
 On the screening cohort, it reaches 244 of 309 (79.0\%) versus 211 (68.3\%), with 46 gains and 13 losses ($+10.7$ points [5.8, 15.4]).
 Both comparisons meet the criteria fixed before evaluation.
 As shown in Fig.~\ref{fig:forest}, the advantage holds at every tolerance and remains when every staging patient is weighted equally ($+9.6$ [3.7, 15.9]) or when distances are measured in native earlier-scan coordinates ($+11.4$ [4.1, 18.9]).
-The median error of the predicted positions decreases from 2.41 to 1.68\,mm on staging and from 1.70 to 1.46\,mm on screening.
-
-The other rows of Table~\ref{tab:main} place these results in context.
+The median error of the predicted positions decreases from 2.41 to 1.68\,mm on staging and from 1.70 to 1.46\,mm on screening. The other rows of Table~\ref{tab:main} place these results in context.
 Among the baselines, the released SAM model is far weaker as a standalone matcher (99 and 80 hits, 22.5\% and 25.9\%), although its similarity map contains a correct location for most lesions (Reach@3 of 396 and 308), and the learned Siamese scorer applied to Relaxed 28 lists reaches 203 and 210 hits.
 Within our own pipeline, a fit-ranked list of 28 candidates (Fit-only 28) yields 205 and 175 hits; enforcing a minimum spacing at the same budget (Diverse 28) raises this to 245 and 212 (Sec.~\ref{sec:diversity}), and running the diverse search to completion gives the 289 and 244 hits reported above.
-Scoring all 4,851 translations (Exhaustive) yields 297 and 242 hits, so \ours is within eight hits of exhaustive scoring on staging and two hits better on screening while scoring about 7.5\% of the candidates (Sec.~\ref{sec:complete}).
-
-Three differences explain the gain over registration.
+Scoring all 4,851 translations (Exhaustive) yields 297 and 242 hits, so \ours is within eight hits of exhaustive scoring on staging and two hits better on screening while scoring about 7.5\% of the candidates. Three differences explain the gain over registration.
 First, the Spline is initialized from the best translation on the smaller original lattice ($\pm4.2$\,mm), whereas \ours searches the wide lattice ($\pm7$\,mm); exhaustive scoring of the wide lattice outperforms the Spline by an even larger margin (297 hits), so the extent of the search matters.
 Second, our scorer selects the most lesion-like candidate, whereas the Spline maps the query itself; with the exact annotated position as the query, the Spline improves from 211 to 239 screening hits, while \ours remains at 243 (Sec.~\ref{sec:query}).
-Third, diverse search makes such a wide, lesion-aware search affordable, reaching 348 of the 351 lesions reachable by exhaustive scoring with 7.5\% of the candidates (Sec.~\ref{sec:complete}).
-
-Table~\ref{tab:missmodes} separates misses into lesions that were never reachable and lesions that were reachable but not selected.
+Third, diverse search makes such a wide, lesion-aware search affordable, reaching 348 of the 351 lesions reachable by exhaustive scoring with 7.5\% of the candidates. Table~\ref{tab:missmodes} separates misses into lesions that were never reachable and lesions that were reachable but not selected.
 Because the Spline returns a single point, all of its misses are unreachable by construction.
 \ours reduces unreachable misses from 197 to 92 on staging and from 98 to 20 on screening, so most of its remaining errors are errors of selection.
 SAM shows the opposite profile: its similarity map contains a correct location for 396 staging and 308 screening lesions, yet its maximum is correct for only 99 and 80.
@@ -51,10 +45,7 @@ The frozen Siamese scorer, applied to the same Relaxed 28 lists as our scorer, n
 \label{sec:diversity}
 Table~\ref{tab:contrasts} isolates candidate allocation by changing only the list, with the same order, grid and scorer.
 At a budget of 28, enforcing a minimum distance of 2.1\,mm raises reach from 221 to 274 staging lesions and from 189 to 242 screening lesions, and raises hits from 205 to 245 ($+9.1$ points [6.0, 12.2]) and from 175 to 212 ($+12.0$ points [7.5, 16.4]), at an extra cost of 22\,ms per query.
-The gain persists with relaxed gates, where diverse search at 28 adds 7.5 [4.7, 10.7] and 9.4 [5.3, 13.4] points.
-
-Figure~\ref{fig:attribution} decomposes these gains with Eq.~\ref{eq:decomp}.
-Diverse search makes 54 staging and 56 screening lesions newly reachable, of which the scorer selects 45 and 41, while choices on lesions reachable by both lists change by a net $-4$ in each cohort.
+The gain persists with relaxed gates, where diverse search at 28 adds 7.5 [4.7, 10.7] and 9.4 [5.3, 13.4] points. Figure~\ref{fig:attribution} decomposes these gains with Eq.~\ref{eq:decomp}. Diverse search makes 54 staging and 56 screening lesions newly reachable, of which the scorer selects 45 and 41, while choices on lesions reachable by both lists change by a net $-4$ in each cohort.
 The improvement is therefore entirely due to coverage.
 
 \begin{figure}[!t]
@@ -78,53 +69,36 @@ Each doubling of a diverse budget increases reach, and hits closely follow reach
 In contrast, Gated $K$ gains little beyond $K{=}28$, because its gates have already removed the neighborhoods that contain the lesion.
 With relaxed gates, replacing the budget of 28 by the complete list raises hits from 237 to 264 (staging) and from 204 to 217 (screening), and removing the remaining gates adds another 48 and 32 reachable lesions and 25 and 27 hits.
 Anatomical fit is therefore more useful as a soft term in the score (Eq.~\ref{eq:direct}) than as a hard filter on the list.
-
-\subsection{Comparison with exhaustive scoring}
-\label{sec:complete}
 Run to completion, \ours reaches 348 of the 351 lesions reachable on the full lattice in staging and 289 of 290 in screening, while scoring about 360 of the 4,851 translations.
 Its hit rate is within 1.8 points of exhaustive scoring on staging (289 versus 297, interval [0.2, 3.5]) and slightly higher on screening (244 versus 242).
 The coverage bound (Eq.~\ref{eq:coverage}) explains the remaining gap: each retained position represents a cluster of nearby translations, which matters most at tight tolerances.
 Accordingly, exhaustive scoring adds 18 staging hits at 2\,mm but only five at 4\,mm.
-Exhaustive scoring is thus the most accurate option on staging, whereas diverse search reaches nearly the same lesions with 7.5\% of the candidate evaluations and, at budgets from 28 to 112, provides intermediate operating points (Sec.~\ref{sec:latency}).
+Exhaustive scoring is thus the most accurate option on staging, whereas diverse search reaches nearly the same lesions with 7.5\% of the candidate evaluations and, at budgets from 28 to 112, provides intermediate operating points.
 The number of scored candidates matters whenever scoring dominates the cost: in the fixed-budget replay, scoring takes 0.201 of the 0.265\,s of exhaustive search, and a heavier per-candidate scorer, such as a neural network, would make this the main factor.
-
-\subsection{Robustness to query error}
 \label{sec:query}
-
 \begin{figure}[!t]
 \centering
 \includegraphics[width=\linewidth]{figures/query_bands.pdf}
 \caption{Gain over the Spline by query error, with 95\% patient-level intervals; $n$: lesions per band. The gain is present even for accurate queries.}
 \label{fig:bands}
 \end{figure}
-
 Our queries are perturbed annotations (Sec.~\ref{sec:evaluation}), so we examine how the gain depends on query error.
 Figure~\ref{fig:bands} groups lesions by the distance between the query $p$ and the annotated current position.
 The gain is already present for well-localized queries: within 1.5\,mm, \ours hits 238 of 322 staging lesions versus 205 for the Spline ($+10.2$ points [2.1, 18.4]) and 178 versus 157 of 194 screening lesions ($+10.8$ [5.8, 16.0]); this band accounts for 33 of the 46 net staging gains and 21 of the 33 screening gains.
 When the screening cohort is rerun with the exact annotated position as the query, the Spline improves from 211 to 239 hits while \ours remains at 243.
-On screening, a large part of the advantage is therefore robustness to an imprecise query, which matters whenever the query comes from a click or a detector (supplement, Tab.~S7).
-
-\subsection{Role of the scorer}
-\label{sec:scorer}
-Additional reach is useful only if the scorer can exploit it.
+On screening, a large part of the advantage is therefore robustness to an imprecise query, which matters whenever the query comes from a click or a detector (supplement, Tab.~S7). Additional reach is useful only if the scorer can exploit it.
 Increasing the budget of Gated $K$ from 7 to 28 raises hits from 192 to 219 on staging ($+6.1$ points [3.6, 9.1]) and from 167 to 195 on screening ($+9.1$ points [6.0, 12.3]), both above the margin fixed before evaluation.
 Widening the lattice at a fixed budget of 28 does not help (intervals include zero), so the number and placement of the retained candidates, rather than the extent of the lattice, drive the gain.
 On identical expanded lists, our scorer selects 33 of the 39 newly reachable staging lesions, whereas SAM selects only 10 and loses 15 hits on the 202 lesions reachable by both lists (Fig.~\ref{fig:attribution}).
 The budget effect favors our scorer over SAM by 7.3 points [4.4, 10.4] on staging and 10.0 [5.4, 14.8] on screening.
 Coverage and selection are therefore complementary: a wider candidate list helps only when the scorer can distinguish the lesion from anatomically similar structures.
-
-\subsection{Runtime}
-\label{sec:latency}
-
 \input{tables/local_timing}
-
 \begin{figure}[!t]
 \centering
 \includegraphics[width=\linewidth]{figures/accuracy_latency.pdf}
 \caption{Hit rate versus local time per query. Diverse search comes close to exhaustive accuracy at lower cost; the Spline (3.6--3.9\,s) is off the scale.}
 \label{fig:speed}
 \end{figure}
-
 Table~\ref{tab:timing} reports local times.
 In the matched comparison, the median local time of \ours is 0.194\,s versus 3.617\,s for the Spline on staging (18.6$\times$ faster) and 0.185 versus 3.866\,s on screening (20.9$\times$); the 90th percentiles are 0.458 versus 4.707\,s and 0.190 versus 4.693\,s.
 Figure~\ref{fig:speed} plots accuracy against local time in the fixed-budget replay.
