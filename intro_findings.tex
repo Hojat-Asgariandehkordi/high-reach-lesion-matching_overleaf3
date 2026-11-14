@@ -2,14 +2,10 @@ Follow-up chest CT is read by comparison: a radiologist identifies a lesion in t
 Automating the second step is a correspondence problem with an unusual structure.
 The current location is known, and a global chest alignment brings the earlier scan into a common frame.
 What remains is a residual displacement of a few millimeters caused by breathing, patient positioning and changes in the lesion itself.
-Within that small window, several earlier locations are often plausible, and the surrounding anatomy may not single out one of them.
-
-Two families of methods address this residual.
+Within that small window, several earlier locations are often plausible, and the surrounding anatomy may not single out one of them. Two families of methods address this residual.
 Deformable registration estimates a continuous map that absorbs local motion~\cite{rueckert1999,ghazipour2021}, but it commits to one solution and is costly per query.
 Hypothesis-based matchers~\cite{sofka2010} instead propose many local translations, rank them by anatomical agreement and let a lesion scorer choose among the best few.
-This second design is fast and interpretable, but it depends on a step that is rarely examined: \emph{which} hypotheses are allowed to reach the scorer.
-
-Our starting observation is that ranking by fit wastes a short candidate list.
+This second design is fast and interpretable, but it depends on a step that is rarely examined: \emph{which} hypotheses are allowed to reach the scorer. Our starting observation is that ranking by fit wastes a short candidate list.
 Translations that differ by a fraction of a millimeter have nearly identical fit, so the top $K$ translations crowd around a single fit mode (Fig.~\ref{fig:teaser}b).
 If that mode is wrong, the scorer has no correct option, however good it is.
 We therefore keep the fit ordering but enforce spatial separation: walking down the fit-ranked list, a translation is retained only if its mapped point is at least $r$ from every retained point.

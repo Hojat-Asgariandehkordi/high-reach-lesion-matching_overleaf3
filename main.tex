@@ -41,7 +41,6 @@ Section~\ref{sec:evaluation} describes the datasets, implementation details, bas
 Section~\ref{sec:discussion} discusses limitations, and Sec.~\ref{sec:conclusion} concludes.
 \section{Related work}
 \label{sec:related}
-
 Matching a lesion across visits is a prerequisite for measuring growth and response in follow-up imaging.
 Location Registration and Recognition (LRR)~\cite{sofka2010} is the closest design to ours: it generates local registration hypotheses around a supplied nodule position, refines them, and verifies them with a lesion model.
 Rafael-Palou \etal~\cite{rafaelpalou2021} instead re-identify detected nodules with a 3D Siamese network, avoiding explicit registration, while Deep Lesion Tracker~\cite{cai2021} and Transformer Lesion Tracker~\cite{tang2022tlt} learn to combine lesion appearance with anatomical context and predict the earlier location directly.
@@ -53,9 +52,7 @@ Studies of registration uncertainty show that good image agreement does not guar
 A third line of work learns a descriptor of anatomical position for every voxel.
 Self-supervised anatomical embeddings (SAM)~\cite{yan2022sam}\footnote{Not to be confused with the Segment Anything Model.} are trained so that the same anatomical point receives similar descriptors in different scans, and a point marked in one scan is matched by finding the most similar descriptor in the other; diffusion-guided position encodings follow the same principle~\cite{zhuang2026diffusion}.
 These methods replace an explicit search over shifts with a learned similarity, but they still report a single most-similar location, so when several locations look alike the error lies in selection rather than in coverage (Sec.~\ref{sec:transfer}).
-We use SAM as a baseline because its released model accepts a point query directly (Sec.~\ref{sec:evaluation}).
-
-Selecting a few good hypotheses from many is a recurring problem across vision.
+We use SAM as a baseline because its released model accepts a point query directly (Sec.~\ref{sec:evaluation}). Selecting a few good hypotheses from many is a recurring problem across vision.
 Non-maximum suppression greedily removes detections that overlap a higher-scoring one~\cite{neubeck2006nms}, and diverse $M$-best methods return several high-scoring but mutually different solutions so that a later stage can choose among them~\cite{batra2012diverse}.
 Farthest-point sampling spreads samples to cover a domain with a bounded gap~\cite{eldar1997farthest}, and randomized correspondence search propagates good matches while sampling widely~\cite{barnes2009patchmatch}.
 We apply minimum-distance selection to lesion correspondence hypotheses ordered by anatomical fit, and we measure its effect on coverage separately from its effect on the final choice.
