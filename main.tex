@@ -50,7 +50,7 @@ Free-form deformation with B-splines~\cite{rueckert1999}, often called B-spline 
 Learned methods predict deformation fields in a single forward pass~\cite{balakrishnan2019voxelmorph,ghazipour2021}, and recent foundation models and benchmarks cover many anatomies, including lung CT~\cite{tian2024unigradicon,hering2023learn2reg}.
 Studies of registration uncertainty show that good image agreement does not guarantee a reliable mapped location~\cite{eppenhof2018,luo2017}, which motivates keeping several hypotheses rather than committing to one; we use a lesion-inclusive B-spline as the registration comparator.
 A third line of work learns a descriptor of anatomical position for every voxel.
-Self-supervised anatomical embeddings (SAM)~\cite{yan2022sam}\footnote{Not to be confused with the Segment Anything Model.} are trained so that the same anatomical point receives similar descriptors in different scans, and a point marked in one scan is matched by finding the most similar descriptor in the other; diffusion-guided position encodings follow the same principle~\cite{zhuang2026diffusion}.
+Self-supervised anatomical embeddings (SAM)~\cite{yan2022sam}\footnote{Not to be confused with the Segment Anything Model.} are trained so that the same anatomical point receives similar descriptors in different scans, and a point marked in one scan is matched by finding the most similar descriptor in the other; diffusion-guided position encodings~\cite{zhuang2026diffusion} follow the same principle, localizing globally by embedding similarity and then refining locally without a prior registration.
 These methods replace an explicit search over shifts with a learned similarity, but they still report a single most-similar location, so when several locations look alike the error lies in selection rather than in coverage (Sec.~\ref{sec:transfer}).
 We use SAM as a baseline because its released model accepts a point query directly (Sec.~\ref{sec:evaluation}). Selecting a few good hypotheses from many is a recurring problem across vision.
 Non-maximum suppression greedily removes detections that overlap a higher-scoring one~\cite{neubeck2006nms}, and diverse $M$-best methods return several high-scoring but mutually different solutions so that a later stage can choose among them~\cite{batra2012diverse}.
@@ -219,12 +219,12 @@ All methods receive the same query and the same lesion-centered grid; the annota
 \emph{Exhaustive} scores every translation.
 We use budgets from $K = 7$ to $K = 112$. We compare against lesion-inclusive B-spline registration~\cite{lowekamp2013} (hereafter \emph{the Spline}), which warps the earlier scan with a smooth deformation controlled by a coarse grid of control points, optimizes image similarity in a region that includes the lesion, and maps the query through the resulting deformation; we use the strongest of four Spline settings on the training set.
 We also compare against the released SAM model~\cite{yan2022sam}, used both standalone and as a drop-in scorer on our candidate lists.
-Finally, we replace our scorer with a Siamese scorer trained on the same data.
-Learned lesion trackers~\cite{cai2021,tang2022tlt} are trained end to end on large annotated longitudinal datasets, whereas our method needs only a small training set; we therefore represent learned correspondence by SAM, which can be applied without retraining. The diffusion-guided tracker~\cite{zhuang2026diffusion} refines a given registration and is thus complementary to, rather than an alternative for, our search.
+Finally, we replace our scorer with a Siamese scorer trained on the same data (supplement, Sec.~S3) and apply it to the Relaxed 28 lists.
+Learned lesion trackers~\cite{cai2021,tang2022tlt} are trained end to end on large annotated longitudinal datasets, whereas our method needs only a small training set; we therefore represent learned correspondence by SAM, which can be applied without retraining. A matched evaluation against the diffusion-guided tracker~\cite{zhuang2026diffusion} remains future work.
 
 \subsection{Evaluation metrics}
 A prediction is a \emph{hit} if it lies within $\tau = 3$\,mm of the annotated lesion position (Eq.~\ref{eq:reachhit}); we report the hit rate, also at 2 and 4\,mm, and the \emph{reach rate}, the percentage of lesions with at least one candidate within 3\,mm.
-Differences between methods are paired, with 95\% confidence intervals from a patient-level bootstrap; the main comparisons and success criteria were fixed before evaluating on the staging cohort.
+We write ``$+x$ points $[a, b]$'' for a paired difference in hit rate with its 95\% confidence interval from a bootstrap that resamples whole patients; the intervals are pointwise and unadjusted for multiplicity, and the main comparisons and success criteria were fixed before evaluating on the staging cohort.
 Runtime is measured on a single CPU thread, for the local matching step and end to end.
 
 
@@ -235,7 +235,7 @@ Runtime is measured on a single CPU thread, for the local matching step and end 
 \label{sec:main-end}
 \section*{LLM Usage Statement}
 % TODO(group): check against the CVPR 2027 LLM policy, and mention the AI assistance used for this revision.
-OpenAI Codex assisted with study design, literature and data screening, code, experiment execution, analysis, figures and tables, manuscript drafting and editing, and source and layout checks. Anthropic Claude assisted with revising the manuscript text, figures and layout. Schematic illustrations were created with BioRender. The numerical results are computed from the specified inputs using the recorded analysis. The authors are responsible for verification and for the submitted work.
+OpenAI ChatGPT provided automated critiques of draft manuscripts. OpenAI Codex assisted with study design, literature and data screening, code, experiment execution, analysis, figures and tables, manuscript drafting and editing, and source and layout checks. Anthropic Claude assisted with revising the manuscript text, figures and layout. Schematic illustrations were created with BioRender. The numerical results are computed from the specified inputs using the recorded analysis. The authors are responsible for verification and for the submitted work.
 
 {\small
 \bibliographystyle{ieeenat_fullname}

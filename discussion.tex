@@ -1,11 +1,11 @@
 \section{Conclusion}
 \label{sec:conclusion}
 \label{sec:discussion}
-This paper asked whether matching a lung lesion across CT visits is limited by how candidates are scored or by which candidates are scored, and the evidence points to the latter.
+Matching a lung lesion across CT visits is limited not only by how candidates are scored but also by which candidates are scored.
 A shortlist ranked by anatomical fit spends a small budget on near-duplicates of one alignment; requiring candidates to be at least 2.1\,mm apart improves the hit rate by 9 to 12 points at 28 candidates, entirely through lesions that become reachable, and the complete list reaches 348 of the 351 lesions reachable by exhaustive scoring with 7.5\% of the candidates.
 Combined with a lesion-aware scorer, the matcher improves on lesion-inclusive B-spline registration by about 10 points at 3\,mm on two cohorts while running the local step about 19 times faster.
-Because extra coverage helps only a scorer that can exploit it, coverage and selection should be designed and evaluated together.
+Because extra coverage helps only a scorer that can exploit it, coverage and selection should be designed together.
 
 Our formulation assumes an approximate lesion position and a lesion that persists between visits, and our queries are simulated; with the exact annotated position, the screening advantage over the Spline drops from 33 to 4 hits.
-Future work should evaluate real clicks and detector outputs, pair diverse lists with stronger scorers, since most remaining errors are errors of selection, and adapt the spacing to the local fit landscape.
-More broadly, candidate allocation deserves to be treated as a design choice in its own right in correspondence problems.
+A fit-informed stratification matches Diverse 28, so our selector is one effective instance of fit-informed coverage rather than a uniquely superior rule, and a matched comparison with learned trackers remains to be done.
+Future work should evaluate real clicks and detector outputs, widen reach on staging, where unreachable lesions dominate the remaining misses, pair diverse lists with stronger scorers for screening, where misselections dominate, and adapt the spacing to the local fit landscape.
