@@ -19,6 +19,7 @@
 \renewcommand{\thesection}{S\arabic{section}}
 \renewcommand{\thetable}{S\arabic{table}}
 \renewcommand{\thefigure}{S\arabic{figure}}
+\renewcommand{\thealgorithm}{S\arabic{algorithm}}
 \title{\paperTitle}
 \author{Anonymous CVPR submission}
 \hypersetup{pdftitle={\paperTitle\ - Supplement}}
@@ -72,6 +73,26 @@ Before crop preparation, each scan must have a robust lung extent of at least 13
 The evaluation uses de-identified research data and previously supplied annotations. The original NLST reports written consent and institutional review~\cite{aberlenslt}. The secondary analysis involved no participant contact or new imaging.
 
 \section{Physical support and candidate generation}
+\paragraph{Fit-ordered diverse search.}
+Algorithm~\ref{alg:diverse} gives the complete procedure described in the main paper. Candidate positions are $x_t=p-t$, and $d$ denotes Euclidean distance in millimeters. The final score $s(t)$ is the frozen lesion-aware score defined in the main paper.
+
+\begin{algorithm}[t]
+\caption{Fit-ordered diverse search}
+\label{alg:diverse}
+\begin{algorithmic}[1]
+\Require query $p$, translations $\T$, fit costs $\{f_t\}$, radius $r$, budget $K$ ($K{=}\infty$ for \ours)
+\State sort $\T$ by $(f_t, \|t\|)$ ascending
+\State $\Ss \gets \emptyset$ \Comment{retained translations}
+\For{$t$ in sorted $\T$}
+  \If{$d(x_t, x_u) \ge r$ for all $u \in \Ss$} \Comment{$x_t = p - t$, $x_u = p - u$}
+    \State $\Ss \gets \Ss \cup \{t\}$
+    \If{$|\Ss| = K$} \textbf{break} \EndIf
+  \EndIf
+\EndFor
+\State \Return $\hat{t} = \argmax_{t \in \Ss} s(t)$ \Comment{main-paper score}
+\end{algorithmic}
+\end{algorithm}
+
 \paragraph{Parameters.}
 Table~\ref{tab:params} lists the parameters of the anatomical fit cost (main paper, Sec.~3.2); the remaining settings are given in the main paper (Sec.~3.6).
 All values were fixed on the training set and kept unchanged for every experiment.
@@ -299,6 +320,13 @@ The independent blinded pilot has 24 unadjudicated cases and the distinct confir
 \label{tab:fixed-budget-timing}
 \input{tables/fixed_budget_timing}
 \end{table}
+
+\begin{figure}[!ht]
+\centering
+\includegraphics[width=0.6\textwidth]{figures/accuracy_latency.pdf}
+\caption{Hit rate versus local time per query in the fixed-budget replay (Table~\ref{tab:fixed-budget-timing}). Diverse search comes close to exhaustive accuracy at lower cost; the Spline (3.6--3.9\,s) is off the scale.}
+\label{fig:speed}
+\end{figure}
 
 \begin{table}[!ht]
 \centering\small

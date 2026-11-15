@@ -21,6 +21,8 @@
 \title{\paperTitle}
 \author{Anonymous CVPR submission}
 \hypersetup{pdftitle={\paperTitle}}
+\setlength{\textfloatsep}{8pt}\setlength{\dbltextfloatsep}{8pt}
+\setlength{\intextsep}{8pt}\setlength{\floatsep}{6pt}\setlength{\dblfloatsep}{6pt}
 
 \begin{document}
 \maketitle
@@ -29,16 +31,10 @@
 \begin{abstract}
 \input{abstract}
 \end{abstract}
-
 \section{Introduction}
-
 \input{intro_findings}
 \ifexpandedpaper\input{intro_expanded}\fi
-The rest of the paper is organized as follows.
-Section~\ref{sec:related} reviews longitudinal lesion tracking, image registration, dense anatomical correspondence and diversity in candidate generation.
-Section~\ref{sec:method} formulates the problem and presents the anatomical fit cost, fit-ordered diverse search with its coverage guarantee, the lesion-aware scorer and the reach--selection decomposition.
-Section~\ref{sec:evaluation} describes the datasets, implementation details, baselines and metrics, and Sec.~\ref{sec:results} reports the results.
-Section~\ref{sec:conclusion} concludes with limitations and future directions.
+
 \section{Related work}
 \label{sec:related}
 Matching a lesion across visits is a prerequisite for measuring growth and response in follow-up imaging.
@@ -46,11 +42,11 @@ Location Registration and Recognition (LRR)~\cite{sofka2010} is the closest desi
 Rafael-Palou \etal~\cite{rafaelpalou2021} instead re-identify detected nodules with a 3D Siamese network, avoiding explicit registration, while Deep Lesion Tracker~\cite{cai2021} and Transformer Lesion Tracker~\cite{tang2022tlt} learn to combine lesion appearance with anatomical context and predict the earlier location directly.
 These systems differ mainly in their scoring function; how candidate locations are allocated before scoring has received less attention, and it is the question we study.
 Registration offers a second route to the earlier location.
-Free-form deformation with B-splines~\cite{rueckert1999}, often called B-spline registration, is a standard way to estimate a continuous map between two CT scans, and discrete registration evaluates a set of candidate displacements per control point and optimizes them jointly~\cite{glocker2008dense,heinrich2013mrf}, which is close in spirit to scoring a lattice of translations.
+B-spline registration estimates a continuous deformation between scans~\cite{rueckert1999}; discrete registration jointly optimizes candidate displacements at control points~\cite{glocker2008dense,heinrich2013mrf}, resembling a translation lattice.
 Learned methods predict deformation fields in a single forward pass~\cite{balakrishnan2019voxelmorph,ghazipour2021}, and recent foundation models and benchmarks cover many anatomies, including lung CT~\cite{tian2024unigradicon,hering2023learn2reg}.
 Studies of registration uncertainty show that good image agreement does not guarantee a reliable mapped location~\cite{eppenhof2018,luo2017}, which motivates keeping several hypotheses rather than committing to one; we use a lesion-inclusive B-spline as the registration comparator.
 A third line of work learns a descriptor of anatomical position for every voxel.
-Self-supervised anatomical embeddings (SAM)~\cite{yan2022sam}\footnote{Not to be confused with the Segment Anything Model.} are trained so that the same anatomical point receives similar descriptors in different scans, and a point marked in one scan is matched by finding the most similar descriptor in the other; diffusion-guided position encodings follow the same principle~\cite{zhuang2026diffusion}.
+Self-supervised anatomical embeddings (SAM)~\cite{yan2022sam}\footnote{Not to be confused with the Segment Anything Model.} match points across scans by descriptor similarity; diffusion-guided position encodings follow the same principle~\cite{zhuang2026diffusion}.
 These methods replace an explicit search over shifts with a learned similarity, but they still report a single most-similar location, so when several locations look alike the error lies in selection rather than in coverage (Sec.~\ref{sec:transfer}).
 We use SAM as a baseline because its released model accepts a point query directly (Sec.~\ref{sec:evaluation}). Selecting a few good hypotheses from many is a recurring problem across vision.
 Non-maximum suppression greedily removes detections that overlap a higher-scoring one~\cite{neubeck2006nms}, and diverse $M$-best methods return several high-scoring but mutually different solutions so that a later stage can choose among them~\cite{batra2012diverse}.
@@ -67,9 +63,7 @@ We apply minimum-distance selection to lesion correspondence hypotheses ordered 
 \label{fig:construction}
 \end{figure*}
 
-Figure~\ref{fig:construction} summarizes the pipeline.
-Given a lesion marked in the current scan, we enumerate candidate translations of the earlier scan around the globally aligned position, order them by an anatomical fit cost computed away from the lesion (Sec.~\ref{sec:fit}), retain a spatially diverse subset in this order (Sec.~\ref{sec:diverse}), and select one candidate with a lesion-aware scorer (Sec.~\ref{sec:scorer-def}).
-Section~\ref{sec:decomp} defines reach and hit and the decomposition used throughout our analysis.
+Figure~\ref{fig:construction} summarizes our pipeline: enumerate local translations after global alignment, rank them by surrounding anatomical fit, retain a spatially diverse subset, and select a candidate with a lesion-aware scorer.
 
 \subsection{Problem formulation}
 \label{sec:setup}
@@ -99,48 +93,26 @@ We measure the disagreement on a sample set $S$ by
 E_S(t) = \frac{1}{|S|}\sum_{i \in S} g_i(t)\,\min\bigl\{\,|a_i - b_i(t) - o_t|,\ \kappa\,\bigr\},
 \label{eq:residual}
 \end{equation}
-which has three components. Scanners, reconstruction kernels and contrast phases can shift all intensities by a nearly constant amount.
-We estimate this shift as the median difference over the fit samples and clip it to $\pm\delta$,
+where $o_t$ corrects global intensity shifts using the clipped median fit-sample difference,
 \begin{equation}
 o_t = \mathrm{clip}_{[-\delta,\delta]}\Bigl(\mathrm{median}_{i\in\Omega_f}\bigl(a_i - b_i(t)\bigr)\Bigr),
 \end{equation}
-so that the offset absorbs a global change but cannot compensate a genuine anatomical mismatch. A vessel that appears at a sample in one scan but not in the other produces a residual of several hundred HU and would dominate the mean.
-Truncating each residual at $\kappa$ penalizes such a mismatch without letting a single sample decide the cost. Most shell samples fall in aerated lung, whose nearly uniform intensity carries little positional information.
-The weight
+limiting compensation for anatomical mismatch. Residual truncation at $\kappa$ limits outlier influence. To downweight uninformative aerated lung, the weight
 \begin{equation}
 g_i(t) = g_0 + (1-g_0)\,\mathrm{clip}_{[0,1]}\!\left(\frac{\max\{a_i, b_i(t)\} - h_0}{h_1 - h_0}\right)
 \end{equation}
 increases linearly from $g_0$ at intensity $h_0$ (air) to $1$ at $h_1$ (tissue), so that structured anatomy dominates the cost.
-Taking the maximum of the two intensities makes a structure count fully if it is present in either scan, so a translation cannot lower its cost by moving a vessel onto air. The \emph{fit cost} $f_t = E_{\Omega_f}(t)$ orders the candidates (Sec.~\ref{sec:diverse}).
-The \emph{witness cost} $w_t = E_{\Omega_w}(t)$ is computed on the other four octants with the same offset $o_t$, which is estimated on $\Omega_f$ only, so nothing is refitted on the witness samples.
-Because these samples play no role in the ordering, $w_t$ acts as a held-out check: a translation that matches $\Omega_f$ by coincidence, for example by aligning a single vessel on one side of the lesion, tends to incur a high cost on the octants it was not ranked on.
-Both costs enter the final score (Sec.~\ref{sec:scorer-def}). Parameter values are listed in the supplement (Tab.~S2).
+The maximum intensity weights structures present in either scan. The \emph{fit cost} $f_t = E_{\Omega_f}(t)$ orders candidates; the \emph{witness cost} $w_t = E_{\Omega_w}(t)$ provides a held-out check on the other four octants, reusing $o_t$ without refitting. Both enter the final score (Sec.~\ref{sec:scorer-def}). Parameter values appear in the supplement (Tab.~S2).
 \subsection{Diverse search}
 \label{sec:diverse}
 The standard choice is to pass the $K$ translations with the lowest fit cost to the scorer.
 Since $f_t$ varies smoothly with $t$, these are typically adjacent lattice points around a single minimum (Fig.~\ref{fig:teaser}b): increasing $K$ adds near-duplicates of the same hypothesis rather than alternatives, and if that minimum is wrong, no scorer can recover the lesion.
 
-We instead traverse the translations in order of increasing $f_t$, breaking ties by $\|t\|$, and retain $t$ only if $d(x_t, x_u) \ge r$ for every previously retained translation $u$, where $x_u = p - u$ (Algorithm~\ref{alg:diverse}).
+We instead traverse the translations in order of increasing $f_t$, breaking ties by $\|t\|$, and retain $t$ only if $d(x_t, x_u) \ge r$ for every previously retained translation $u$, where $x_u = p - u$ (pseudocode in the supplementary material).
 Retained candidates thus keep the fit order, and only near-duplicates are skipped.
 Stopping after $K$ retained translations yields \emph{Diverse $K$}; traversing the whole lattice yields the complete list $\Ss$, which we call \emph{\ours}.
 The rule is greedy non-maximum suppression~\cite{neubeck2006nms} applied to correspondence hypotheses, with the fit cost as the score and a fixed spatial radius.
 
-\begin{algorithm}[t]
-\caption{Fit-ordered diverse search}
-\label{alg:diverse}
-\begin{algorithmic}[1]
-\Require query $p$, translations $\T$, fit costs $\{f_t\}$, radius $r$, budget $K$ ($K{=}\infty$ for \ours)
-\State sort $\T$ by $(f_t, \|t\|)$ ascending
-\State $\Ss \gets \emptyset$ \Comment{retained translations}
-\For{$t$ in sorted $\T$}
-  \If{$d(x_t, x_u) \ge r$ for all $u \in \Ss$} \Comment{$x_t = p - t$, $x_u = p - u$}
-    \State $\Ss \gets \Ss \cup \{t\}$
-    \If{$|\Ss| = K$} \textbf{break} \EndIf
-  \EndIf
-\EndFor
-\State \Return $\hat{t} = \argmax_{t \in \Ss} s(t)$ \Comment{score of Eq.~\ref{eq:direct}}
-\end{algorithmic}
-\end{algorithm}
 The complete list inherits the covering property of greedy suppression.
 Let $\mathcal{X} = \{x_t : t \in \T\}$ be all candidate positions, $\mathcal{D} = \{x_t : t \in \Ss\}$ those retained by \ours, and $d(y, \mathcal{A}) = \min_{x \in \mathcal{A}} d(y, x)$.
 
@@ -167,12 +139,12 @@ s(t) = \ell_t - \lambda\left(\frac{f_t - \min_{u\in\Ss} f_u}{F} + \frac{w_t - \m
 \label{eq:direct}
 \end{equation}
 and the prediction is $x_{\hat t}$ with $\hat t = \argmax_{t\in\Ss} s(t)$.
-Both penalty terms are zero for the best-fitting candidate and grow linearly as a candidate fits worse than the best one in the list, so a candidate with clearly lesion-like appearance can still win despite a slightly worse fit.
+The soft penalty lets strong lesion evidence outweigh a modest fit difference.
 
 \noindent\textbf{Lemma 1 (list invariance).} \emph{Let $\Ss \subseteq \Ss'$ be two candidate lists and $s, s'$ the corresponding scores. Then $s'(t) - s'(u) = s(t) - s(u)$ for all $t, u \in \Ss$.}
 
 \noindent\emph{Proof.}
-By Eq.~\ref{eq:direct}, $s'(t) = s(t) + \lambda (c_f/F + c_w/W)$ with $c_f = \min_{u\in\Ss} f_u - \min_{u\in\Ss'} f_u \ge 0$ and $c_w$ defined analogously; the shift is the same for every $t \in \Ss$ and cancels in the difference. \hfill$\square$
+The list-dependent minima in Eq.~\ref{eq:direct} contribute the same constant to every candidate, which cancels in pairwise score differences. \hfill$\square$
 
 \noindent Extending a list therefore never reorders the existing candidates: the prediction changes only if a new candidate outranks the previous winner.
 Section~\ref{sec:decomp} relies on this property.
@@ -187,13 +159,11 @@ R_i &= \mathbf{1}\{d(y_i, \Ss_i) \le \tau\}, &
 H_i &= \mathbf{1}\{d(\hat{x}_i, y_i) \le \tau\},
 \label{eq:reachhit}
 \end{align}
-where $\mathbf{1}\{\cdot\}$ is $1$ if the condition holds and $0$ otherwise.
-A lesion is \emph{reachable} if $R_i = 1$ and a \emph{hit} if $H_i = 1$; since the prediction is one of the retained positions, $H_i \le R_i$, so a hit implies reach.
+A lesion is \emph{reachable} when $R_i = 1$ and a \emph{hit} when $H_i = 1$. Since predictions belong to the candidate list, $H_i \le R_i$.
 
 To compare two matchers on the same lesions, let $R_{i,m}$ and $H_{i,m}$ denote the indicators of matcher $m \in \{1, 2\}$, and let $\Delta H = \sum_i (H_{i,2} - H_{i,1})$ be the change in the number of hits.
 We partition the lesions reachable by at least one matcher into $\mathcal{J} = \{i : R_{i,1} = R_{i,2} = 1\}$ (reachable by both), $\mathcal{G} = \{i : R_{i,1} = 0, R_{i,2} = 1\}$ (reachable only by matcher~2) and $\mathcal{O} = \{i : R_{i,1} = 1, R_{i,2} = 0\}$ (reachable only by matcher~1).
-Lesions reachable by neither matcher contribute nothing to $\Delta H$, because $H_{i,m} \le R_{i,m} = 0$; on $\mathcal{G}$ we have $H_{i,1} = 0$ and on $\mathcal{O}$ we have $H_{i,2} = 0$.
-Splitting the sum over the three sets therefore gives the exact decomposition
+Since $H_{i,m} \le R_{i,m}$, partitioning the hit difference gives
 \begin{equation}
 \Delta H = \underbrace{\sum_{i\in\mathcal{J}} (H_{i,2} - H_{i,1})}_{\text{selection}} \;+\; \underbrace{\sum_{i\in\mathcal{G}} H_{i,2} \;-\; \sum_{i\in\mathcal{O}} H_{i,1}}_{\text{reach}} .
 \label{eq:decomp}
