@@ -356,6 +356,8 @@ Figures~\ref{fig:forest}--\ref{fig:budget} were moved from the main paper for sp
 \centering
 \footnotesize
 \setlength{\tabcolsep}{3pt}
+\caption{Median local time per query (s) on prepared crops, one CPU thread, matched workloads of 24 staging and 32 screening queries. The matched comparison is a single timing pass per method; the fixed-budget replay takes the median of three randomized repetitions. SAM runs on a GPU (0.033\,s per screening query) and is not comparable. Details in Tabs.~\ref{tab:timing-v6} and~\ref{tab:fixed-budget-timing}; moved from the main paper for space.}
+\label{tab:timing}
 \begin{tabular}{@{}lcccc@{}}
 \toprule
 & \multicolumn{2}{c}{Matched comparison} & \multicolumn{2}{c}{Fixed-budget replay} \\
@@ -371,8 +373,6 @@ Diverse 112 & -- & -- & 0.142 & 0.144 \\
 Exhaustive & 0.956 & 0.256 & 0.265 & 0.265 \\
 \bottomrule
 \end{tabular}
-\caption{Median local time per query (s) on prepared crops, one CPU thread, matched workloads of 24 staging and 32 screening queries. The matched comparison is a single timing pass per method; the fixed-budget replay takes the median of three randomized repetitions. SAM runs on a GPU (0.033\,s per screening query) and is not comparable. Details in Tabs.~\ref{tab:timing-v6} and~\ref{tab:fixed-budget-timing}; moved from the main paper for space.}
-\label{tab:timing}
 \end{table}
 
 \begin{table}[!ht]
@@ -457,6 +457,8 @@ No radius or seed was chosen using these outcomes, and similar performance of st
 \begin{table}[!ht]
 \centering
 \small
+\caption{Equal-budget allocation controls at 3\,mm on the same lattice with the frozen scorer (exploratory replay of saved inputs).}
+\label{tab:alloc}
 \begin{tabular}{@{}lcc@{}}
 \toprule
 Policy at $K{=}28$ & Staging hits/reach & Screening hits/reach \\
@@ -472,8 +474,6 @@ Diverse 28, $r{=}2.8$\,mm & 254/295 & 206/245 \\
 Exhaustive (not budget-matched) & 297/351 & 242/290 \\
 \bottomrule
 \end{tabular}
-\caption{Equal-budget allocation controls at 3\,mm on the same lattice with the frozen scorer (exploratory replay of saved inputs).}
-\label{tab:alloc}
 \end{table}
 
 {\small
