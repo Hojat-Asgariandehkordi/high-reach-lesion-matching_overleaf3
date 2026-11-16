@@ -6,21 +6,30 @@
 % \usepackage{cvpr}              % To produce the CAMERA-READY version
 \usepackage[review]{cvpr}      % To produce the REVIEW version
 % \usepackage[pagenumbers]{cvpr} % To force page numbers, e.g. for an arXiv version
-\newif\ifexpandedpaper
-\ifdefined\cvprcompact\expandedpaperfalse\else\expandedpapertrue\fi
+
 % Import additional packages in the preamble file, before hyperref
 \input{preamble}
 
 % It is strongly recommended to use hyperref, especially for the review version.
+% hyperref with option pagebackref eases the reviewers' job.
+% Please disable hyperref *only* if you encounter grave issues, 
+% e.g. with the file validation for the camera-ready version.
+%
+% If you comment hyperref and then uncomment it, you should delete *.aux before re-running LaTeX.
+% (Or just hit 'q' on the first LaTeX run, let it finish, and you should be clear).
 \definecolor{cvprblue}{rgb}{0.21,0.49,0.74}
 \usepackage[pagebackref,breaklinks,colorlinks,allcolors=cvprblue]{hyperref}
 
 \def\confName{CVPR}
 \def\confYear{2027}
-\hypersetup{pdfauthor={},pdfsubject={},pdfkeywords={}}
-\title{\paperTitle}
-\author{Anonymous CVPR submission}
-\hypersetup{pdftitle={\paperTitle}}
+
+%%%%%%%%% TITLE - PLEASE UPDATE
+\title{High-Reach Candidate Search for Longitudinal Lung Lesion Matching}
+
+%%%%%%%%% AUTHORS - PLEASE UPDATE
+% Kept anonymous for the review version; replace with the author block of the
+% author kit (names, institutions, e-mail) for the camera-ready version.
+\author{Anonymous \confName~submission}
 
 \begin{document}
 \maketitle
@@ -33,12 +42,12 @@
 \section{Introduction}
 
 \input{intro_findings}
-\ifexpandedpaper\input{intro_expanded}\fi
+\input{intro_expanded}
 The rest of the paper is organized as follows.
-Section~\ref{sec:related} reviews longitudinal lesion tracking, image registration, dense anatomical correspondence and diversity in candidate generation.
-Section~\ref{sec:method} formulates the problem and presents the anatomical fit cost, fit-ordered diverse search with its coverage guarantee, the lesion-aware scorer and the reach--selection decomposition.
-Section~\ref{sec:evaluation} describes the datasets, implementation details, baselines and metrics, and Sec.~\ref{sec:results} reports the results.
-Section~\ref{sec:conclusion} concludes with limitations and future directions.
+\Cref{sec:related} reviews longitudinal lesion tracking, image registration, dense anatomical correspondence and diversity in candidate generation.
+\Cref{sec:method} formulates the problem and presents the anatomical fit cost, fit-ordered diverse search with its coverage guarantee, the lesion-aware scorer and the reach--selection decomposition.
+\Cref{sec:evaluation} describes the datasets, implementation details, baselines and metrics, and \cref{sec:results} reports the results.
+\Cref{sec:conclusion} concludes with limitations and future directions.
 \section{Related work}
 \label{sec:related}
 Matching a lesion across visits is a prerequisite for measuring growth and response in follow-up imaging.
@@ -51,8 +60,8 @@ Learned methods predict deformation fields in a single forward pass~\cite{balakr
 Studies of registration uncertainty show that good image agreement does not guarantee a reliable mapped location~\cite{eppenhof2018,luo2017}, which motivates keeping several hypotheses rather than committing to one; we use a lesion-inclusive B-spline as the registration comparator.
 A third line of work learns a descriptor of anatomical position for every voxel.
 Self-supervised anatomical embeddings (SAM)~\cite{yan2022sam}\footnote{Not to be confused with the Segment Anything Model.} are trained so that the same anatomical point receives similar descriptors in different scans, and a point marked in one scan is matched by finding the most similar descriptor in the other; diffusion-guided position encodings~\cite{zhuang2026diffusion} follow the same principle, localizing globally by embedding similarity and then refining locally without a prior registration.
-These methods replace an explicit search over shifts with a learned similarity, but they still report a single most-similar location, so when several locations look alike the error lies in selection rather than in coverage (Sec.~\ref{sec:transfer}).
-We use SAM as a baseline because its released model accepts a point query directly (Sec.~\ref{sec:evaluation}). Selecting a few good hypotheses from many is a recurring problem across vision.
+These methods replace an explicit search over shifts with a learned similarity, but they still report a single most-similar location, so when several locations look alike the error lies in selection rather than in coverage (\cref{sec:transfer}).
+We use SAM as a baseline because its released model accepts a point query directly (\cref{sec:evaluation}). Selecting a few good hypotheses from many is a recurring problem across vision.
 Non-maximum suppression greedily removes detections that overlap a higher-scoring one~\cite{neubeck2006nms}, and diverse $M$-best methods return several high-scoring but mutually different solutions so that a later stage can choose among them~\cite{batra2012diverse}.
 Farthest-point sampling spreads samples to cover a domain with a bounded gap~\cite{eldar1997farthest}, and randomized correspondence search propagates good matches while sampling widely~\cite{barnes2009patchmatch}.
 We apply minimum-distance selection to lesion correspondence hypotheses ordered by anatomical fit, and we measure its effect on coverage separately from its effect on the final choice.
@@ -63,13 +72,13 @@ We apply minimum-distance selection to lesion correspondence hypotheses ordered 
 \begin{figure*}[!t]
 \centering
 \includegraphics[width=0.8\textwidth]{figures/overview.pdf}
-\caption{Method overview. (A)~Chest alignment leaves a residual displacement. (B)~Translations are scored on a shell around the lesion: fit octants give $f_t$, witness octants $w_t$. (C)~At the same budget, diverse search spreads the candidates so that one reaches the lesion. (D)~A frozen scorer selects the final candidate (Eq.~\ref{eq:direct}). (E)~Reach versus hit. Created in BioRender; not to scale.}
+\caption{Method overview. (A)~Chest alignment leaves a residual displacement. (B)~Translations are scored on a shell around the lesion: fit octants give $f_t$, witness octants $w_t$. (C)~At the same budget, diverse search spreads the candidates so that one reaches the lesion. (D)~A frozen scorer selects the final candidate (\cref{eq:direct}). (E)~Reach versus hit. Created in BioRender; not to scale.}
 \label{fig:construction}
 \end{figure*}
 
-Figure~\ref{fig:construction} summarizes the pipeline.
-Given a lesion marked in the current scan, we enumerate candidate translations of the earlier scan around the globally aligned position, order them by an anatomical fit cost computed away from the lesion (Sec.~\ref{sec:fit}), retain a spatially diverse subset in this order (Sec.~\ref{sec:diverse}), and select one candidate with a lesion-aware scorer (Sec.~\ref{sec:scorer-def}).
-Section~\ref{sec:decomp} defines reach and hit and the decomposition used throughout our analysis.
+\Cref{fig:construction} summarizes the pipeline.
+Given a lesion marked in the current scan, we enumerate candidate translations of the earlier scan around the globally aligned position, order them by an anatomical fit cost computed away from the lesion (\cref{sec:fit}), retain a spatially diverse subset in this order (\cref{sec:diverse}), and select one candidate with a lesion-aware scorer (\cref{sec:scorer-def}).
+\Cref{sec:decomp} defines reach and hit and the decomposition used throughout our analysis.
 
 \subsection{Problem formulation}
 \label{sec:setup}
@@ -92,7 +101,7 @@ The lesion may grow, shrink or change shape between visits, so its own appearanc
 We instead rank translations by the anatomy around it, \ie vessels, airways, fissures and pleura, which is largely preserved between visits. Let $\{z_i\}$ be sample positions in a spherical shell centered at the query $p$, with inner radius $\rho_1$ and outer radius $\rho_2$.
 The inner radius keeps the lesion and its immediate surroundings out of the cost, and the outer radius keeps the samples close enough to the lesion for the translation model to hold.
 We divide the shell into its eight octants around $p$ and assign them alternately, like the cells of a $2\times2\times2$ checkerboard, to a \emph{fit} set $\Omega_f$ and a \emph{witness} set $\Omega_w$, so that adjacent octants always belong to different sets.
-Each set therefore surrounds the lesion from all directions, but the two sets share no samples. For a sample $i$, let $a_i = I^{c}(z_i)$ be the current-scan intensity and $b_i(t) = I^{e}(z_i - t)$ the earlier-scan intensity under translation $t$, consistent with Eq.~\ref{eq:mapped}; since translations lie on the grid, no interpolation is needed.
+Each set therefore surrounds the lesion from all directions, but the two sets share no samples. For a sample $i$, let $a_i = I^{c}(z_i)$ be the current-scan intensity and $b_i(t) = I^{e}(z_i - t)$ the earlier-scan intensity under translation $t$, consistent with \cref{eq:mapped}; since translations lie on the grid, no interpolation is needed.
 For the correct translation, $a_i \approx b_i(t)$ up to noise and a global change in intensity.
 We measure the disagreement on a sample set $S$ by
 \begin{equation}
@@ -111,14 +120,14 @@ The weight
 g_i(t) = g_0 + (1-g_0)\,\mathrm{clip}_{[0,1]}\!\left(\frac{\max\{a_i, b_i(t)\} - h_0}{h_1 - h_0}\right)
 \end{equation}
 increases linearly from $g_0$ at intensity $h_0$ (air) to $1$ at $h_1$ (tissue), so that structured anatomy dominates the cost.
-Taking the maximum of the two intensities makes a structure count fully if it is present in either scan, so a translation cannot lower its cost by moving a vessel onto air. The \emph{fit cost} $f_t = E_{\Omega_f}(t)$ orders the candidates (Sec.~\ref{sec:diverse}).
+Taking the maximum of the two intensities makes a structure count fully if it is present in either scan, so a translation cannot lower its cost by moving a vessel onto air. The \emph{fit cost} $f_t = E_{\Omega_f}(t)$ orders the candidates (\cref{sec:diverse}).
 The \emph{witness cost} $w_t = E_{\Omega_w}(t)$ is computed on the other four octants with the same offset $o_t$, which is estimated on $\Omega_f$ only, so nothing is refitted on the witness samples.
 Because these samples play no role in the ordering, $w_t$ acts as a held-out check: a translation that matches $\Omega_f$ by coincidence, for example by aligning a single vessel on one side of the lesion, tends to incur a high cost on the octants it was not ranked on.
-Both costs enter the final score (Sec.~\ref{sec:scorer-def}). Parameter values are listed in the supplement (Tab.~S2).
+Both costs enter the final score (\cref{sec:scorer-def}). Parameter values are listed in the supplement (Tab.~S2).
 \subsection{Diverse search}
 \label{sec:diverse}
 The standard choice is to pass the $K$ translations with the lowest fit cost to the scorer.
-Since $f_t$ varies smoothly with $t$, these are typically adjacent lattice points around a single minimum (Fig.~\ref{fig:teaser}b): increasing $K$ adds near-duplicates of the same hypothesis rather than alternatives, and if that minimum is wrong, no scorer can recover the lesion.
+Since $f_t$ varies smoothly with $t$, these are typically adjacent lattice points around a single minimum (\cref{fig:teaser}b): increasing $K$ adds near-duplicates of the same hypothesis rather than alternatives, and if that minimum is wrong, no scorer can recover the lesion.
 
 We instead traverse the translations in order of increasing $f_t$, breaking ties by $\|t\|$, and retain $t$ only if $d(x_t, x_u) \ge r$ for every previously retained translation $u$, where $x_u = p - u$ (Algorithm~S1 in the supplement).
 Retained candidates thus keep the fit order, and only near-duplicates are skipped.
@@ -142,7 +151,7 @@ A list truncated at $K$ entries, or filtered by cost thresholds, offers no such 
 
 \subsection{Lesion-aware selection}
 \label{sec:scorer-def}
-Each retained translation is scored by a logistic-regression lesion scorer that is trained once on the training set (Sec.~\ref{sec:evaluation}) and then frozen.
+Each retained translation is scored by a logistic-regression lesion scorer that is trained once on the training set (\cref{sec:evaluation}) and then frozen.
 Its logit $\ell_t$ combines five descriptors of the candidate position (center contrast, compactness, Hessian tube- and plate-likeness to reject vessels and fissures, and isotropy) with three comparisons to the query lesion (patch correlation and the ratios of contrast and compactness); details are in the supplement (Sec.~S3).
 The final score subtracts a soft penalty for anatomical fit relative to the best candidate in the list.
 Let $F$ and $W$ be fixed scales that bring the fit and witness costs to comparable units, and let $\lambda > 0$ weight the penalty against the lesion evidence; then
@@ -156,10 +165,10 @@ Both penalty terms are zero for the best-fitting candidate and grow linearly as 
 \noindent\textbf{Lemma 1 (list invariance).} \emph{Let $\Ss \subseteq \Ss'$ be two candidate lists and $s, s'$ the corresponding scores. Then $s'(t) - s'(u) = s(t) - s(u)$ for all $t, u \in \Ss$.}
 
 \noindent\emph{Proof.}
-By Eq.~\ref{eq:direct}, $s'(t) = s(t) + \lambda (c_f/F + c_w/W)$ with $c_f = \min_{u\in\Ss} f_u - \min_{u\in\Ss'} f_u \ge 0$ and $c_w$ defined analogously; the shift is the same for every $t \in \Ss$ and cancels in the difference. \hfill$\square$
+By \cref{eq:direct}, $s'(t) = s(t) + \lambda (c_f/F + c_w/W)$ with $c_f = \min_{u\in\Ss} f_u - \min_{u\in\Ss'} f_u \ge 0$ and $c_w$ defined analogously; the shift is the same for every $t \in \Ss$ and cancels in the difference. \hfill$\square$
 
 \noindent Extending a list therefore never reorders the existing candidates: the prediction changes only if a new candidate outranks the previous winner.
-Section~\ref{sec:decomp} relies on this property.
+\Cref{sec:decomp} relies on this property.
 
 \subsection{Reach and selection}
 \label{sec:decomp}
@@ -184,7 +193,7 @@ Splitting the sum over the three sets therefore gives the exact decomposition
 \end{equation}
 The selection term measures changed choices on lesions that both matchers could find; the reach term counts hits made possible, or lost, by the change in candidates.
 Comparing hit rates conditioned on reach would conflate the two effects, since the reachable set itself changes.
-The identity holds for any pair of matchers; with the list-invariant score of Eq.~\ref{eq:direct}, a nonzero selection term between nested lists can only arise from a new candidate being chosen.
+The identity holds for any pair of matchers; with the list-invariant score of \cref{eq:direct}, a nonzero selection term between nested lists can only arise from a new candidate being chosen.
 
 \subsection{Implementation details}
 \label{sec:impl}
@@ -223,7 +232,7 @@ Finally, we replace our scorer with a Siamese scorer trained on the same data (s
 Learned lesion trackers~\cite{cai2021,tang2022tlt} are trained end to end on large annotated longitudinal datasets, whereas our method needs only a small training set; we therefore represent learned correspondence by SAM, which can be applied without retraining. A matched evaluation against the diffusion-guided tracker~\cite{zhuang2026diffusion} remains future work.
 
 \subsection{Evaluation metrics}
-A prediction is a \emph{hit} if it lies within $\tau = 3$\,mm of the annotated lesion position (Eq.~\ref{eq:reachhit}); we report the hit rate, also at 2 and 4\,mm, and the \emph{reach rate}, the percentage of lesions with at least one candidate within 3\,mm.
+A prediction is a \emph{hit} if it lies within $\tau = 3$\,mm of the annotated lesion position (\cref{eq:reachhit}); we report the hit rate, also at 2 and 4\,mm, and the \emph{reach rate}, the percentage of lesions with at least one candidate within 3\,mm.
 We write ``$+x$ points $[a, b]$'' for a paired difference in hit rate with its 95\% confidence interval from a bootstrap that resamples whole patients; the intervals are pointwise and unadjusted for multiplicity, and the main comparisons and success criteria were fixed before evaluating on the staging cohort.
 Runtime is measured on a single CPU thread, for the local matching step and end to end.
 
@@ -237,8 +246,13 @@ Runtime is measured on a single CPU thread, for the local matching step and end 
 % TODO(group): check against the CVPR 2027 LLM policy, and mention the AI assistance used for this revision.
 OpenAI ChatGPT provided automated critiques of draft manuscripts. OpenAI Codex assisted with study design, literature and data screening, code, experiment execution, analysis, figures and tables, manuscript drafting and editing, and source and layout checks. Anthropic Claude assisted with revising the manuscript text, figures and layout. Schematic illustrations were created with BioRender. The numerical results are computed from the specified inputs using the recorded analysis. The authors are responsible for verification and for the submitted work.
 
-{\small
-\bibliographystyle{ieeenat_fullname}
-\bibliography{refs}
+{
+    \small
+    \bibliographystyle{ieeenat_fullname}
+    \bibliography{refs}
 }
+
+% WARNING: do not forget to delete the supplementary pages from your submission 
+% The supplementary material is compiled separately from supplement.tex.
+
 \end{document}

@@ -6,25 +6,39 @@
 % \usepackage{cvpr}              % To produce the CAMERA-READY version
 \usepackage[review]{cvpr}      % To produce the REVIEW version
 % \usepackage[pagenumbers]{cvpr} % To force page numbers, e.g. for an arXiv version
+
 % Import additional packages in the preamble file, before hyperref
 \input{preamble}
 
 % It is strongly recommended to use hyperref, especially for the review version.
+% hyperref with option pagebackref eases the reviewers' job.
+% Please disable hyperref *only* if you encounter grave issues, 
+% e.g. with the file validation for the camera-ready version.
+%
+% If you comment hyperref and then uncomment it, you should delete *.aux before re-running LaTeX.
+% (Or just hit 'q' on the first LaTeX run, let it finish, and you should be clear).
 \definecolor{cvprblue}{rgb}{0.21,0.49,0.74}
 \usepackage[pagebackref,breaklinks,colorlinks,allcolors=cvprblue]{hyperref}
 
 \def\confName{CVPR}
 \def\confYear{2027}
-\hypersetup{pdfauthor={},pdfsubject={},pdfkeywords={}}
+
+% Supplementary numbering (S1, S2, ...)
 \renewcommand{\thesection}{S\arabic{section}}
 \renewcommand{\thetable}{S\arabic{table}}
 \renewcommand{\thefigure}{S\arabic{figure}}
 \renewcommand{\thealgorithm}{S\arabic{algorithm}}
-\title{\paperTitle}
-\author{Anonymous CVPR submission}
-\hypersetup{pdftitle={\paperTitle\ - Supplement}}
+
+%%%%%%%%% TITLE - PLEASE UPDATE
+\title{High-Reach Candidate Search for Longitudinal Lung Lesion Matching}
+
+%%%%%%%%% AUTHORS - PLEASE UPDATE
+% Kept anonymous for the review version; replace with the author block of the
+% author kit (names, institutions, e-mail) for the camera-ready version.
+\author{Anonymous \confName~submission}
 
 \begin{document}
+\setcounter{page}{1}
 \maketitlesupplementary
 
 \paragraph{Names used in the main paper.}
@@ -56,7 +70,7 @@ Sections~\ref{sec:supp-status-scope} onward also report a lesion-status protocol
 \input{tables/cohorts}
 \end{table}
 
-LUNA25 public data~\cite{peeters2026,lunamarks,lunascans} provide marks and the listed NLST series~\cite{nlstct}. We select the most annotated series per visit, breaking ties by series identifier. The last two eligible annotated visits form one scan pair per patient. A track uses a nodule key present in both selected series. Of the 2,120 source participants, 1,484 belong to the original checkpoint partition, 212 to development, and 424 to retrospective test. The source split shuffles sorted identifiers with seed 42, takes the first 70\% for the checkpoint partition, and shuffles the remainder with seed 29 before a one-third development split. The scored subsets are in Tab.~\ref{tab:cohorts}. The fit gate's encoder checkpoint used 1,383 patients in the original checkpoint partition, with zero overlap with development, the retrospective LUNA25 test patients, or TCIA. The new matchers use neither this encoder nor external initialization.
+LUNA25 public data~\cite{peeters2026,lunamarks,lunascans} provide marks and the listed NLST series~\cite{nlstct}. We select the most annotated series per visit, breaking ties by series identifier. The last two eligible annotated visits form one scan pair per patient. A track uses a nodule key present in both selected series. Of the 2,120 source participants, 1,484 belong to the original checkpoint partition, 212 to development, and 424 to retrospective test. The source split shuffles sorted identifiers with seed 42, takes the first 70\% for the checkpoint partition, and shuffles the remainder with seed 29 before a one-third development split. The scored subsets are in \cref{tab:cohorts}. The fit gate's encoder checkpoint used 1,383 patients in the original checkpoint partition, with zero overlap with development, the retrospective LUNA25 test patients, or TCIA. The new matchers use neither this encoder nor external initialization.
 
 The analysis of 309 linked marks reuses previously inspected patients. We recorded the analysis before the new readout. The primary external budget contrasts are the wide strict cap 7 to 28 under the direct and SAM scorers. Other prespecified point contrasts isolate fixed-support width, relaxation at cap 28, the higher relaxed caps, the remaining gates at all candidates, and diversification versus raw scoring. We report pointwise 95\% intervals. The paired bootstrap resamples whole patients with replacement using seed 20261109 and 5,000 draws and preserves every sampled patient's tracks and paired predictions. It conditions on fitted models, candidate generation, supported subsets where indicated, and any fitted decision thresholds. All eligible tracks enter, with failed point maps and empty sets treated as misses.
 
@@ -67,13 +81,13 @@ We inspect per-patient metadata and scan headers before image retrieval. Single-
 
 In a prespecified 12-patient geometry audit, each of 98 CSV centroids differs from its mask-derived centroid by $(0.5,0.5,0.5)$ voxels. We subtract this offset in each visit before applying its NIfTI transform. The maximum corrected error is below $10^{-9}$ voxels in the audit. We convert RAS to LPS and verify that the reader reference maps through the inverse chest affine and back. The native-distance sensitivity uses the full linear part of this transform. Eligibility and inputs are frozen before inference, and the earlier references and query manifest are separate. The query uses independently seeded jitter with the same physical range as the screening study.
 
-Before crop preparation, each scan must have a robust lung extent of at least 130 mm and a 10 mm margin to both axial ends. After aligning the scans we require the entire crop to lie inside both image supports, using all eight native corners. Failed scans and unsupported crops remain in the denominator. The source and allocated sample flow are in Tab.~\ref{tab:external-flow}.
+Before crop preparation, each scan must have a robust lung extent of at least 130 mm and a 10 mm margin to both axial ends. After aligning the scans we require the entire crop to lie inside both image supports, using all eight native corners. Failed scans and unsupported crops remain in the denominator. The source and allocated sample flow are in \cref{tab:external-flow}.
 
 \paragraph{Use of research images.}
 The evaluation uses de-identified research data and previously supplied annotations. The original NLST reports written consent and institutional review~\cite{aberlenslt}. The secondary analysis involved no participant contact or new imaging.
 
 \section{Physical support and candidate generation}
-Algorithm~\ref{alg:diverse} gives the complete fit-ordered diverse search (main paper, Sec.~3.3).
+\Cref{alg:diverse} gives the complete fit-ordered diverse search (main paper, Sec.~3.3).
 
 \begin{algorithm}[!ht]
 \caption{Fit-ordered diverse search}
@@ -93,7 +107,7 @@ Algorithm~\ref{alg:diverse} gives the complete fit-ordered diverse search (main 
 \end{algorithm}
 
 \paragraph{Parameters.}
-Table~\ref{tab:params} lists the parameters of the anatomical fit cost (main paper, Sec.~3.2); the remaining settings are given in the main paper (Sec.~3.6).
+\Cref{tab:params} lists the parameters of the anatomical fit cost (main paper, Sec.~3.2); the remaining settings are given in the main paper (Sec.~3.6).
 All values were fixed on the training set and kept unchanged for every experiment.
 
 \begin{table}[t]
@@ -135,7 +149,7 @@ g(a,b) &= 0.25+0.75\,\mathrm{clip}_{[0,1]}\left(\frac{\max(a,b)+860}{490}\right)
 \end{align}
 over the respective sector samples. The witness uses the offset from fit. Shifts are ordered by fit cost and then displacement norm. The frozen original fit and witness limits are 76.958 and 99.541 HU. \emph{Candidate-list gates.} Gated $K$ discards translations whose fit cost exceeds the fit limit or exceeds the best fit cost by more than 24 HU and, after truncation to $K$, those whose witness cost exceeds the witness limit. Relaxed $K$ raises the fit limit by 20 HU and the margin to 40 HU and drops the witness gate. Because anatomical fit also enters every score (main paper, Eq.~6), the gates change only which translations reach the scorer. The 279 fit controls give shared-mask limits of 73.124 and 103.872 HU at the best narrow shift, applied identically to the two widths. The broad relaxed configuration uses the wider common-mask fit bound plus 20 HU and slack 40 HU, with the witness cutoff removed.
 
-For the original lattice, the nearest raw prior voxels accessed by smoothing over all shifts are 13.31 mm from the crop center. On the shared support the corresponding distances are 15.13 mm for the narrow lattice and 12.00 mm for the wide lattice. Linear interpolation for the affine evaluation uses corners inside the same rectangular raw-voxel bound, because the componentwise displacement extrema are integer grid steps. With an additional conservative voxel per axis the wide bound is 10.50 mm. The exact crop-grid margin to the prior image boundary is at least 0.70 mm along the shortest physical axis. There are no changes to crop size, native field of view or HU inputs when changing the width. The native-grid corner audit in Sec.~\ref{sec:timing} includes the earlier scan resampling.
+For the original lattice, the nearest raw prior voxels accessed by smoothing over all shifts are 13.31 mm from the crop center. On the shared support the corresponding distances are 15.13 mm for the narrow lattice and 12.00 mm for the wide lattice. Linear interpolation for the affine evaluation uses corners inside the same rectangular raw-voxel bound, because the componentwise displacement extrema are integer grid steps. With an additional conservative voxel per axis the wide bound is 10.50 mm. The exact crop-grid margin to the prior image boundary is at least 0.70 mm along the shortest physical axis. There are no changes to crop size, native field of view or HU inputs when changing the width. The native-grid corner audit in \cref{sec:timing} includes the earlier scan resampling.
 
 \paragraph{Anchor affine ensemble.}
 The anchor pool has 216 centers in the shared fit sectors. A center's sparse $3^3$ patch has offsets $(-1,0,1)$ voxels axially and $(-2,0,2)$ in each in-plane direction. The actual minimum prior crop-grid radius including this patch and smoothing is 13.50 mm. Within each fit octant we keep up to six anchors in descending patch standard deviation, with a floor of 8 HU and 4.2 mm separation. Each fixed anchor evaluates normalized cross-correlation at all wide translations. It contributes its best three modes separated by 2.1 mm, weighted by clipped texture divided by 75 HU (floor 0.1, ceiling 1) times $[(1+\rho)/2]^6$ with correlation $\rho$.
@@ -145,7 +159,7 @@ A 2.2 mm isotropic Gaussian smooths the pooled votes on the wide lattice. The fi
 \paragraph{Order-dependent reach.}
 Distance to the continuous box is the norm of the excess beyond its three shift bounds. The original stage audit gives 274, 274, 251, 241, 229, 200, and 198 reachable tracks for the continuous box, lattice, absolute fit, slack, diversification, cap, and witness. Replacing the fixed query by the current mark while holding geometry costs fixed gives 222 final reachable tracks. Of the 111 originally unreachable tracks, 32 have current-query errors above 3 mm. The witness-first alternative achieves 199 reachable and 185 selected hits, one more of each than the original set. These counts describe the implemented stage order, and current-query displacement can affect which step removes reach. The wide lattice reaches 286, 290, and 292 tracks at 2, 3, and 4 mm before screening.
 
-In the extended sweeps, all means the complete fit-ordered list after the specified gates and 2.1 mm diversification. The ungated and raw references keep the fit and witness residuals in the frozen direct score. All methods use the same current and earlier crops. The raw reference uses one descriptor computation over all centers and the same candidate score as the shorter lists. Greedy diversification can recover better spatial support at a fixed cap, while the dense reference shows the cost of pruning at full candidate count. The same-region comparisons in Tabs.~\ref{tab:point-luna} and \ref{tab:point-external} record actual candidate counts after the witness step. Query bands are $[0,1.5]$, $(1.5,3]$ and $(3,\infty)$ mm. Replacing the frozen query by the known current mark is a separate diagnostic. Its crop, residual costs and Spline objectives remain fixed.
+In the extended sweeps, all means the complete fit-ordered list after the specified gates and 2.1 mm diversification. The ungated and raw references keep the fit and witness residuals in the frozen direct score. All methods use the same current and earlier crops. The raw reference uses one descriptor computation over all centers and the same candidate score as the shorter lists. Greedy diversification can recover better spatial support at a fixed cap, while the dense reference shows the cost of pruning at full candidate count. The same-region comparisons in \cref{tab:point-luna,tab:point-external} record actual candidate counts after the witness step. Query bands are $[0,1.5]$, $(1.5,3]$ and $(3,\infty)$ mm. Replacing the frozen query by the known current mark is a separate diagnostic. Its crop, residual costs and Spline objectives remain fixed.
 
 \section{Appearance supervision and evaluation}
 \paragraph{Fixed descriptors.}
@@ -170,7 +184,7 @@ The standalone list orders the same field's voxel centers by descending similari
 \input{sam_scope}
 
 \section{Point maps, timing and physical audit}
-Figure~\ref{fig:speed} plots hit rate against local time in the fixed-budget replay, complementing the local times in Tab.~\ref{tab:timing}.
+\Cref{fig:speed} plots hit rate against local time in the fixed-budget replay, complementing the local times in \cref{tab:timing}.
 
 \begin{figure}[!ht]
 \centering
@@ -184,7 +198,7 @@ All Splines use SimpleITK~\cite{lowekamp2013} with linear interpolation, mean sq
 
 \input{timing_details}
 
-The matched replay compares the routes on the same 32 prepared screening queries. It includes search, feature computation and optimization as appropriate and verifies that every route reproduces the saved point. A single pinned CPU runs each route, and SAM's released network uses an RTX A1000 with a synchronized output. The native replay uses the first four single-query and first four two-query pairs in the archived order. This measures loading and the shared affine once per scan pair and each real query separately. Four-query times are estimates using those same stages. Tab.~\ref{tab:timing-v6} separates boundaries and tails.
+The matched replay compares the routes on the same 32 prepared screening queries. It includes search, feature computation and optimization as appropriate and verifies that every route reproduces the saved point. A single pinned CPU runs each route, and SAM's released network uses an RTX A1000 with a synchronized output. The native replay uses the first four single-query and first four two-query pairs in the archived order. This measures loading and the shared affine once per scan pair and each real query separately. Four-query times are estimates using those same stages. \cref{tab:timing-v6} separates boundaries and tails.
 
 \input{decision_expanded}
 
@@ -194,7 +208,7 @@ The archived fit gate uses a single local translation and a 2.1 mm prior envelop
 
 New routes reuse the same 87 paired absent/present backgrounds with five patient folds for the direct feature model. We cross incident-recall targets of 45, 55, 65, 75 and 85\% with coverage targets of 81, 90 and 98\%. Calibration enumerates adjacent distinct active-score midpoints and extremes for the two thresholds. A feasible pair is within three incident-recall points and five coverage points of the target and has at least 80\% overall coverage. The rule minimizes false-new, then recall deviation, then maximizes prior-visible coverage, then minimizes coverage deviation. When the target is infeasible, the archived fallback minimizes the larger deviation, then their sum, then false-new and prior-visible coverage deficit. Higher coverage targets retain the floor when feasible. The exhaustive best geometry supplies a ranking score when the retained set is empty. Such tracks abstain.
 
-We apply every frozen rule to the held-out controls. For descriptive matched comparisons, achieved recall must lie within three points and achieved overall and both class coverages within five points on the absent and standard insertion pair. We retain all matching grid pairs, including equivalent threshold outcomes from different targets. Each outcome uses its full class denominator. Off-target and shear coverage can differ from standard-control coverage and are reported separately. Curves connect discrete rules as a visual guide. The matched range in Tab.~\ref{tab:status-matched-v6} uses measured rules only.
+We apply every frozen rule to the held-out controls. For descriptive matched comparisons, achieved recall must lie within three points and achieved overall and both class coverages within five points on the absent and standard insertion pair. We retain all matching grid pairs, including equivalent threshold outcomes from different targets. Each outcome uses its full class denominator. Off-target and shear coverage can differ from standard-control coverage and are reported separately. Curves connect discrete rules as a visual guide. The matched range in \cref{tab:status-matched-v6} uses measured rules only.
 
 The shear displaces the same patient's real earlier CT by $\pm[4+2\sin(2\pi z/36+\phi)]$ mm along one in-plane axis, with fixed patient-seeded sign, phase and axis and exact forward transport of the earlier mark. For insertions, each background preserves the current opacity across all conditions. Radii and contrast are drawn from $\{2.5,3.2,4.0\}$ mm and $\{150,250,350\}$ HU. Displacement moves the earlier opacity by 3 mm. The off-target insertion is 4.9 mm away. Absence in these controls is defined for the inserted target by construction. Existing background structures can still supply earlier evidence. Small uses 70\% radius, faint uses 50\% contrast, and combined uses both reductions with displacement. The geometry evaluates the insertion-free backgrounds. We checked that the insertion recipes change zero raw resampled voxels in the original, wide residual, or anchor-patch support unions. Reported counts use full class denominators. The common-resolved analyses condition on both routes returning a status call. At the primary target, 36 of 63 false prior-visible calls for the wide relaxed route have a selected point within 3 mm of the inserted distractor. On the original 28-cap route, this occurs for 60 of 77. These spatial coincidences in a known insertion control quantify where the points land.
 
@@ -224,7 +238,7 @@ The independent blinded pilot has 24 unadjudicated cases and the distinct confir
 \label{fig:paired-effects}
 \end{figure}
 
-Figures~\ref{fig:forest}--\ref{fig:budget} were moved from the main paper for space; they show the paired effects of main-paper Sec.~5.1, the dependence of the gain on query error and reach and hits versus the candidate budget.
+\Crefrange{fig:forest}{fig:budget} were moved from the main paper for space; they show the paired effects of main-paper Sec.~5.1, the dependence of the gain on query error and reach and hits versus the candidate budget.
 
 \begin{figure}[!ht]
 \centering
@@ -356,7 +370,7 @@ Figures~\ref{fig:forest}--\ref{fig:budget} were moved from the main paper for sp
 \centering
 \footnotesize
 \setlength{\tabcolsep}{3pt}
-\caption{Median local time per query (s) on prepared crops, one CPU thread, matched workloads of 24 staging and 32 screening queries. The matched comparison is a single timing pass per method; the fixed-budget replay takes the median of three randomized repetitions. SAM runs on a GPU (0.033\,s per screening query) and is not comparable. Details in Tabs.~\ref{tab:timing-v6} and~\ref{tab:fixed-budget-timing}; moved from the main paper for space.}
+\caption{Median local time per query (s) on prepared crops, one CPU thread, matched workloads of 24 staging and 32 screening queries. The matched comparison is a single timing pass per method; the fixed-budget replay takes the median of three randomized repetitions. SAM runs on a GPU (0.033\,s per screening query) and is not comparable. Details in \cref{tab:timing-v6,tab:fixed-budget-timing}; moved from the main paper for space.}
 \label{tab:timing}
 \begin{tabular}{@{}lcccc@{}}
 \toprule
@@ -449,7 +463,7 @@ Random sampling draws 28 translations without replacement under 20 fixed seeds.
 Farthest-point selection starts from the best-fitting translation and maximizes the minimum physical separation, breaking ties by fit rank and lattice index.
 Spatial-stratified best-fit selection splits each lattice axis into three nearly equal index bins, takes the best-fitting translation in each of the 27 cells and fills the remaining slots by fit; it is fit-informed rather than uniformly random.
 The radius controls run the same fit-ordered suppression algorithm with a different $r$ and are not independent methods.
-Table~\ref{tab:alloc} lists the results.
+\Cref{tab:alloc} lists the results.
 Relative to Diverse 28, the hit-rate differences in points (staging; screening) are $+0.23$ [$-2.46$, 3.23] and $-1.29$ [$-5.02$, 2.48] for stratification, $-24.09$ [$-29.89$, $-17.98$] and $-29.47$ [$-33.48$, $-25.18$] for random sampling, and $-14.55$ [$-19.73$, $-10.07$] and $-16.83$ [$-22.19$, $-11.36$] for farthest-point selection; for the separation radius they are $-3.86$ [$-6.46$, $-1.29$] and $-5.50$ [$-8.62$, $-2.40$] at 1.4\,mm and $+2.05$ [$-0.75$, 5.03] and $-1.94$ [$-4.98$, 1.05] at 2.8\,mm.
 Intervals use 4,000 paired percentile resamples of whole patients (72 staging and 233 screening clusters) with lesion-weighted ratios; they condition on the existing predictions and policies and are unadjusted for multiplicity, and for random sampling they bootstrap per-case means over seeds rather than the full algorithmic randomness.
 No radius or seed was chosen using these outcomes, and similar performance of stratification is not evidence of equivalence or non-inferiority.
