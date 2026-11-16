@@ -27,7 +27,7 @@ All methods receive the same query and the same lesion-centered grid; the annota
 \emph{Exhaustive} scores every translation.
 We use budgets from $K = 7$ to $K = 112$. We compare against lesion-inclusive B-spline registration~\cite{lowekamp2013} (hereafter \emph{the Spline}), which warps the earlier scan with a smooth deformation controlled by a coarse grid of control points, optimizes image similarity in a region that includes the lesion, and maps the query through the resulting deformation; we use the strongest of four Spline settings on the training set.
 We also compare against the released SAM model~\cite{yan2022sam}, used both standalone and as a drop-in scorer on our candidate lists.
-Finally, we replace our scorer with a Siamese scorer trained on the same data (supplement, \cref{sec:supp-appearance}) and apply it to the Relaxed 28 lists.
+Finally, we replace our scorer with a Siamese scorer trained on the same data (supplement, Sec.~S3) and apply it to the Relaxed 28 lists.
 Learned lesion trackers~\cite{cai2021,tang2022tlt} are trained end to end on large annotated longitudinal datasets, whereas our method needs only a small training set; we therefore represent learned correspondence by SAM, which can be applied without retraining. A matched evaluation against the diffusion-guided tracker~\cite{zhuang2026diffusion} remains future work.
 
 \subsection{Evaluation metrics}
