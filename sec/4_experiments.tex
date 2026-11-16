@@ -1,0 +1,32 @@
+\section{Experiments}
+\label{sec:evaluation}
+\subsection{Datasets}
+We evaluate on two longitudinal CT cohorts: a melanoma staging cohort, which serves as the main test set, and a lung cancer screening cohort, which serves as a replication: \textbf{Staging cohort (main test set):}
+Longitudinal-CT v2~\cite{gatidis2026longct,kuestner2025longct} contains staging CT scans of melanoma patients at baseline and follow-up, in which practitioners segmented each lesion and linked it across the two visits.
+It comes from a clinical source different from the screening data used to train our method, and none of its patients were used for training.
+We select lung lesions that appear in both visits, in scan pairs where each visit is a single CT volume and each lesion has a 3D center.
+This yields 440 lesions from 72 patients.
+For three of them, the lesion-centered crop is not contained in both scans; we count these as failures for every method.
+Comparing 98 lesion centers with the published masks revealed a constant half-voxel offset, which we corrected in both visits before running any method.
+All settings were fixed before testing on this cohort, and the annotated lesion locations were used only to compute the evaluation metrics.
+\textbf{Screening cohort (replication).}
+LUNA25~\cite{peeters2026,lunamarks,lunascans,nlstct} links pulmonary nodules across low-dose screening CT visits of the National Lung Screening Trial.
+Our \emph{training set} consists of 145 nodule tracks from 101 patients of this dataset; the scorer and all parameters were fitted on it and then frozen.
+We evaluate on 309 nodules from 233 other patients.
+
+\subsection{Experimental settings}
+In clinical use, the query is a radiologist's click or a detector output and is therefore imprecise.
+We simulate this by displacing the annotated lesion center by a random offset of up to 2.5\,mm along each axis and then moving it to the most lesion-like position within 6\,mm, found with a blob-detection filter~\cite{li2003}.
+All methods receive the same query and the same lesion-centered grid; the annotated locations are used only for evaluation. To measure the effect of candidate selection alone, we compare candidate lists that differ only in which translations reach the scorer, with everything else unchanged.
+\emph{Fit-only $K$} keeps the $K$ best-fitting translations, \emph{Diverse $K$} applies our diverse search until $K$ candidates are retained, and \emph{\ours} runs it to completion.
+\emph{Gated $K$} additionally discards candidates with a poor fit or witness cost, and \emph{Relaxed $K$} uses looser limits.
+\emph{Exhaustive} scores every translation.
+We use budgets from $K = 7$ to $K = 112$. We compare against lesion-inclusive B-spline registration~\cite{lowekamp2013} (hereafter \emph{the Spline}), which warps the earlier scan with a smooth deformation controlled by a coarse grid of control points, optimizes image similarity in a region that includes the lesion, and maps the query through the resulting deformation; we use the strongest of four Spline settings on the training set.
+We also compare against the released SAM model~\cite{yan2022sam}, used both standalone and as a drop-in scorer on our candidate lists.
+Finally, we replace our scorer with a Siamese scorer trained on the same data (supplement, \cref{sec:supp-appearance}) and apply it to the Relaxed 28 lists.
+Learned lesion trackers~\cite{cai2021,tang2022tlt} are trained end to end on large annotated longitudinal datasets, whereas our method needs only a small training set; we therefore represent learned correspondence by SAM, which can be applied without retraining. A matched evaluation against the diffusion-guided tracker~\cite{zhuang2026diffusion} remains future work.
+
+\subsection{Evaluation metrics}
+A prediction is a \emph{hit} if it lies within $\tau = 3$\,mm of the annotated lesion position (\cref{eq:reachhit}); we report the hit rate, also at 2 and 4\,mm, and the \emph{reach rate}, the percentage of lesions with at least one candidate within 3\,mm.
+We write ``$+x$ points $[a, b]$'' for a paired difference in hit rate with its 95\% confidence interval from a bootstrap that resamples whole patients; the intervals are pointwise and unadjusted for multiplicity, and the main comparisons and success criteria were fixed before evaluating on the staging cohort.
+Runtime is measured on a single CPU thread, for the local matching step and end to end.

@@ -1,3 +1,5 @@
+\section{Introduction}
+
 Follow-up chest CT is read by comparison: a radiologist identifies a lesion in the current scan and looks for the same lesion in an earlier scan to measure interval change~\cite{rafaelpalou2021,sofka2010}.
 Automating the second step is a correspondence problem with an unusual structure.
 The current location is known, and a global chest alignment brings the earlier scan into a common frame.
@@ -20,3 +22,15 @@ Our paper offers the following contributions.
 First, we diagnose and remedy a failure of candidate allocation: we show that fit-ranked shortlists collapse onto one alignment mode and introduce fit-ordered diverse search, which inherits the covering property of greedy suppression, so that the complete list stays within $r$ of every lattice position while scoring 7.5\% of them (\cref{sec:method}).
 Second, we show that allocation, not scoring, limits small budgets: at a fixed budget of 28, diversification adds 9.1 and 12.0 points over the fit-ranked list in two cohorts, and the reach/selection accounting attributes the whole gain to coverage (\cref{sec:decomp,sec:diversity}).
 Third, we obtain an accurate and fast matcher: the complete fit-ordered list comes within 1.8 points of exhaustive scoring on staging and matches it on screening, and it improves on lesion-inclusive B-spline registration by 10.5 and 10.7 points at 3\,mm with about 19 times lower local cost; we trace this gain to wider coverage plus lesion-aware selection and show that it is largest for imprecise queries (\cref{sec:results}).
+\begin{figure}[t]
+\centering
+\includegraphics[width=\linewidth]{figures/teaser.pdf}
+\caption{The problem and our idea. (a)~After chest alignment, the lesion marked in the current CT lies in a small window of the earlier CT. (b)~The 12 best-fitting candidates crowd around one wrong fit mode and miss the lesion (star, 3\,mm circle). (c)~Requiring candidates to be at least $r$ apart spreads the same 12 so that they cover the lesion. Panels (b,\,c) run our selection rule on a synthetic landscape; (a) created in BioRender.}
+% TODO(group): replace with BioRender's official citation (includes the creator's name) for the camera-ready version only, to keep the review copy anonymous.
+\label{fig:teaser}
+\end{figure}
+The rest of the paper is organized as follows.
+\Cref{sec:related} reviews longitudinal lesion tracking, image registration, dense anatomical correspondence and diversity in candidate generation.
+\Cref{sec:method} formulates the problem and presents the anatomical fit cost, fit-ordered diverse search with its coverage guarantee, the lesion-aware scorer and the reach--selection decomposition.
+\Cref{sec:evaluation} describes the datasets, implementation details, baselines and metrics, and \cref{sec:results} reports the results.
+\Cref{sec:conclusion} concludes with limitations and future directions.

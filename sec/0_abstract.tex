@@ -1,3 +1,4 @@
+\begin{abstract}
 Measuring how a lung lesion changes over time requires finding the same lesion again in the patient's earlier CT scan.
 After the two scans are aligned, several nearby positions can still look anatomically plausible, so practical matchers propose a short list of candidate positions and let a lesion classifier choose one.
 We show that the usual way of building this list wastes it: the best-matching candidates are near-copies of a single guess, and when that guess is wrong the classifier never sees the lesion.
@@ -5,3 +6,4 @@ We propose to keep the same ranking but to accept a candidate only if it is suff
 This simple change improves the matching rate by 9 to 12 percentage points on two CT cohorts, and we show that the gain comes entirely from the list containing the lesion more often.
 On an independent cohort of 440 metastases, the resulting matcher finds the earlier lesion within 3\,mm in 66\% of cases, compared with 55\% for deformable registration, while running about 19 times faster.
 The results suggest that deciding which candidates to consider deserves as much attention as deciding how to score them.
+\end{abstract}
