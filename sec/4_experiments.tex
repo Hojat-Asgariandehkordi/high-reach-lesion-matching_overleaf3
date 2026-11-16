@@ -1,15 +1,19 @@
 \section{Experiments}
 \label{sec:evaluation}
 \subsection{Datasets}
-We evaluate on two longitudinal CT cohorts: a melanoma staging cohort, which serves as the main test set, and a lung cancer screening cohort, which serves as a replication: \textbf{Staging cohort (main test set):}
-Longitudinal-CT v2~\cite{gatidis2026longct,kuestner2025longct} contains staging CT scans of melanoma patients at baseline and follow-up, in which practitioners segmented each lesion and linked it across the two visits.
-It comes from a clinical source different from the screening data used to train our method, and none of its patients were used for training.
-We select lung lesions that appear in both visits, in scan pairs where each visit is a single CT volume and each lesion has a 3D center.
+We evaluate on two longitudinal CT cohorts.
+A melanoma staging cohort is the main test set, and a lung cancer screening cohort is a second test set that checks whether the findings hold on different patients and scanners.
+
+\paragraph{Staging cohort.}
+Longitudinal-CT v2~\cite{gatidis2026longct,kuestner2025longct} contains staging CT scans of melanoma patients at baseline and follow-up; practitioners segmented each lesion and linked it across the two visits.
+The data come from a different clinical source than the screening data used for training, and none of these patients were used for training.
+We select lung lesions that appear in both visits, in scan pairs where each visit is a single CT volume and each lesion has an annotated 3D center.
 This yields 440 lesions from 72 patients.
-For three of them, the lesion-centered crop is not contained in both scans; we count these as failures for every method.
+For three of them, the lesion-centered crop does not fit inside both scans; we count these as failures for every method.
 Comparing 98 lesion centers with the published masks revealed a constant half-voxel offset, which we corrected in both visits before running any method.
 All settings were fixed before testing on this cohort, and the annotated lesion locations were used only to compute the evaluation metrics.
-\textbf{Screening cohort (replication).}
+
+\paragraph{Screening cohort.}
 LUNA25~\cite{peeters2026,lunamarks,lunascans,nlstct} links pulmonary nodules across low-dose screening CT visits of the National Lung Screening Trial.
 Our \emph{training set} consists of 145 nodule tracks from 101 patients of this dataset; the scorer and all parameters were fitted on it and then frozen.
 We evaluate on 309 nodules from 233 other patients.
