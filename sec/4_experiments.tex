@@ -20,7 +20,7 @@ We evaluate on 309 nodules from 233 other patients.
 
 \subsection{Experimental settings}
 In clinical use, the query is a radiologist's click or a detector output and is therefore imprecise.
-We simulate this by displacing the annotated lesion center by a random offset of up to 2.5\,mm along each axis and then moving it to the most lesion-like position within 6\,mm, found with a blob-detection filter~\cite{li2003}.
+We simulate this by displacing the annotated lesion center by a random offset of up to 2.5\,mm along each axis and then moving it to the most lesion-like position within 6\,mm, found with a blob-detection filter~\cite{li2003selective}.
 All methods receive the same query and the same lesion-centered grid; the annotated locations are used only for evaluation. To measure the effect of candidate selection alone, we compare candidate lists that differ only in which translations reach the scorer, with everything else unchanged.
 \emph{Fit-only $K$} keeps the $K$ best-fitting translations, \emph{Diverse $K$} applies our diverse search until $K$ candidates are retained, and \emph{\ours} runs it to completion.
 \emph{Gated $K$} additionally discards candidates with a poor fit or witness cost, and \emph{Relaxed $K$} uses looser limits.

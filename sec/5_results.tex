@@ -54,7 +54,13 @@ Exhaustive scoring remains the most accurate option on staging (297 versus 289 h
 Scoring only 7.5\% of the translations matters most when scoring dominates the cost, as it would with a neural scorer: in the fixed-budget replay, scoring takes 0.201 of the 0.265\,s of exhaustive search.
 \label{sec:query}
 Our queries are perturbed annotations (\cref{sec:evaluation}), so we examine how the gain depends on query error.
-Supplement \cref{fig:bands} groups lesions by the distance between the query $p$ and the annotated current position.
+\begin{figure}[!t]
+\centering
+\includegraphics[width=\linewidth]{figures/query_bands.pdf}
+\caption{Gain over the Spline by query error, with 95\% patient-level intervals; $n$: lesions per band. The gain is present even for accurate queries.}
+\label{fig:bands}
+\end{figure}
+\Cref{fig:bands} groups lesions by the distance between the query $p$ and the annotated current position.
 The gain is already present for well-localized queries: within 1.5\,mm, \ours hits 238 of 322 staging lesions versus 205 for the Spline ($+10.2$ points [2.1, 18.4]) and 178 versus 157 of 194 screening lesions ($+10.8$ [5.8, 16.0]); this band accounts for 33 of the 46 net staging gains and 21 of the 33 screening gains.
 When the screening cohort is rerun with the exact annotated position as the query, the Spline improves from 211 to 239 hits while \ours remains at 243.
 On screening, a large part of the advantage is therefore robustness to an imprecise query, which matters whenever the query comes from a click or a detector (supplement, \cref{tab:query-bands}). Additional reach is useful only if the scorer can exploit it.
@@ -63,7 +69,29 @@ Widening the lattice at a fixed budget of 28 does not help (intervals include ze
 On identical expanded lists, our scorer selects 33 of the 39 newly reachable staging lesions, whereas SAM selects only 10 and loses 15 hits on the 202 lesions reachable by both lists (\cref{fig:attribution}).
 The budget effect favors our scorer over SAM by 7.3 points [4.4, 10.4] on staging and 10.0 [5.4, 14.8] on screening.
 Coverage and selection are therefore complementary: a wider candidate list helps only when the scorer can distinguish the lesion from anatomically similar structures.
-In the matched comparison (prepared crops, one CPU thread, 24 staging and 32 screening queries; supplement, \cref{tab:timing}), the median local time of \ours is 0.194\,s versus 3.617\,s for the Spline on staging (18.6$\times$ faster) and 0.185 versus 3.866\,s on screening (20.9$\times$).
+\begin{table}[!t]
+\centering
+\footnotesize
+\setlength{\tabcolsep}{3pt}
+\caption{Median local time per query (s) on prepared crops, one CPU thread, matched workloads of 24 staging and 32 screening queries. The matched comparison is a single timing pass per method; the fixed-budget replay takes the median of three randomized repetitions. SAM runs on a GPU (0.033\,s per screening query) and is not comparable. Supplement, \cref{tab:timing-v6,tab:fixed-budget-timing}.}
+\label{tab:timing}
+\begin{tabular}{@{}lcccc@{}}
+\toprule
+& \multicolumn{2}{c}{Matched comparison} & \multicolumn{2}{c}{Fixed-budget replay} \\
+\cmidrule(lr){2-3}\cmidrule(l){4-5}
+Method & Staging & Screening & Staging & Screening \\
+\midrule
+B-spline & 3.617 & 3.866 & -- & -- \\
+Siamese, Relaxed 28 & 0.106 & 0.082 & -- & -- \\
+Fit-only 28 & -- & -- & 0.098 & 0.101 \\
+Diverse 28 & -- & -- & 0.120 & 0.120 \\
+Diverse 112 & -- & -- & 0.142 & 0.144 \\
+\textbf{\ours} & 0.194 & 0.185 & 0.190 & 0.190 \\
+Exhaustive & 0.956 & 0.256 & 0.265 & 0.265 \\
+\bottomrule
+\end{tabular}
+\end{table}
+In the matched comparison (prepared crops, one CPU thread, 24 staging and 32 screening queries; \cref{tab:timing}), the median local time of \ours is 0.194\,s versus 3.617\,s for the Spline on staging (18.6$\times$ faster) and 0.185 versus 3.866\,s on screening (20.9$\times$).
 Supplement \cref{fig:speed} plots accuracy against local time in the fixed-budget replay, where a budget of 112 yields 278 staging hits at 0.142\,s.
 In this single-pass matched comparison, exhaustive scoring took 0.956\,s on staging (4.9$\times$ the time of \ours) but 0.256\,s on screening (1.4$\times$), whereas the fixed-budget replay gives 0.265\,s on both cohorts, so its measured relative cost depends on the timing protocol.
 End to end, the shared chest alignment dominates: with one query per screening pair, \ours takes 29.36\,s versus 32.87\,s for the Spline, and with two queries sharing one alignment, 14.88 versus 19.38\,s per query; the relative saving grows as more lesions share an alignment.
