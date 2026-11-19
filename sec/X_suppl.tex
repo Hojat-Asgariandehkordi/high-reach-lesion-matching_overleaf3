@@ -25,7 +25,7 @@ Exhaustive & Wide raw, all \\
 Gated $K$ & Wide strict $K$ \\
 Relaxed $K$ & Wide relaxed $K$ \\
 Original-lattice gated variants & Original 7, Original 28, Original 28 + fit \\
-B-spline & Full central Spline \\
+Spline (B-spline registration) & Full central Spline \\
 \bottomrule
 \end{tabular}
 \end{center}
@@ -56,7 +56,7 @@ Before crop preparation, each scan must have a robust lung extent of at least 13
 The evaluation uses de-identified research data and previously supplied annotations. The original NLST reports written consent and institutional review~\cite{aberlenslt}. The secondary analysis involved no participant contact or new imaging.
 
 \section{Physical support and candidate generation}
-\Cref{alg:diverse} gives the complete fit-ordered diverse search (main paper, \cref{sec:diverse}).
+\Cref{alg:diverse} gives the complete fit-ordered diverse search (main paper, Sec.~3.3).
 
 \begin{algorithm}[!ht]
 \caption{Fit-ordered diverse search}
@@ -71,19 +71,19 @@ The evaluation uses de-identified research data and previously supplied annotati
     \If{$|\Ss| = K$} \textbf{break} \EndIf
   \EndIf
 \EndFor
-\State \Return $\hat{t} = \argmax_{t \in \Ss} s(t)$ \Comment{score of main-paper \cref{eq:direct}}
+\State \Return $\hat{t} = \argmax_{t \in \Ss} s(t)$ \Comment{score of main-paper Eq.~(6)}
 \end{algorithmic}
 \end{algorithm}
 
 \paragraph{Parameters.}
-\Cref{tab:params} lists the parameters of the anatomical fit cost (main paper, \cref{sec:fit}); the remaining settings are given in the main paper (\cref{sec:impl}).
+\Cref{tab:params} lists the parameters of the anatomical fit cost (main paper, Sec.~3.2); the remaining settings are given in the main paper (Sec.~3.6).
 All values were fixed on the training set and kept unchanged for every experiment.
 
 \begin{table}[t]
 \centering
 \footnotesize
 \setlength{\tabcolsep}{4pt}
-\caption{Parameters of the anatomical fit cost (main paper, \cref{sec:fit}), fixed on the training set.}
+\caption{Parameters of the anatomical fit cost (main paper, Sec.~3.2), fixed on the training set.}
 \label{tab:params}
 \begin{tabular}{@{}clr@{}}
 \toprule
@@ -101,7 +101,7 @@ $h_1$ & intensity at or above which $g_i = 1$ (tissue) & $-370$\,HU \\
 \end{tabular}
 \end{table}
 
-\paragraph{Residual support details (moved from the main paper).}
+\paragraph{Residual support details.}
 The fit and witness octants use strided centers that stay valid across the lattice after smoothing and displacement.
 The residual support excludes a 10\,mm core on the resampled grid, while the final lesion score and the central Spline can use the lesion-bearing interior.
 The residual limits are fitted on training-side controls.
@@ -116,7 +116,7 @@ The fit and witness sets use alternating octants and centers on a stride-two vox
 g(a,b) &= 0.25+0.75\,\mathrm{clip}_{[0,1]}\left(\frac{\max(a,b)+860}{490}\right),\\
 \ell(a,b) &= g(a,b)\min\left(\lvert a-b-o\rvert,420\right)
 \end{align}
-over the respective sector samples. The witness uses the offset from fit. Shifts are ordered by fit cost and then displacement norm. The frozen original fit and witness limits are 76.958 and 99.541 HU. \emph{Candidate-list gates.} Gated $K$ discards translations whose fit cost exceeds the fit limit or exceeds the best fit cost by more than 24 HU and, after truncation to $K$, those whose witness cost exceeds the witness limit. Relaxed $K$ raises the fit limit by 20 HU and the margin to 40 HU and drops the witness gate. Because anatomical fit also enters every score (main paper, \cref{eq:direct}), the gates change only which translations reach the scorer. The 279 fit controls give shared-mask limits of 73.124 and 103.872 HU at the best narrow shift, applied identically to the two widths. The broad relaxed configuration uses the wider common-mask fit bound plus 20 HU and slack 40 HU, with the witness cutoff removed.
+over the respective sector samples. The witness uses the offset from fit. Shifts are ordered by fit cost and then displacement norm. The frozen original fit and witness limits are 76.958 and 99.541 HU. \emph{Candidate-list gates.} Gated $K$ discards translations whose fit cost exceeds the fit limit or exceeds the best fit cost by more than 24 HU and, after truncation to $K$, those whose witness cost exceeds the witness limit. Relaxed $K$ raises the fit limit by 20 HU and the margin to 40 HU and drops the witness gate. Because anatomical fit also enters every score (main paper, Eq.~(6)), the gates change only which translations reach the scorer. The 279 fit controls give shared-mask limits of 73.124 and 103.872 HU at the best narrow shift, applied identically to the two widths. The broad relaxed configuration uses the wider common-mask fit bound plus 20 HU and slack 40 HU, with the witness cutoff removed.
 
 For the original lattice, the nearest raw prior voxels accessed by smoothing over all shifts are 13.31 mm from the crop center. On the shared support the corresponding distances are 15.13 mm for the narrow lattice and 12.00 mm for the wide lattice. Linear interpolation for the affine evaluation uses corners inside the same rectangular raw-voxel bound, because the componentwise displacement extrema are integer grid steps. With an additional conservative voxel per axis the wide bound is 10.50 mm. The exact crop-grid margin to the prior image boundary is at least 0.70 mm along the shortest physical axis. There are no changes to crop size, native field of view or HU inputs when changing the width. The native-grid corner audit in \cref{sec:timing} includes the earlier scan resampling.
 
@@ -155,7 +155,7 @@ The standalone list orders the same field's voxel centers by descending similari
 We additionally run the same SAM checkpoint on both original CT volumes for the frozen 32-query, 24-pair screening timing roster. The choice of roster predates the comparator readout. The sensitivity analysis was specified after the common-crop readout. We physically reorient the volumes to LPS, apply the released intensity and embedding routines, and recover the same current query in native coordinates. SAM searches the entire native prior without an affine or earlier label. A separately computed chest affine converts its output to the common scoring frame. All 32 maps are available. The native-context and common-crop SAM routes hit 9 and 10 at 3 mm (paired $-3.1$ points [$-18.8$, 13.8]). On the same 32 tracks the full spline and ungated diversified wide direct score hit 21 and 25. The native 2, 3 and 4 mm errors give 3, 9 and 16 hits for full-scan SAM. Context and search extent change together in this sensitivity comparison.
 
 \section{Point maps, timing and physical audit}
-\Cref{fig:speed} plots hit rate against local time in the fixed-budget replay, complementing the local times in \cref{tab:timing}.
+\Cref{fig:speed} plots hit rate against local time in the fixed-budget replay, complementing the local times in main-paper Tab.~4.
 
 \begin{figure}[!ht]
 \centering
@@ -238,12 +238,12 @@ The frozen local Siamese at relaxed caps 7, 28 and 56 hits 169, 210 and 224 on s
 \label{fig:paired-effects}
 \end{figure}
 
-\Cref{fig:forest,fig:budget} were moved from the main paper for space; they show the paired effects of main-paper \cref{sec:transfer} and reach and hits versus the candidate budget.
+\Cref{fig:forest,fig:budget} complement the main paper: they show the paired effects of main-paper Sec.~5.1 and reach and hits versus the candidate budget.
 
 \begin{figure}[!ht]
 \centering
 \includegraphics[width=\linewidth]{figures/paired_forest.pdf}
-\caption{Paired differences in hit rate with 95\% patient-level intervals. Top: \ours minus the Spline; bottom: candidate-list changes (main-paper \cref{tab:contrasts}). Dashed: 3-point margin.}
+\caption{Paired differences in hit rate with 95\% patient-level intervals. Top: \ours minus the Spline; bottom: candidate-list changes (main-paper Tab.~3). Dashed: 3-point margin.}
 \label{fig:forest}
 \end{figure}
 
