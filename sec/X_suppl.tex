@@ -418,6 +418,21 @@ The frozen local Siamese at relaxed caps 7, 28 and 56 hits 169, 210 and 224 on s
 \end{table*}
 
 
+
+\section{Equal-budget allocation controls}
+\label{sec:alloc}
+This exploratory CPU replay uses the same ungated lattice, the frozen lesion scorer, the 3\,mm endpoint and all 440 staging and 309 screening lesions, counting failed queries as misses.
+The budget $K = 28$, all policies and the random seeds were fixed before any contrast was computed; this is not a prospective preregistration or an untouched holdout.
+The saved Fit-only, Diverse and exhaustive lists, winners and errors were reproduced exactly.
+Random sampling draws 28 translations without replacement under 20 fixed seeds.
+Farthest-point selection starts from the best-fitting translation and maximizes the minimum physical separation, breaking ties by fit rank and lattice index.
+Spatial-stratified best-fit selection splits each lattice axis into three nearly equal index bins, takes the best-fitting translation in each of the 27 cells and fills the remaining slots by fit; it is fit-informed rather than uniformly random.
+The radius controls run the same fit-ordered suppression algorithm with a different $r$ and are not independent methods.
+\Cref{tab:alloc} lists the results.
+Relative to Diverse 28, the hit-rate differences in points (staging; screening) are $+0.23$ [$-2.46$, 3.23] and $-1.29$ [$-5.02$, 2.48] for stratification, $-24.09$ [$-29.89$, $-17.98$] and $-29.47$ [$-33.48$, $-25.18$] for random sampling, and $-14.55$ [$-19.73$, $-10.07$] and $-16.83$ [$-22.19$, $-11.36$] for farthest-point selection; for the separation radius they are $-3.86$ [$-6.46$, $-1.29$] and $-5.50$ [$-8.62$, $-2.40$] at 1.4\,mm and $+2.05$ [$-0.75$, 5.03] and $-1.94$ [$-4.98$, 1.05] at 2.8\,mm.
+Intervals use 4,000 paired percentile resamples of whole patients (72 staging and 233 screening clusters) with lesion-weighted ratios; they condition on the existing predictions and policies and are unadjusted for multiplicity, and for random sampling they bootstrap per-case means over seeds rather than the full algorithmic randomness.
+No radius or seed was chosen using these outcomes, and similar performance of stratification is not evidence of equivalence or non-inferiority.
+
 \begin{table*}[!t]
 \centering
 \small
@@ -439,20 +454,3 @@ Exhaustive (not budget-matched) & 297/351 & 242/290 \\
 \bottomrule
 \end{tabular}
 \end{table*}
-
-\FloatBarrier
-\clearpage
-\section{Equal-budget allocation controls}
-\label{sec:alloc}
-This exploratory CPU replay uses the same ungated lattice, the frozen lesion scorer, the 3\,mm endpoint and all 440 staging and 309 screening lesions, counting failed queries as misses.
-The budget $K = 28$, all policies and the random seeds were fixed before any contrast was computed; this is not a prospective preregistration or an untouched holdout.
-The saved Fit-only, Diverse and exhaustive lists, winners and errors were reproduced exactly.
-Random sampling draws 28 translations without replacement under 20 fixed seeds.
-Farthest-point selection starts from the best-fitting translation and maximizes the minimum physical separation, breaking ties by fit rank and lattice index.
-Spatial-stratified best-fit selection splits each lattice axis into three nearly equal index bins, takes the best-fitting translation in each of the 27 cells and fills the remaining slots by fit; it is fit-informed rather than uniformly random.
-The radius controls run the same fit-ordered suppression algorithm with a different $r$ and are not independent methods.
-\Cref{tab:alloc} lists the results.
-Relative to Diverse 28, the hit-rate differences in points (staging; screening) are $+0.23$ [$-2.46$, 3.23] and $-1.29$ [$-5.02$, 2.48] for stratification, $-24.09$ [$-29.89$, $-17.98$] and $-29.47$ [$-33.48$, $-25.18$] for random sampling, and $-14.55$ [$-19.73$, $-10.07$] and $-16.83$ [$-22.19$, $-11.36$] for farthest-point selection; for the separation radius they are $-3.86$ [$-6.46$, $-1.29$] and $-5.50$ [$-8.62$, $-2.40$] at 1.4\,mm and $+2.05$ [$-0.75$, 5.03] and $-1.94$ [$-4.98$, 1.05] at 2.8\,mm.
-Intervals use 4,000 paired percentile resamples of whole patients (72 staging and 233 screening clusters) with lesion-weighted ratios; they condition on the existing predictions and policies and are unadjusted for multiplicity, and for random sampling they bootstrap per-case means over seeds rather than the full algorithmic randomness.
-No radius or seed was chosen using these outcomes, and similar performance of stratification is not evidence of equivalence or non-inferiority.
-
