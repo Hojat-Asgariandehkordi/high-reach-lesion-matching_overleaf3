@@ -213,6 +213,20 @@ After exclusions for checkpoint training, development, earlier inspection or sco
 
 The independent blinded pilot has 24 unadjudicated cases and the distinct confirmation reserve has 104 patients, with a one-case unadjudicated preview. Pilot calibration requires all cases adjudicated and at least six valid labels per known class, followed by unchanged confirmation thresholds and indeterminate labels retained in the flow. Counterpart locations must be independently marked to measure clinical false associations.
 
+\begin{figure*}[!t]
+\centering
+\includegraphics[width=\textwidth]{figures/paired_effects.pdf}
+\caption{Paired hit-rate changes at 3\,mm with patient-level 95\% intervals; blue intervals lie above zero; dotted: 3-point margin.}
+\label{fig:paired-effects}
+\end{figure*}
+
+\begin{table*}[!t]
+\centering\small
+\caption{Point correspondence at 3 mm. Misses are unreachable (U) or reachable but incorrectly selected (R). The full Spline maps a single point. Standalone SAM searches the entire common crop.}
+\label{tab:point-methods}
+\input{tables/primary_methods}
+\end{table*}
+
 \section{Additional correspondence diagnostics}
 \subsection{Query and shared alignment sensitivity}
 The accuracy comparison uses the same automatically refined current point for every route. Of 309 screening tracks, 47 current queries have error above 3 mm. Thirty-two of these are among the 111 tracks unreachable by Original 7. Diverse search and the full Spline hit 178 and 157 of 194 queries within 1.5 mm, 57 and 46 of 68 queries in the 1.5--3 mm band, and 9 and 8 of 47 above 3 mm. Holding the crop and anatomical costs fixed and replacing the query with the annotated current mark changes Original 7 from 184 to 211 and the Spline from 211 to 239 hits. Diverse search changes from 244 to 243. The advantage in the automatic-query setting narrows when the exact current mark is supplied.
@@ -229,12 +243,6 @@ The frozen local Siamese at relaxed caps 7, 28 and 56 hits 169, 210 and 224 on s
 
 \section{Additional quantitative results}
 
-\begin{figure*}[!t]
-\centering
-\includegraphics[width=\textwidth]{figures/paired_effects.pdf}
-\caption{Paired hit-rate changes at 3\,mm with patient-level 95\% intervals; blue intervals lie above zero; dotted: 3-point margin.}
-\label{fig:paired-effects}
-\end{figure*}
 
 \Cref{fig:forest,fig:budget} complement the main paper: they show the paired effects of main-paper Sec.~5.1 and reach and hits versus the candidate budget.
 
@@ -253,14 +261,7 @@ The frozen local Siamese at relaxed caps 7, 28 and 56 hits 169, 210 and 224 on s
 \label{fig:budget}
 \end{figure}
 
-\begin{table*}[!t]
-\centering\small
-\caption{Point correspondence at 3 mm. Misses are unreachable (U) or reachable but incorrectly selected (R). The full Spline maps a single point. Standalone SAM searches the entire common crop.}
-\label{tab:point-methods}
-\input{tables/primary_methods}
-\end{table*}
 
-\clearpage
 \begin{table*}[!t]
 \centering\small
 \caption{Independent Longitudinal-CT participant flow. The full denominator follows the allocation row.}
@@ -296,7 +297,6 @@ The frozen local Siamese at relaxed caps 7, 28 and 56 hits 169, 210 and 224 on s
 \input{tables/external_native_mm}
 \end{table*}
 
-\clearpage
 \begin{table*}[!t]
 \centering\small
 \setlength{\tabcolsep}{4pt}
@@ -305,7 +305,6 @@ The frozen local Siamese at relaxed caps 7, 28 and 56 hits 169, 210 and 224 on s
 \input{tables/luna_direct}
 \end{table*}
 
-\clearpage
 \begin{table*}[!t]
 \centering\small
 \setlength{\tabcolsep}{4pt}
@@ -314,7 +313,6 @@ The frozen local Siamese at relaxed caps 7, 28 and 56 hits 169, 210 and 224 on s
 \input{tables/external_direct}
 \end{table*}
 
-\clearpage
 \begin{table*}[!t]
 \centering\small
 \setlength{\tabcolsep}{3pt}
@@ -322,7 +320,6 @@ The frozen local Siamese at relaxed caps 7, 28 and 56 hits 169, 210 and 224 on s
 \input{tables/luna_sam}
 \end{table*}
 
-\clearpage
 \begin{table*}[!t]
 \centering\small
 \setlength{\tabcolsep}{3pt}
@@ -336,7 +333,6 @@ The frozen local Siamese at relaxed caps 7, 28 and 56 hits 169, 210 and 224 on s
 \input{tables/siamese_frontier}
 \end{table*}
 
-\clearpage
 \begin{table*}[!t]
 \centering\small
 \setlength{\tabcolsep}{4pt}
@@ -382,7 +378,6 @@ The frozen local Siamese at relaxed caps 7, 28 and 56 hits 169, 210 and 224 on s
 \input{tables/learning_pairs}
 \end{table*}
 
-\clearpage
 \begin{figure*}[!t]
 \centering
 \includegraphics[width=\textwidth]{figures/status_achieved.pdf}
@@ -396,7 +391,6 @@ The frozen local Siamese at relaxed caps 7, 28 and 56 hits 169, 210 and 224 on s
 \input{tables/status_joint_v6}
 \end{table*}
 
-\clearpage
 \begin{table*}[!t]
 \centering\small
 \caption{New / prior-visible / unresolved on the held-out controls at the 65\% recall and 81\% coverage target. Clean and shear each use 309 tracks. Absent, standard and off-target each use 181.}
@@ -423,8 +417,8 @@ The frozen local Siamese at relaxed caps 7, 28 and 56 hits 169, 210 and 224 on s
 \input{tables/clinical_main}
 \end{table*}
 
-\clearpage
 
+\FloatBarrier
 \section{Equal-budget allocation controls}
 \label{sec:alloc}
 This exploratory CPU replay uses the same ungated lattice, the frozen lesion scorer, the 3\,mm endpoint and all 440 staging and 309 screening lesions, counting failed queries as misses.
