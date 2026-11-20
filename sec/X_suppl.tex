@@ -227,16 +227,14 @@ At strict budgets above 28, staging reach increases from 241 to 259 and direct h
 
 The frozen local Siamese at relaxed caps 7, 28 and 56 hits 169, 210 and 224 on screening and 169, 203 and 214 on staging. The corresponding all-relaxed counts are 223 and 210. At cap 28, the screening near-match of 210 versus 211 for the Spline does not transfer. On staging, the Siamese gives 203 hits versus 243 ($-9.1$ points [$-15.3$, $-3.6$]). The archived supervision comparison increases Original 7 hits from 178 to 186 with proposal supervision. On the same Wide relaxed 28 points, close-pair ranking improves by 1.5 points [0.2, 3.0] while hits change from 211 to 205. Seven of the ten new misses retain the same leading distractor. The final matched fits use one seed.
 
-\clearpage
-\onecolumn
 \section{Additional quantitative results}
 
-\begin{figure}[!ht]
+\begin{figure*}[!t]
 \centering
-\includegraphics[width=.96\textwidth]{figures/paired_effects.pdf}
+\includegraphics[width=\textwidth]{figures/paired_effects.pdf}
 \caption{Paired hit-rate changes at 3\,mm with patient-level 95\% intervals; blue intervals lie above zero; dotted: 3-point margin.}
 \label{fig:paired-effects}
-\end{figure}
+\end{figure*}
 
 \Cref{fig:forest,fig:budget} complement the main paper: they show the paired effects of main-paper Sec.~5.1 and reach and hits versus the candidate budget.
 
@@ -255,175 +253,175 @@ The frozen local Siamese at relaxed caps 7, 28 and 56 hits 169, 210 and 224 on s
 \label{fig:budget}
 \end{figure}
 
-\begin{table}[!ht]
+\begin{table*}[!t]
 \centering\small
 \caption{Point correspondence at 3 mm. Misses are unreachable (U) or reachable but incorrectly selected (R). The full Spline maps a single point. Standalone SAM searches the entire common crop.}
 \label{tab:point-methods}
 \input{tables/primary_methods}
-\end{table}
+\end{table*}
 
 \clearpage
-\begin{table}[!ht]
+\begin{table*}[!t]
 \centering\small
 \caption{Independent Longitudinal-CT participant flow. The full denominator follows the allocation row.}
 \label{tab:external-flow}
 \input{tables/external_flow}
-\end{table}
+\end{table*}
 
-\begin{table}[!ht]
+\begin{table*}[!t]
 \centering\small
 \setlength{\tabcolsep}{3pt}
 \caption{Changes on shared, gained, and lost reach at 3 mm. Shared hits gives first / second on the same tracks. Gain reach gives first-route hits / tracks among newly reachable, and lost reach gives second-route hits / tracks among no longer reachable. Both p90 gives matched available-only error tails in mm.}
 \label{tab:reach-transitions}
 \input{tables/reach_transitions}
-\end{table}
+\end{table*}
 
-\begin{table}[!ht]
+\begin{table*}[!t]
 \centering\small
 \caption{Frozen current-query error bands, from at most 1.5 mm to 1.5--3 mm to above 3 mm. The top table is screening and the bottom is staging. Entries are hits / reach at 3 mm. Query-unavailable tracks are included in the unstratified results.}
 \label{tab:query-bands}
 \input{tables/query_luna}\par\medskip
 \input{tables/query_external}
-\end{table}
+\end{table*}
 
-\begin{table}[!ht]
+\begin{table*}[!t]
 \centering\small
 \caption{Diagnostic rerun on the retrospective cohort with the annotated current point in the same fixed crop. Entries are hits / reach at 3 mm.}
 \input{tables/current_mark_diagnostic}
-\end{table}
+\end{table*}
 
-\begin{table}[!ht]
+\begin{table*}[!t]
 \centering\small
 \caption{Staging sensitivity using native baseline millimeters, with all 440 tracks in the denominator.}
 \input{tables/external_native_mm}
-\end{table}
+\end{table*}
 
 \clearpage
-\begin{table}[!ht]
+\begin{table*}[!t]
 \centering\small
 \setlength{\tabcolsep}{4pt}
 \caption{Retrospective screening. Reach and hits use all 309 tracks at 2/3/4 mm. Off is the number of returned points outside 3 mm. Conditional hits and tails are reported separately.}
 \label{tab:point-luna}
 \input{tables/luna_direct}
-\end{table}
+\end{table*}
 
 \clearpage
-\begin{table}[!ht]
+\begin{table*}[!t]
 \centering\small
 \setlength{\tabcolsep}{4pt}
 \caption{Staging CT. Reach and hits use all 440 allocated tracks at 2/3/4 mm. Off is the number of returned points outside 3 mm.}
 \label{tab:point-external}
 \input{tables/external_direct}
-\end{table}
+\end{table*}
 
 \clearpage
-\begin{table}[!ht]
+\begin{table*}[!t]
 \centering\small
 \setlength{\tabcolsep}{3pt}
 \caption{SAM point and candidate crossings in retrospective screening CT. The standalone result uses the whole common crop. SAM field prefixes retain its selected point while adding alternative centers.}
 \input{tables/luna_sam}
-\end{table}
+\end{table*}
 
 \clearpage
-\begin{table}[!ht]
+\begin{table*}[!t]
 \centering\small
 \setlength{\tabcolsep}{3pt}
 \caption{SAM point and candidate crossings in staging CT. Unavailable crops count as misses throughout.}
 \input{tables/external_sam}
-\end{table}
+\end{table*}
 
-\begin{table}[!ht]
+\begin{table*}[!t]
 \centering\small
 \caption{Wide relaxed budget sweep with the frozen Siamese on identical centers. The staging sweep is a secondary transfer diagnostic.}
 \input{tables/siamese_frontier}
-\end{table}
+\end{table*}
 
 \clearpage
-\begin{table}[!ht]
+\begin{table*}[!t]
 \centering\small
 \setlength{\tabcolsep}{4pt}
 \caption{Screening timing. Each entry gives median / p90 seconds. Prepared-crop results use 32 queries. The native replay uses eight pairs, four with two measured queries. The four-query column estimates amortization.}
 \label{tab:timing-v6}
 \input{tables/timing_v6}
-\end{table}
+\end{table*}
 
-\begin{table}[!ht]
+\begin{table*}[!t]
 \centering\small
 \caption{Staging prepared-crop timing on 24 supported patient pairs, one query per pair. Each entry gives median / p90 seconds.}
 \input{tables/timing_external}
-\end{table}
+\end{table*}
 
-\begin{table}[!ht]
+\begin{table*}[!t]
 \centering\small
 \setlength{\tabcolsep}{4pt}
 \caption{Fixed-budget timing after the accuracy readout. Hit counts use the full staging and screening cohorts. Times are median / p90 seconds of per-query medians from three randomized repetitions on the matched 24 staging and 32 screening workloads. Propose includes residuals, ordering and candidate construction. Score includes descriptor computation and point selection. All replayed counts and selected points equal their saved values.}
 \label{tab:fixed-budget-timing}
 \input{tables/fixed_budget_timing}
-\end{table}
+\end{table*}
 
 
-\begin{table}[!ht]
+\begin{table*}[!t]
 \centering\small
 \caption{Out-of-fold development with 145 frozen queries. Geometry uses the direct selector.}
 \label{tab:devsearch}
 \input{tables/search_dev}
-\end{table}
+\end{table*}
 
-\begin{table}[!ht]
+\begin{table*}[!t]
 \centering\small
 \caption{Native image sampling audit over the timing workloads. Radii are relative to the crop center, mapped back to the current physical frame. Counts refer to queries whose possible raw support reaches the reserved radius or exceeds the native sampling domain.}
 \label{tab:native}
 \input{tables/native}
-\end{table}
+\end{table*}
 
-\begin{table}[!ht]
+\begin{table*}[!t]
 \centering\small
 \setlength{\tabcolsep}{4pt}
 \caption{Paired training contrasts on identical candidate centers. Entries are percentage-point changes and 95\% paired intervals. Close ranking conditions on tracks with at least one close positive--negative pair.}
 \label{tab:learnpairs}
 \input{tables/learning_pairs}
-\end{table}
+\end{table*}
 
 \clearpage
-\begin{figure}[!ht]
+\begin{figure*}[!t]
 \centering
-\includegraphics[width=.96\textwidth]{figures/status_achieved.pdf}
+\includegraphics[width=\textwidth]{figures/status_achieved.pdf}
 \caption{Held-out status trade-offs at three coverage targets. Color: route family; marker and line style: candidate cap.}
 \label{fig:status-achieved}
-\end{figure}
+\end{figure*}
 
-\begin{table}[!ht]
+\begin{table*}[!t]
 \centering\small
 \caption{Joint status metrics at the 65\% recall and 81\% coverage target. I and P denote the 181 absent and 181 standard-prior controls. Metrics are percentages of the full applicable denominators, except abstention counts.}
 \input{tables/status_joint_v6}
-\end{table}
+\end{table*}
 
 \clearpage
-\begin{table}[!ht]
+\begin{table*}[!t]
 \centering\small
 \caption{New / prior-visible / unresolved on the held-out controls at the 65\% recall and 81\% coverage target. Clean and shear each use 309 tracks. Absent, standard and off-target each use 181.}
 \input{tables/status_primary_v6}
-\end{table}
+\end{table*}
 
-\begin{table}[!ht]
+\begin{table*}[!t]
 \centering\small
 \caption{Status of weak or displaced prior insertions at the same primary target. Entries are new / prior-visible / unresolved on 181 backgrounds per condition.}
 \input{tables/status_weak_v6}
-\end{table}
+\end{table*}
 
-\begin{table}[!ht]
+\begin{table*}[!t]
 \centering\small
 \caption{Ranges of paired point estimates across the achieved recall and coverage matches, in percentage points. Each entry compares the first route to the second. Match counts can include identical decisions at distinct calibration targets. The full grid and paired intervals accompany the figures in aggregate form.}
 \label{tab:status-matched-v6}
 \input{tables/status_matched_v6}
-\end{table}
+\end{table*}
 
-\begin{table}[!ht]
+\begin{table*}[!t]
 \centering\small
 \caption{Archived exploratory TCIA status. Inc. is incident-new out of 91. FN and P res. use the 13 prior-visible marks. Res. uses all 104. Sheared scans use the same thresholds fitted to the other folds' clean cases.}
 \label{tab:tcia}
 \input{tables/clinical_main}
-\end{table}
+\end{table*}
 
 \clearpage
 
@@ -441,7 +439,7 @@ Relative to Diverse 28, the hit-rate differences in points (staging; screening) 
 Intervals use 4,000 paired percentile resamples of whole patients (72 staging and 233 screening clusters) with lesion-weighted ratios; they condition on the existing predictions and policies and are unadjusted for multiplicity, and for random sampling they bootstrap per-case means over seeds rather than the full algorithmic randomness.
 No radius or seed was chosen using these outcomes, and similar performance of stratification is not evidence of equivalence or non-inferiority.
 
-\begin{table}[!ht]
+\begin{table*}[!t]
 \centering
 \small
 \caption{Equal-budget allocation controls at 3\,mm on the same lattice with the frozen scorer (exploratory replay of saved inputs).}
@@ -461,4 +459,4 @@ Diverse 28, $r{=}2.8$\,mm & 254/295 & 206/245 \\
 Exhaustive (not budget-matched) & 297/351 & 242/290 \\
 \bottomrule
 \end{tabular}
-\end{table}
+\end{table*}
